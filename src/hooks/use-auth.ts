@@ -95,5 +95,5 @@ export function useAuth() {
     }
   };
 
-  return { user, isAdmin, loading: loading || checking, signIn, signInWithPassword, signOut, passwordAuth };
+  return { user, isAdmin, loading: loading || (!passwordAuth && checking), signIn, signInWithPassword, signOut, passwordAuth };
 }
