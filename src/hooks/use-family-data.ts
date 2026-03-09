@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAllFamilyData } from "@/lib/firestore";
+import { getAllFamilyData, getLegacyFamilyData } from "@/lib/firestore";
 import type { FamilyData } from "@/lib/types";
 
 function parseFamilyData(raw: Record<string, any>): FamilyData {
@@ -37,7 +37,11 @@ export function useFamilyData(familyId: string | undefined) {
     queryKey: ["family", familyId],
     queryFn: async (): Promise<FamilyData> => {
       if (!familyId) throw new Error("No familyId");
-      const raw = await getAllFamilyData(familyId);
+      let raw = await getAllFamilyData(familyId);
+      // If no data found in families/{id}/data/, try legacy collection
+      if (Object.keys(raw).length === 0) {
+        raw = await getLegacyFamilyData();
+      }
       return parseFamilyData(raw);
     },
     enabled: !!familyId,

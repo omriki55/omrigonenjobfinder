@@ -105,3 +105,51 @@ export async function setFamilyData(familyId: string, key: string, value: any) {
     updatedAt: new Date().toISOString(),
   });
 }
+
+// ── Legacy / Discovery helpers ──
+
+// Discover families from the legacy "family-chores" collection
+export async function discoverFromLegacy(): Promise<{ familyId: string | null; familyName: string; hasLegacyData: boolean }> {
+  try {
+    const docRef = doc(db, "family-chores", "family-config");
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) return { familyId: null, familyName: "", hasLegacyData: false };
+
+    const raw = snap.data().value;
+    let config: any;
+    try {
+      config = typeof raw === "string" ? JSON.parse(raw) : raw;
+    } catch {
+      config = raw;
+    }
+
+    return {
+      familyId: config?.familyId || null,
+      familyName: config?.familyName || "",
+      hasLegacyData: true,
+    };
+  } catch {
+    return { familyId: null, familyName: "", hasLegacyData: false };
+  }
+}
+
+// Load all data from the legacy "family-chores" collection
+export async function getLegacyFamilyData(): Promise<Record<string, any>> {
+  try {
+    const colRef = collection(db, "family-chores");
+    const snapshot = await getDocs(colRef);
+    const data: Record<string, any> = {};
+    snapshot.forEach((d) => {
+      try {
+        const raw = d.data().value;
+        data[d.id] = typeof raw === "string" ? JSON.parse(raw) : raw;
+      } catch {
+        data[d.id] = d.data().value;
+      }
+    });
+    return data;
+  } catch (e) {
+    console.error("getLegacyFamilyData:", e);
+    return {};
+  }
+}

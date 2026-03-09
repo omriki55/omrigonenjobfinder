@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   getAdminConfig, setAdminConfig,
   getFamilyRegistry, registerFamily, removeFamily,
+  discoverFromLegacy,
 } from "@/lib/firestore";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -123,26 +124,41 @@ export default function SettingsPage() {
   const handleAutoDiscover = async () => {
     setDiscovering(true);
     try {
-      const colRef = collection(db, "families");
-      const snapshot = await getDocs(colRef);
-      const discoveredIds: string[] = [];
-      snapshot.forEach((d) => discoveredIds.push(d.id));
-
       const existingIds = new Set(registeredFamilies.map((f) => f.familyId));
       let added = 0;
 
-      for (const fid of discoveredIds) {
-        if (!existingIds.has(fid)) {
-          await registerFamily(fid, { familyName: fid, autoDiscovered: true });
+      // Strategy 1: Scan families collection for parent docs
+      try {
+        const colRef = collection(db, "families");
+        const snapshot = await getDocs(colRef);
+        for (const d of snapshot.docs) {
+          if (!existingIds.has(d.id)) {
+            await registerFamily(d.id, { familyName: d.id, autoDiscovered: true });
+            existingIds.add(d.id);
+            added++;
+          }
+        }
+      } catch {}
+
+      // Strategy 2: Check legacy "family-chores" collection for family-config
+      try {
+        const legacy = await discoverFromLegacy();
+        if (legacy.familyId && !existingIds.has(legacy.familyId)) {
+          await registerFamily(legacy.familyId, {
+            familyName: legacy.familyName || legacy.familyId,
+            autoDiscovered: true,
+            source: "legacy",
+          });
+          existingIds.add(legacy.familyId);
           added++;
         }
-      }
+      } catch {}
 
       if (added > 0) {
         toast.success(`Discovered and registered ${added} new families`);
         loadFamilyRegistry();
       } else {
-        toast.info("No new families found");
+        toast.info("No new families found — try adding a Family ID manually");
       }
     } catch (e) {
       toast.error("Auto-discovery failed");
