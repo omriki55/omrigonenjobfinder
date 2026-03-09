@@ -1,0 +1,28 @@
+import { createContext, useContext, type ReactNode } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import type { User } from "firebase/auth";
+
+interface AuthContextType {
+  user: User | null;
+  isAdmin: boolean;
+  loading: boolean;
+  signIn: () => Promise<void>;
+  signOut: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  isAdmin: false,
+  loading: true,
+  signIn: async () => {},
+  signOut: async () => {},
+});
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const auth = useAuth();
+  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
+}
+
+export function useAuthContext() {
+  return useContext(AuthContext);
+}
