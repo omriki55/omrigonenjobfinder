@@ -16,12 +16,13 @@ import SettingsPage from "@/pages/SettingsPage";
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, isAdmin, loading } = useAuthContext();
+  const { user, isAdmin, loading, passwordAuth } = useAuthContext();
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
     </div>
   );
+  if (passwordAuth && isAdmin) return <>{children}</>;
   if (!user || !isAdmin) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
