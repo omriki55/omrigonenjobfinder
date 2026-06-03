@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 import os
 import sys
@@ -25,6 +26,17 @@ from sheets import get_existing_urls, get_existing_rows, append_jobs, get_todays
 from deduplication import deduplicate
 from email_summary import send_daily_summary
 from config import MIN_FIT_SCORE
+
+
+def _save_scored_jobs(jobs: list) -> None:
+    """Persist scored jobs to scored_jobs.json for the web app."""
+    out_path = os.path.join(os.path.dirname(__file__), "scored_jobs.json")
+    try:
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(jobs, f, ensure_ascii=False, indent=2)
+        logger.info(f"Saved {len(jobs)} scored jobs to {out_path}")
+    except Exception as e:
+        logger.warning(f"Could not save scored_jobs.json: {e}")
 
 
 def main(dry_run: bool = False):
@@ -56,6 +68,9 @@ def main(dry_run: bool = False):
         if j.get("location_ok", False) and j.get("fit_score", 0) >= MIN_FIT_SCORE
     ]
     logger.info(f"{len(good_jobs)} jobs pass filter (location_ok + score >= {MIN_FIT_SCORE})")
+
+    # Save scored jobs for the web app (always, regardless of dry_run)
+    _save_scored_jobs(good_jobs)
 
     if dry_run:
         logger.info("[DRY RUN] Top 5 results:")

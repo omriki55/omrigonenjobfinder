@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Job Tracker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --card: #1e2130;
+      --accent: #00c853;
+      --text: #e0e0e0;
+      --muted: #8a8fa8;
+      --yellow: #ffd600;
+      --red: #f44336;
+      --border: #2a2d3e;
+      --radius: 12px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      padding-bottom: 32px;
+    }
+
+    /* ── Header ── */
+    header {
+      background: #131620;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px 10px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.3px;
+    }
+    .header-meta {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .btn-refresh {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: opacity 0.15s;
+    }
+    .btn-refresh:hover { opacity: 0.85; }
+    .btn-refresh.loading { opacity: 0.6; cursor: not-allowed; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #2a2d3e;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 10px 20px;
+      font-size: 0.85rem;
+      white-space: nowrap;
+      z-index: 999;
+      transition: transform 0.3s ease;
+      pointer-events: none;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      padding: 10px 16px 0;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-btn.active {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ── Jobs container ── */
+    .jobs-container {
+      padding: 12px 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ── Job card ── */
+    .job-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .card-row1 {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .score-badge {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .score-green { background: rgba(0, 200, 83, 0.18); color: var(--accent); border: 1.5px solid rgba(0,200,83,0.35); }
+    .score-yellow { background: rgba(255, 214, 0, 0.15); color: var(--yellow); border: 1.5px solid rgba(255,214,0,0.3); }
+    .score-red { background: rgba(244, 67, 54, 0.15); color: var(--red); border: 1.5px solid rgba(244,67,54,0.3); }
+
+    .card-title-block {
+      flex: 1;
+      min-width: 0;
+    }
+    .card-company {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-role {
+      font-size: 0.82rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .tag {
+      background: #1a1d2e;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.73rem;
+      color: var(--muted);
+    }
+
+    .card-reason {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 2px;
+    }
+    .btn-view, .btn-copy {
+      flex: 1;
+      padding: 9px 0;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s;
+    }
+    .btn-view {
+      background: rgba(0,200,83,0.12);
+      color: var(--accent);
+      border: 1px solid rgba(0,200,83,0.3);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .btn-view:hover { opacity: 0.8; }
+    .btn-copy {
+      background: rgba(138,143,168,0.12);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .btn-copy:hover { opacity: 0.8; }
+    .btn-copy.copied { color: var(--accent); border-color: rgba(0,200,83,0.4); }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 16px;
+      color: var(--muted);
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.95rem; }
+
+    /* ── Refreshing banner ── */
+    .refreshing-banner {
+      background: rgba(0,200,83,0.08);
+      border: 1px solid rgba(0,200,83,0.25);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      color: var(--accent);
+      margin: 12px 16px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(0,200,83,0.3);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Count label ── */
+    .count-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      padding: 8px 16px 0;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <h1>🎯 Job Tracker</h1>
+      <div class="header-meta" id="last-updated-label">Last updated: {{ last_updated }}</div>
+    </div>
+    <a href="/refresh" class="btn-refresh" id="btn-refresh" onclick="onRefreshClick(event)">🔄 Refresh</a>
+  </div>
+</header>
+
+{% if refreshing %}
+<div class="refreshing-banner" id="refreshing-banner">
+  <div class="spinner"></div>
+  Pipeline is running… results will update automatically.
+</div>
+{% endif %}
+
+<div class="filter-bar">
+  <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All</button>
+  <button class="filter-btn" data-filter="high" onclick="setFilter('high', this)">🟢 8+</button>
+  <button class="filter-btn" data-filter="mid" onclick="setFilter('mid', this)">🟡 5–7</button>
+</div>
+
+<div class="count-label" id="count-label">{{ jobs | length }} job{{ 's' if jobs | length != 1 else '' }}</div>
+
+<div class="jobs-container" id="jobs-container">
+  {% if jobs %}
+    {% for job in jobs %}
+    {% set score = job.fit_score | default(0) %}
+    {% set badge_class = 'score-green' if score >= 8 else ('score-yellow' if score >= 5 else 'score-red') %}
+    {% set filter_val = 'high' if score >= 8 else ('mid' if score >= 5 else 'low') %}
+    <div class="job-card" data-score="{{ score }}" data-filter="{{ filter_val }}">
+      <div class="card-row1">
+        <div class="score-badge {{ badge_class }}">{{ score }}</div>
+        <div class="card-title-block">
+          <div class="card-company">{{ job.company }}</div>
+          <div class="card-role">{{ job.title }}</div>
+        </div>
+      </div>
+      <div class="card-tags">
+        {% if job.location %}
+        <span class="tag">📍 {{ job.location }}</span>
+        {% endif %}
+        {% if job.job_type %}
+        <span class="tag">{{ job.job_type }}</span>
+        {% endif %}
+      </div>
+      {% if job.score_reason %}
+      <div class="card-reason">{{ job.score_reason }}</div>
+      {% endif %}
+      <div class="card-actions">
+        <a href="{{ job.url }}" target="_blank" rel="noopener" class="btn-view">View Job ↗</a>
+        <button class="btn-copy" onclick="copyOpener(this, {{ job.ai_opener | default('') | tojson }})">Copy Opener 📋</button>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <div class="icon">🔍</div>
+      <p>No jobs yet — tap Refresh to scan</p>
+    </div>
+  {% endif %}
+</div>
+
+<div id="toast"></div>
+
+<script>
+  let currentFilter = 'all';
+  let pollInterval = null;
+  const isRefreshing = {{ 'true' if refreshing else 'false' }};
+
+  function setFilter(filter, btn) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilter();
+  }
+
+  function applyFilter() {
+    const cards = document.querySelectorAll('.job-card');
+    let visible = 0;
+    cards.forEach(card => {
+      const f = card.dataset.filter;
+      const show = currentFilter === 'all' || f === currentFilter;
+      card.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    const label = document.getElementById('count-label');
+    if (label) label.textContent = visible + ' job' + (visible !== 1 ? 's' : '');
+  }
+
+  function showToast(msg, duration = 2500) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), duration);
+  }
+
+  function copyOpener(btn, text) {
+    if (!text) { showToast('No opener available'); return; }
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied! ✓';
+      btn.classList.add('copied');
+      showToast('Opener copied to clipboard');
+      setTimeout(() => {
+        btn.textContent = 'Copy Opener 📋';
+        btn.classList.remove('copied');
+      }, 2000);
+    }).catch(() => {
+      showToast('Copy failed — try manually');
+    });
+  }
+
+  function onRefreshClick(e) {
+    e.preventDefault();
+    showToast('🔄 Refreshing pipeline…', 3000);
+    const btn = document.getElementById('btn-refresh');
+    btn.classList.add('loading');
+    btn.textContent = '⏳ Running…';
+    fetch('/refresh').then(() => {
+      startPolling();
+    });
+  }
+
+  function startPolling() {
+    if (pollInterval) return;
+    // show banner if not already present
+    let banner = document.getElementById('refreshing-banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'refreshing-banner';
+      banner.className = 'refreshing-banner';
+      banner.innerHTML = '<div class="spinner"></div> Pipeline is running… results will update automatically.';
+      document.querySelector('.filter-bar').insertAdjacentElement('beforebegin', banner);
+    }
+    pollInterval = setInterval(pollJobs, 5000);
+  }
+
+  function pollJobs() {
+    fetch('/api/jobs')
+      .then(r => r.json())
+      .then(data => {
+        if (!data.refreshing) {
+          clearInterval(pollInterval);
+          pollInterval = null;
+          // Reload page to show new data
+          window.location.reload();
+        } else {
+          // Update last-updated label
+          const lbl = document.getElementById('last-updated-label');
+          if (lbl && data.last_updated_label) {
+            lbl.textContent = 'Last updated: ' + data.last_updated_label;
+          }
+        }
+      })
+      .catch(() => {}); // ignore network errors during poll
+  }
+
+  // Auto-start polling if pipeline was already running on page load
+  if (isRefreshing) {
+    startPolling();
+  }
+</script>
+</body>
+</html>
