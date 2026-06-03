@@ -26,3 +26,8 @@ dist-ssr
 *.sw?
 .vercel
 __pycache__/
+# Job search local run artifacts
+job_search/daily_email.html
+job_search/scored_jobs.json
+job_search/failed_jobs_*.json
+job_search/_live_run.py
