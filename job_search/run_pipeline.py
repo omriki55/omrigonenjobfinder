@@ -78,23 +78,34 @@ load_dotenv(HERE / ".env")
 
 client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
-_BASE_SEARCH_PROMPT = """Search for current job listings (posted in the last 30 days) matching these roles:
+_BASE_SEARCH_PROMPT = """Search LinkedIn Jobs and other job boards for CURRENTLY OPEN positions (posted in the last 30 days) matching these roles:
 {roles}
 
+Search strategy — run these queries:
+1. site:linkedin.com/jobs for each role above
+2. site:greenhouse.io OR site:lever.co OR site:ashbyhq.com for each role
+3. Direct company career pages for B2B SaaS companies in Israel / remote
+
 Focus on: B2B SaaS companies, remote/global, Israel (Tel Aviv area), or hybrid.
+
+CRITICAL RULES:
+- Each URL must be a DIRECT link to a SPECIFIC job posting — NOT a search results page
+- URLs like indeed.com/jobs?q=... or linkedin.com/jobs/search?... are FORBIDDEN
+- Only include jobs where you found the actual job posting page
+- If you cannot find a direct URL for a job, skip it entirely
 
 For each job found, return a JSON array with objects containing:
 {{
   "company": "...",
   "title": "...",
   "location": "...",
-  "url": "...",
+  "url": "DIRECT link to this specific job posting",
   "job_type": "Full-time",
-  "posted": "YYYY-MM-DD (the date the job was posted; best estimate if not exact)",
+  "posted": "YYYY-MM-DD",
   "description": "... (50-100 words about the role and requirements)"
 }}
 
-Return at minimum 6 and at most 15 real, currently open positions.
+Return at minimum 8 and at most 15 real, currently open positions with direct URLs.
 Return ONLY the JSON array, no other text."""
 
 _BASE_SCORING_PROMPT = """You are evaluating job listings for Omri Gonen, a senior RevOps/GTM executive with 15+ years in B2B SaaS.
@@ -105,7 +116,7 @@ CANDIDATE PROFILE:
 - Weak fit: pure media buying, e-commerce D2C only, junior/IC roles, companies under 30 people
 - Location OK: Remote/Hybrid globally, Tel Aviv area, Herzliya, Ra'anana, Petah Tikva, Bnei Brak, Holon, Bat Yam
 - Location REJECT: Rehovot and south, Modiin, North of Ra'anana (Haifa etc.), non-remote international
-{avoid_section}
+{avoid_section}{feedback_section}
 JOB LISTING:
 Company: {{company}}
 Role: {{title}}
@@ -131,11 +142,15 @@ def build_prompts() -> tuple[str, str]:
 
     feedback = load_feedback()
     avoid = feedback.get("avoid_companies", [])
-    if avoid:
-        avoid_section = f"\nCompanies previously marked irrelevant by user (score 0): {avoid}\n"
+    avoid_section = f"\nCompanies previously marked irrelevant by user (score 0): {avoid}\n" if avoid else ""
+    # Per-job user feedback notes incorporated as general pattern hints
+    job_feedbacks = feedback.get("job_feedback", {})
+    if job_feedbacks:
+        hints = "\n".join(f"  - {v}" for v in list(job_feedbacks.values())[:10] if v)
+        feedback_section = f"\nUser scoring feedback on past jobs (learn from these patterns):\n{hints}\n" if hints else ""
     else:
-        avoid_section = ""
-    scoring_prompt = _BASE_SCORING_PROMPT.format(avoid_section=avoid_section)
+        feedback_section = ""
+    scoring_prompt = _BASE_SCORING_PROMPT.format(avoid_section=avoid_section, feedback_section=feedback_section)
     return search_prompt, scoring_prompt
 
 

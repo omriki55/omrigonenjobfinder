@@ -297,8 +297,8 @@
         <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
       </div>
       <div class="sort-seg">
-        <button class="sort-btn on" data-val="score" onclick="setSort(this)">התאמה</button>
-        <button class="sort-btn" data-val="posted" onclick="setSort(this)">עדכני</button>
+        <button class="sort-btn" data-val="score" onclick="setSort(this)">התאמה</button>
+        <button class="sort-btn on" data-val="posted" onclick="setSort(this)">עדכני</button>
         <button class="sort-btn" data-val="az" onclick="setSort(this)">A–Z</button>
       </div>
     </div>
@@ -536,6 +536,14 @@ function saveNote(j,val){
   const k=jobKey(j),cur=STATE[k]||{status:"saved"};
   cur.note=val;STATE[k]=cur;saveState(STATE);
 }
+function saveScoringFeedback(j,val){
+  const k=jobKey(j),cur=STATE[k]||{status:"saved"};
+  cur.score_feedback=val;STATE[k]=cur;saveState(STATE);
+  // debounced auto-sync if token present
+  clearTimeout(window._fbTimer);
+  if(val&&localStorage.getItem('gh_token'))
+    window._fbTimer=setTimeout(syncFeedback,4000);
+}
 
 /* ── dismiss (Feature 1) ── */
 function dismissJob(j,reason){
@@ -595,7 +603,7 @@ function needsFollowupDirect(st){
 }
 
 /* ── filters ── */
-let fStage="all",fFit="all",fSort="score",fQ="",fAge="all";
+let fStage="all",fFit="all",fSort="posted",fQ="",fAge="all";
 function setStageFilter(b){
   const v=b.dataset.stage;
   fStage=v;
@@ -850,6 +858,13 @@ function render(){
             ${aiNote?`<div class="ai-note"><div class="ai-note-head">⚡ התאמת AI</div><div class="ai-note-text">${aiNote}</div></div>`:""}
             ${contactHTML}
             <div class="notes-wrap">
+              <div class="notes-lbl">🧠 פידבק לסינון <span style="font-weight:400;opacity:.6;font-size:.6rem">(משפר את הניקוד בסריקה הבאה)</span></div>
+              <textarea class="notes-ta score-fb${st.score_feedback?" has-note":""}" rows="2"
+                placeholder="למשל: החברה קטנה מדי / התפקיד מדי טכני / מיקום בעייתי / שכר לא מספיק…"
+                onclick="event.stopPropagation()"
+                oninput='saveScoringFeedback(window._sorted[${i}],this.value);this.className="notes-ta score-fb"+(this.value?" has-note":"")'>${(st.score_feedback||"").replace(/"/g,"&quot;")}</textarea>
+            </div>
+            <div class="notes-wrap">
               <div class="notes-lbl">📝 הערות אישיות</div>
               <textarea class="notes-ta${st.note?" has-note":""}" rows="2"
                 placeholder="מה קרה עד עכשיו? אנשי קשר, משימות, תאריכים…"
@@ -908,13 +923,15 @@ async function syncFeedback(){
   const token=localStorage.getItem('gh_token');
   if(!token){showToast('הוסף GitHub token בהגדרות');return;}
   const dismissed={};
+  const job_feedback={};
   Object.entries(STATE).forEach(([k,v])=>{
     if(v.dismissed)dismissed[k]={reason:v.dismiss_reason,date:v.dismiss_date,company:v.company};
+    if(v.score_feedback)job_feedback[k]=v.score_feedback;
   });
   const avoid=Object.values(dismissed)
     .filter(d=>d.reason==='irrelevant')
     .map(d=>d.company).filter(Boolean);
-  const payload={dismissed,avoid_companies:[...new Set(avoid)]};
+  const payload={dismissed,avoid_companies:[...new Set(avoid)],job_feedback};
   try{
     const r=await fetch('https://api.github.com/repos/omriki55/family-chores-admin/contents/job_search/feedback.json',{
       headers:{Authorization:`Bearer ${token}`,Accept:'application/vnd.github.v3+json'}
