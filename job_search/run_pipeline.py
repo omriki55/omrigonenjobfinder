@@ -21,6 +21,8 @@ REPO_ROOT = HERE.parent
 DOCS_HTML = REPO_ROOT / "docs" / "index.html"
 SCORED_JSON = HERE / "scored_jobs.json"
 CONTACTS_JSON = HERE / "contacts.json"
+FEEDBACK_JSON = HERE / "feedback.json"
+CONFIG_JSON = HERE / "config.json"
 
 
 def attach_contacts(jobs: list[dict]) -> list[dict]:
@@ -34,35 +36,79 @@ def attach_contacts(jobs: list[dict]) -> list[dict]:
             j["contact"] = contacts.get(j.get("company", ""))
     return jobs
 
+
+def load_feedback() -> dict:
+    """Load feedback.json, creating it if missing."""
+    if not FEEDBACK_JSON.exists():
+        FEEDBACK_JSON.write_text("{}", encoding="utf-8")
+    try:
+        return json.loads(FEEDBACK_JSON.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def save_feedback(data: dict):
+    """Write feedback.json."""
+    FEEDBACK_JSON.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def load_config() -> dict:
+    """Load config.json for custom roles etc., creating defaults if missing."""
+    defaults = {
+        "roles": [
+            "Head of Revenue Operations",
+            "RevOps Manager",
+            "GTM Engineer",
+            "Head of Growth",
+            "Marketing Operations Lead",
+            "Sales Operations Manager",
+        ],
+        "updated": date.today().isoformat(),
+    }
+    if not CONFIG_JSON.exists():
+        CONFIG_JSON.write_text(json.dumps(defaults, ensure_ascii=False, indent=2), encoding="utf-8")
+        return defaults
+    try:
+        return json.loads(CONFIG_JSON.read_text(encoding="utf-8"))
+    except Exception:
+        return defaults
+
+
 load_dotenv(HERE / ".env")
 
 client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
-SEARCH_PROMPT = """Search for current job listings (posted in the last 30 days) matching these roles:
-- Head of Revenue Operations
-- RevOps Manager
-- GTM Engineer
-- Head of Growth
-- Marketing Operations Lead
-- Sales Operations Manager
+_BASE_SEARCH_PROMPT = """Search LinkedIn Jobs and other job boards for CURRENTLY OPEN positions (posted in the last 30 days) matching these roles:
+{roles}
+
+Search strategy — run these queries:
+1. site:linkedin.com/jobs for each role above
+2. site:greenhouse.io OR site:lever.co OR site:ashbyhq.com for each role
+3. Direct company career pages for B2B SaaS companies in Israel / remote
 
 Focus on: B2B SaaS companies, remote/global, Israel (Tel Aviv area), or hybrid.
 
+CRITICAL RULES:
+- Each URL must be a DIRECT link to a SPECIFIC job posting — NOT a search results page
+- URLs like indeed.com/jobs?q=... or linkedin.com/jobs/search?... are FORBIDDEN
+- Only include jobs where you found the actual job posting page
+- If you cannot find a direct URL for a job, skip it entirely
+
 For each job found, return a JSON array with objects containing:
-{
+{{
   "company": "...",
   "title": "...",
   "location": "...",
-  "url": "...",
+  "url": "DIRECT link to this specific job posting",
   "job_type": "Full-time",
-  "posted": "YYYY-MM-DD (the date the job was posted; best estimate if not exact)",
+  "posted": "YYYY-MM-DD",
   "description": "... (50-100 words about the role and requirements)"
-}
+}}
 
-Return at minimum 6 and at most 15 real, currently open positions.
+Return at minimum 8 and at most 15 real, currently open positions with direct URLs.
 Return ONLY the JSON array, no other text."""
 
-SCORING_PROMPT = """You are evaluating job listings for Omri Gonen, a senior RevOps/GTM executive with 15+ years in B2B SaaS.
+_BASE_SCORING_PROMPT = """You are evaluating job listings for Omri Gonen, a senior RevOps/GTM executive with 15+ years in B2B SaaS.
 
 CANDIDATE PROFILE:
 - Target roles: Head of Revenue Operations, RevOps Manager, GTM Engineer, Head of Growth, Marketing Operations Lead
@@ -70,45 +116,76 @@ CANDIDATE PROFILE:
 - Weak fit: pure media buying, e-commerce D2C only, junior/IC roles, companies under 30 people
 - Location OK: Remote/Hybrid globally, Tel Aviv area, Herzliya, Ra'anana, Petah Tikva, Bnei Brak, Holon, Bat Yam
 - Location REJECT: Rehovot and south, Modiin, North of Ra'anana (Haifa etc.), non-remote international
-
+{avoid_section}{feedback_section}
 JOB LISTING:
-Company: {company}
-Role: {title}
-Location: {location}
-Description: {description}
+Company: {{company}}
+Role: {{title}}
+Location: {{location}}
+Description: {{description}}
 
 Respond in JSON ONLY:
-{{
+{{{{
   "fit_score": <integer 1-10>,
   "score_reason": "<1-2 sentences>",
   "ai_opener": "<2-3 sentence personalized cold outreach opener specific to this company>",
   "location_ok": <true/false>
-}}
+}}}}
 If location_ok is false, set fit_score to 0."""
+
+
+def build_prompts() -> tuple[str, str]:
+    """Build SEARCH_PROMPT and SCORING_PROMPT incorporating config.json and feedback.json."""
+    cfg = load_config()
+    roles = cfg.get("roles", [])
+    roles_str = "\n".join(f"- {r}" for r in roles)
+    search_prompt = _BASE_SEARCH_PROMPT.format(roles=roles_str)
+
+    feedback = load_feedback()
+    avoid = feedback.get("avoid_companies", [])
+    avoid_section = f"\nCompanies previously marked irrelevant by user (score 0): {avoid}\n" if avoid else ""
+    # Per-job user feedback notes incorporated as general pattern hints
+    job_feedbacks = feedback.get("job_feedback", {})
+    if job_feedbacks:
+        hints = "\n".join(f"  - {v}" for v in list(job_feedbacks.values())[:10] if v)
+        feedback_section = f"\nUser scoring feedback on past jobs (learn from these patterns):\n{hints}\n" if hints else ""
+    else:
+        feedback_section = ""
+    scoring_prompt = _BASE_SCORING_PROMPT.format(avoid_section=avoid_section, feedback_section=feedback_section)
+    return search_prompt, scoring_prompt
 
 
 def search_jobs() -> list[dict]:
     """Use Anthropic web_search tool to find real job listings."""
     print("🔍 Searching for jobs via Anthropic web search...")
+    search_prompt, _ = build_prompts()
     try:
         response = client.messages.create(
             model="claude-opus-4-8",
-            max_tokens=4096,
+            max_tokens=8192,
             tools=[{"type": "web_search_20250305", "name": "web_search", "max_uses": 8}],
-            messages=[{"role": "user", "content": SEARCH_PROMPT}],
+            messages=[{"role": "user", "content": search_prompt}],
         )
         # Extract text from response
         text = ""
         for block in response.content:
             if hasattr(block, "text"):
                 text += block.text
-        # Parse JSON from response
+        # Parse JSON from response — find first [...] array in text
         text = text.strip()
-        if "```" in text:
-            text = text.split("```")[1]
-            if text.startswith("json"):
-                text = text[4:]
-            text = text.split("```")[0]
+        import re
+        # Try code fence first
+        fence = re.search(r"```(?:json)?\s*(\[.*?\])\s*```", text, re.DOTALL)
+        if fence:
+            text = fence.group(1)
+        else:
+            # Find outermost JSON array
+            start = text.find("[")
+            end = text.rfind("]")
+            if start != -1 and end != -1 and end > start:
+                text = text[start:end+1]
+            elif start != -1:
+                # Truncated response — close the array manually
+                text = text[start:].rstrip().rstrip(",") + "]"
         jobs = json.loads(text.strip())
         print(f"  Found {len(jobs)} job listings")
         return jobs
@@ -121,9 +198,9 @@ def search_jobs() -> list[dict]:
         return []
 
 
-def score_job(job: dict) -> dict:
+def score_job(job: dict, scoring_prompt: str) -> dict:
     """Score a single job using Claude."""
-    prompt = SCORING_PROMPT.format(
+    prompt = scoring_prompt.format(
         company=job.get("company", ""),
         title=job.get("title", ""),
         location=job.get("location", ""),
@@ -147,23 +224,38 @@ def score_job(job: dict) -> dict:
             job["score_reason"] = result.get("score_reason", "")
             job["ai_opener"] = result.get("ai_opener", "")
             job["location_ok"] = bool(result.get("location_ok", True))
+            job["scan_date"] = date.today().isoformat()
             return job
         except Exception as e:
             if attempt == 0:
                 time.sleep(3)
             else:
-                job.update({"fit_score": 0, "score_reason": "Scoring failed", "ai_opener": "", "location_ok": False})
+                job.update({"fit_score": 0, "score_reason": "Scoring failed", "ai_opener": "", "location_ok": False, "scan_date": date.today().isoformat()})
     return job
 
 
 def score_jobs(jobs: list[dict]) -> list[dict]:
+    _, scoring_prompt = build_prompts()
     scored = []
     for i, job in enumerate(jobs):
         print(f"  Scoring {i+1}/{len(jobs)}: {job.get('title')} @ {job.get('company')}")
-        scored.append(score_job(job))
+        scored.append(score_job(job, scoring_prompt))
         if (i + 1) % 5 == 0:
             time.sleep(1)
     return scored
+
+
+def update_feedback_after_scoring(scored: list[dict]):
+    """Write low-score companies back to feedback.json."""
+    feedback = load_feedback()
+    low = feedback.get("low_score_companies", [])
+    for j in scored:
+        if j.get("fit_score", 0) == 0:
+            company = j.get("company", "")
+            if company and company not in low:
+                low.append(company)
+    feedback["low_score_companies"] = low
+    save_feedback(feedback)
 
 
 TEMPLATE = HERE / "tracker_template.html"
@@ -185,7 +277,8 @@ def update_github_pages(jobs: list[dict], last_updated: str):
 
     try:
         subprocess.run(
-            ["git", "-C", str(REPO_ROOT), "add", "docs/index.html"],
+            ["git", "-C", str(REPO_ROOT), "add", "docs/index.html", "job_search/scored_jobs.json",
+             "job_search/feedback.json"],
             check=True, capture_output=True
         )
         subprocess.run(
@@ -267,20 +360,35 @@ def main():
     print(f"\n📊 Scoring {len(jobs)} jobs...")
     scored = score_jobs(jobs)
 
-    # 3. Filter
+    # 3. Update feedback with low-score companies
+    update_feedback_after_scoring(scored)
+
+    # 4. Filter
     good = [j for j in scored if j.get("location_ok") and j.get("fit_score", 0) >= 4]
     print(f"\n✅ {len(good)}/{len(scored)} jobs passed filter (score ≥ 4, location OK)")
     for j in sorted(good, key=lambda x: x.get("fit_score", 0), reverse=True):
         print(f"   [{j['fit_score']}/10] {j['title']} @ {j['company']} ({j['location']})")
 
-    # 4. Save JSON
-    SCORED_JSON.write_text(json.dumps(good, ensure_ascii=False, indent=2), encoding="utf-8")
+    # 5. Save JSON — preserve manually-added jobs (those with initial_status)
+    existing = []
+    if SCORED_JSON.exists():
+        try:
+            existing = json.loads(SCORED_JSON.read_text(encoding="utf-8"))
+        except Exception:
+            existing = []
+    manual = [j for j in existing if j.get("initial_status")]
+    # Deduplicate: drop pipeline jobs whose company+title match a manual entry
+    manual_keys = {(j["company"].lower(), j["title"].lower()) for j in manual}
+    pipeline_jobs = [j for j in good if (j["company"].lower(), j["title"].lower()) not in manual_keys]
+    combined = pipeline_jobs + manual
+    SCORED_JSON.write_text(json.dumps(combined, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"💾 Saved {len(pipeline_jobs)} pipeline + {len(manual)} manual jobs = {len(combined)} total")
 
-    # 5. Update GitHub Pages
+    # 6. Update GitHub Pages
     print("\n🌐 Updating GitHub Pages...")
     update_github_pages(good, last_updated)
 
-    # 6. Email
+    # 7. Email
     print("\n📧 Sending email summary...")
     send_gmail_draft(good, today, len(good))
 
