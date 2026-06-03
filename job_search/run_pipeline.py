@@ -369,8 +369,20 @@ def main():
     for j in sorted(good, key=lambda x: x.get("fit_score", 0), reverse=True):
         print(f"   [{j['fit_score']}/10] {j['title']} @ {j['company']} ({j['location']})")
 
-    # 5. Save JSON
-    SCORED_JSON.write_text(json.dumps(good, ensure_ascii=False, indent=2), encoding="utf-8")
+    # 5. Save JSON — preserve manually-added jobs (those with initial_status)
+    existing = []
+    if SCORED_JSON.exists():
+        try:
+            existing = json.loads(SCORED_JSON.read_text(encoding="utf-8"))
+        except Exception:
+            existing = []
+    manual = [j for j in existing if j.get("initial_status")]
+    # Deduplicate: drop pipeline jobs whose company+title match a manual entry
+    manual_keys = {(j["company"].lower(), j["title"].lower()) for j in manual}
+    pipeline_jobs = [j for j in good if (j["company"].lower(), j["title"].lower()) not in manual_keys]
+    combined = pipeline_jobs + manual
+    SCORED_JSON.write_text(json.dumps(combined, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"💾 Saved {len(pipeline_jobs)} pipeline + {len(manual)} manual jobs = {len(combined)} total")
 
     # 6. Update GitHub Pages
     print("\n🌐 Updating GitHub Pages...")
