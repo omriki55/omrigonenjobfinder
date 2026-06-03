@@ -3,279 +3,320 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Job Tracker — Omri</title>
+  <title>Job Tracker — Omri · Momentum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&family=Assistant:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
   <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    /* ── TOKENS ── */
     :root{
-      --bg:#f0f2f7;--card:#ffffff;--text:#111827;--muted:#6b7280;--line:#e5e7eb;
-      --accent:#2563eb;--accent-bg:#eff4ff;--accent-border:#c7d7fe;
-      --green:#16a34a;--green-bg:#dcfce7;--green-border:#86efac;
-      --amber:#b45309;--amber-bg:#fef3c7;--amber-border:#fcd34d;
-      --red:#dc2626;--red-bg:#fee2e2;--red-border:#fca5a5;
-      --purple:#7c3aed;--purple-bg:#ede9fe;--purple-border:#c4b5fd;
-      --star:#d97706;--star-bg:#fffbeb;--star-border:#fde68a;
-      --gray:#374151;--gray-bg:#f3f4f6;--gray-border:#d1d5db;
-      --orange:#ea580c;--orange-bg:#fff7ed;--orange-border:#fed7aa;
-      --wa:#25d366;
-      --radius:14px;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.06);
+      --canvas:oklch(0.984 0.005 95);
+      --surface:oklch(1 0 0);
+      --surfaceAlt:oklch(0.975 0.006 95);
+      --ink:oklch(0.24 0.03 270);
+      --inkSoft:oklch(0.46 0.02 270);
+      --inkFaint:oklch(0.62 0.015 270);
+      --line:oklch(0.92 0.008 270);
+      --lineSoft:oklch(0.95 0.006 270);
+      --accent:oklch(0.55 0.20 270);
+      --accentDeep:oklch(0.46 0.20 270);
+      --accentSoft:oklch(0.96 0.04 270);
+      --accentInk:oklch(0.45 0.18 270);
+      --onAccent:oklch(0.99 0.01 270);
+      --heroBg:linear-gradient(135deg,oklch(0.97 0.035 270),oklch(0.985 0.02 230));
+      --wa:oklch(0.64 0.16 150);
+      --star:oklch(0.78 0.15 80);
+      --toast-bg:oklch(0.22 0.02 265);
+      /* stage hues */
+      --h-saved:235;--h-applied:205;--h-interview:285;--h-offer:150;--h-rejected:20;
+      /* fit hues */
+      --h-high:150;--h-mid:78;--h-low:28;
+      --radius:18px;
+      --font-display:'Rubik',system-ui,sans-serif;
+      --font-ui:'Assistant',system-ui,sans-serif;
+      --font-mono:'JetBrains Mono',ui-monospace,monospace;
     }
-    body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100vh;padding-bottom:56px;-webkit-font-smoothing:antialiased;direction:rtl}
+    /* stage bg/fg helpers (used inline via JS) */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{background:var(--canvas);color:var(--ink);font-family:var(--font-ui);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;direction:rtl}
 
-    /* ── HEADER ── */
-    header{background:#fff;border-bottom:1px solid var(--line);padding:14px 16px 10px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.04)}
-    .header-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .header-title{font-size:1.2rem;font-weight:800;letter-spacing:-.02em}
-    .header-meta{font-size:.72rem;color:var(--muted);margin-top:2px}
-    .header-actions{display:flex;gap:7px;align-items:center}
-    .sheet-btn{display:inline-flex;align-items:center;gap:4px;background:var(--bg);border:1px solid var(--line);color:var(--muted);border-radius:10px;padding:7px 11px;font-size:.76rem;text-decoration:none;font-weight:600;white-space:nowrap;cursor:pointer;transition:background .15s}
-    .sheet-btn:hover{background:var(--line)}
-    .view-toggle{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:10px;overflow:hidden}
-    .vt-btn{padding:7px 11px;font-size:.78rem;font-weight:600;cursor:pointer;border:none;background:none;color:var(--muted);transition:all .13s}
-    .vt-btn.on{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+    /* ── APP SHELL ── */
+    #app{max-width:760px;margin:0 auto;padding:14px 14px 60px;display:flex;flex-direction:column;gap:12px}
 
-    /* ── FILTER BAR ── */
-    .filter-wrap{max-width:900px;margin:0 auto;padding:10px 16px 0}
-    .filter-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:6px}
-    .filter-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);width:46px;flex-shrink:0;text-align:right}
-    .fp{background:#fff;border:1.5px solid var(--line);color:var(--muted);border-radius:999px;padding:5px 13px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .13s;outline:none}
-    .fp:hover{border-color:#9ca3af}
-    .fp.active{color:#fff}
-    .fp[data-val="all"].active{background:var(--text);border-color:var(--text)}
-    .fp[data-val="todo"].active{background:var(--gray);border-color:var(--gray)}
-    .fp[data-val="applied"].active{background:var(--accent);border-color:var(--accent)}
-    .fp[data-val="interview"].active{background:var(--purple);border-color:var(--purple)}
-    .fp[data-val="rejected"].active{background:var(--red);border-color:var(--red)}
-    .fp[data-val="starred"].active{background:var(--star);border-color:var(--star)}
-    .fp[data-val="high"].active{background:var(--green);border-color:var(--green)}
-    .fp[data-val="mid"].active{background:var(--amber);border-color:var(--amber)}
-    .fp[data-val="todo"]:not(.active):hover{background:var(--gray-bg);border-color:var(--gray-border);color:var(--gray)}
-    .fp[data-val="applied"]:not(.active):hover{background:var(--accent-bg);border-color:var(--accent-border);color:var(--accent)}
-    .fp[data-val="interview"]:not(.active):hover{background:var(--purple-bg);border-color:var(--purple-border);color:var(--purple)}
-    .fp[data-val="rejected"]:not(.active):hover{background:var(--red-bg);border-color:var(--red-border);color:var(--red)}
-    .fp[data-val="starred"]:not(.active):hover{background:var(--star-bg);border-color:var(--star-border);color:var(--star)}
+    /* ── HERO ── */
+    .hero{background:var(--heroBg);border-radius:20px;padding:18px 20px;box-shadow:inset 0 0 0 1px var(--line);display:flex;flex-direction:column;gap:10px}
+    .hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+    .hero-greeting{font-family:var(--font-display);font-size:.82rem;font-weight:800;color:var(--ink)}
+    .hero-meta{font-size:.75rem;color:var(--inkFaint);margin-top:1px}
+    .hero-coach{font-family:var(--font-display);font-size:.9rem;font-weight:700;color:var(--accentInk)}
+    .sheet-btn{display:inline-flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--line);color:var(--inkSoft);border-radius:10px;padding:6px 10px;font-size:.73rem;text-decoration:none;font-weight:600;white-space:nowrap;font-family:var(--font-ui)}
 
-    /* ── COUNT + EXPAND BAR ── */
-    .count-bar{max-width:900px;margin:6px auto 0;padding:0 16px;display:flex;align-items:center;justify-content:space-between}
-    .count-txt{font-size:.78rem;font-weight:600;color:var(--muted)}
-    .expand-btns{display:flex;gap:6px}
-    .exp-btn{background:#fff;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 10px;font-size:.73rem;font-weight:600;cursor:pointer;transition:all .13s}
-    .exp-btn:hover{background:var(--bg);border-color:#9ca3af;color:var(--text)}
+    /* funnel bars */
+    .funnel{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+    .f-stage{display:flex;flex-direction:column;gap:5px;padding:10px 8px;border-radius:12px;cursor:pointer;transition:background .15s;position:relative;border:1.5px solid transparent;user-select:none}
+    .f-stage:hover{background:rgba(255,255,255,.5)}
+    .f-stage.active{border-color:var(--f-solid)}
+    .f-sep{width:1px;background:var(--lineSoft);margin:10px 0;flex-shrink:0}
+    .f-count{font-family:var(--font-mono);font-size:1.55rem;font-weight:700;line-height:1;color:var(--f-fg)}
+    .f-count.zero{color:var(--inkFaint)}
+    .f-label{font-size:.72rem;font-weight:600;color:var(--inkSoft)}
+    .f-track{height:5px;background:var(--lineSoft);border-radius:999px;overflow:hidden;margin-top:2px}
+    .f-fill{height:100%;border-radius:999px;background:var(--f-solid);transition:width .7s cubic-bezier(.2,.7,.3,1)}
 
-    /* ── LIST VIEW ── */
-    .jobs-wrap{max-width:900px;margin:0 auto;padding:10px 16px 0;display:flex;flex-direction:column;gap:10px}
+    /* momentum chips */
+    .m-chips{display:flex;gap:6px;flex-wrap:wrap}
+    .m-chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:.74rem;display:inline-flex;align-items:center;gap:5px;color:var(--inkSoft)}
+    .m-chip .val{font-family:var(--font-mono);font-weight:700;font-size:.78rem;color:var(--accent)}
 
-    /* ── KANBAN VIEW ── */
-    .kanban-wrap{max-width:1200px;margin:0 auto;padding:10px 16px 0;display:none;gap:12px;overflow-x:auto}
-    .kanban-col{flex:0 0 260px;display:flex;flex-direction:column;gap:8px}
-    .kanban-head{padding:10px 12px;border-radius:10px;font-size:.78rem;font-weight:700;display:flex;align-items:center;justify-content:space-between}
-    .kh-todo{background:var(--gray-bg);color:var(--gray)}
-    .kh-applied{background:var(--accent-bg);color:var(--accent)}
-    .kh-interview{background:var(--purple-bg);color:var(--purple)}
-    .kh-rejected{background:var(--red-bg);color:var(--red)}
-    .kanban-count{background:rgba(0,0,0,.08);border-radius:999px;padding:1px 7px;font-size:.7rem}
-    .kanban-cards{display:flex;flex-direction:column;gap:7px;min-height:60px}
-    .kcard{background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 12px;box-shadow:0 1px 3px rgba(0,0,0,.05);cursor:pointer;position:relative}
-    .kcard.st-todo{border-right:3px solid var(--gray-border)}
-    .kcard.st-applied{border-right:3px solid var(--accent)}
-    .kcard.st-interview{border-right:3px solid var(--purple)}
-    .kcard.st-rejected{border-right:3px solid var(--red);opacity:.65}
-    .kcard-score{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:700;margin-bottom:5px}
-    .kcard-company{font-weight:800;font-size:.88rem}
-    .kcard-role{font-size:.74rem;color:var(--muted);margin-top:1px}
-    .kcard-loc{font-size:.7rem;color:var(--muted);margin-top:4px}
-    .kcard-follow{font-size:.68rem;background:var(--orange-bg);color:var(--orange);border:1px solid var(--orange-border);border-radius:6px;padding:2px 6px;margin-top:5px;display:inline-block}
-    .kstar{position:absolute;top:8px;left:10px;font-size:.9rem;opacity:.3;background:none;border:none;cursor:pointer;padding:0}
-    .kstar.on{opacity:1}
+    /* ── TOOLBAR ── */
+    .toolbar{background:var(--surface);border-radius:14px;padding:12px 14px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 12px rgba(20,20,40,.04);display:flex;flex-direction:column;gap:8px}
+    .search-row{display:flex;align-items:center;gap:8px}
+    .search-wrap{flex:1;position:relative}
+    .search-ico{position:absolute;top:50%;right:10px;transform:translateY(-50%);color:var(--inkFaint);pointer-events:none}
+    .search-inp{width:100%;border:1.5px solid var(--line);border-radius:11px;padding:8px 34px 8px 10px;font-size:.82rem;font-family:var(--font-ui);color:var(--ink);background:var(--surfaceAlt);outline:none;direction:rtl;transition:border-color .15s}
+    .search-inp:focus{border-color:var(--accent);background:var(--surface)}
+    .search-clear{position:absolute;top:50%;left:10px;transform:translateY(-50%);background:none;border:none;color:var(--inkFaint);cursor:pointer;font-size:.9rem;padding:0;line-height:1;display:none}
+    .search-clear.show{display:block}
+    .sort-seg{display:flex;background:var(--surfaceAlt);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px}
+    .sort-btn{flex:1;padding:5px 8px;border:none;background:none;border-radius:8px;font-size:.74rem;font-weight:600;font-family:var(--font-ui);color:var(--inkSoft);cursor:pointer;white-space:nowrap;transition:all .13s}
+    .sort-btn.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+    .filter-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+    .filter-lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--inkFaint);flex-shrink:0}
+    /* stage filter chips */
+    .sf-chip{background:var(--surfaceAlt);border:1.5px solid var(--line);color:var(--inkSoft);border-radius:999px;padding:4px 11px;font-size:.75rem;font-weight:600;font-family:var(--font-ui);cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;gap:4px;outline:none}
+    .sf-chip .n{font-family:var(--font-mono);font-size:.7rem}
+    .sf-chip.on-all{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+    .sf-chip.on-stage{background:var(--f-bg);color:var(--f-fg);border-color:var(--f-solid)}
+    /* fit chips */
+    .fit-chip{background:var(--surfaceAlt);border:1.5px solid var(--line);color:var(--inkSoft);border-radius:999px;padding:4px 12px;font-size:.75rem;font-weight:600;font-family:var(--font-ui);cursor:pointer;transition:all .12s;outline:none}
+    .fit-chip.on{background:var(--accentSoft);color:var(--accentInk);border-color:var(--accent)}
+    /* expand btns */
+    .exp-row{display:flex;align-items:center;justify-content:space-between}
+    .exp-count{font-family:var(--font-mono);font-size:.76rem;font-weight:700;color:var(--inkSoft)}
+    .exp-btns{display:flex;gap:5px}
+    .exp-btn{background:none;border:1px solid var(--line);color:var(--inkSoft);border-radius:8px;padding:4px 9px;font-size:.72rem;font-weight:600;font-family:var(--font-ui);cursor:pointer;transition:all .13s}
+    .exp-btn:hover{background:var(--surfaceAlt);color:var(--ink)}
 
-    /* ── JOB CARD ── */
-    .job-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);position:relative;overflow:hidden;transition:opacity .2s}
-    .job-card.st-todo{border-right:4px solid var(--gray-border)}
-    .job-card.st-applied{border-right:4px solid var(--accent)}
-    .job-card.st-interview{border-right:4px solid var(--purple)}
-    .job-card.st-rejected{border-right:4px solid var(--red);opacity:.68}
-    .job-card.has-followup{outline:2px solid var(--orange);outline-offset:-2px}
+    /* ── CARD ── */
+    @keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+    .job-card{
+      background:var(--surface);border-radius:var(--radius);flex-shrink:0;
+      box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(20,20,40,.05);
+      border:1px solid transparent;
+      position:relative;overflow:hidden;
+      transition:box-shadow .2s,border-color .2s;
+    }
+    .job-card:hover{box-shadow:0 2px 6px rgba(0,0,0,.06),0 14px 32px rgba(20,20,40,.10)}
+    .job-card.open{border-color:var(--line)}
+    /* accent stripe — right edge in RTL */
+    .job-card::before{content:'';position:absolute;top:0;right:0;bottom:0;width:4px;background:var(--s-solid);border-radius:0 var(--radius) var(--radius) 0}
+    .job-card.st-rejected{opacity:.7}
+    .job-card.st-rejected::before{opacity:.3}
+    .job-card.has-followup{outline:2px solid oklch(0.64 0.18 45);outline-offset:-2px}
 
-    /* card summary row (always visible) */
-    .card-summary{display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer;user-select:none}
-    .card-summary:hover{background:#fafbfc}
-    .score-badge{flex-shrink:0;width:44px;height:44px;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1}
-    .score-badge .num{font-size:1.25rem}
-    .score-badge .lbl{font-size:.48rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;opacity:.7}
-    .sg{background:var(--green-bg);color:var(--green)}
-    .sa{background:var(--amber-bg);color:var(--amber)}
-    .sr{background:var(--red-bg);color:var(--red)}
-    .summary-info{flex:1;min-width:0;padding-left:28px}
-    .card-company{font-weight:800;font-size:.98rem;letter-spacing:-.01em}
-    .card-role{font-size:.82rem;color:var(--muted);margin-top:1px}
-    .summary-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
-    .follow-badge{font-size:.65rem;background:var(--orange-bg);color:var(--orange);border:1px solid var(--orange-border);border-radius:999px;padding:2px 7px;font-weight:700;white-space:nowrap}
-    .chevron{font-size:.75rem;color:var(--muted);transition:transform .2s;margin-top:2px}
+    /* card header */
+    .card-head{display:flex;align-items:center;gap:12px;padding:14px 17px 14px 17px;cursor:pointer;user-select:none}
+    .star-btn{background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;line-height:1;color:var(--inkFaint);transition:color .15s,transform .15s;flex-shrink:0}
+    .star-btn.on{color:var(--star);transform:scale(1.1)}
+    .card-text{flex:1;min-width:0;padding-left:6px}
+    .card-company{font-family:var(--font-display);font-weight:700;font-size:1rem;color:var(--ink);direction:ltr;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .card-role{font-size:.82rem;color:var(--inkSoft);direction:ltr;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+    .card-head-right{display:flex;flex-direction:column;align-items:flex-start;gap:5px;flex-shrink:0}
+    .next-pill{background:var(--accentSoft);color:var(--accentInk);border-radius:999px;padding:3px 8px;font-size:.65rem;font-weight:600;display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+    /* stage pill */
+    .s-pill{border-radius:999px;padding:3px 9px;font-size:.68rem;font-weight:700;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;background:var(--s-bg);color:var(--s-fg)}
+    .s-dot{width:6px;height:6px;border-radius:50%;background:var(--s-solid);flex-shrink:0}
+    /* fit chip */
+    .fit-mark{display:flex;flex-direction:column;align-items:center;justify-content:center;width:46px;height:46px;border-radius:12px;background:var(--f-bg);flex-shrink:0}
+    .fit-num{font-family:var(--font-mono);font-weight:700;font-size:1.2rem;line-height:1;color:var(--f-fg)}
+    .fit-lbl{font-size:.44rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--f-fg);opacity:.7;margin-top:1px}
+    /* chevron */
+    .chevron{font-size:.72rem;color:var(--inkFaint);transition:transform .25s cubic-bezier(.2,.7,.3,1);flex-shrink:0}
     .job-card.open .chevron{transform:rotate(180deg)}
+    .follow-badge{font-size:.64rem;background:oklch(0.97 0.04 45);color:oklch(0.5 0.18 45);border:1px solid oklch(0.88 0.08 45);border-radius:999px;padding:2px 7px;font-weight:700;white-space:nowrap}
 
-    /* star button */
-    .star-btn{position:absolute;top:12px;left:12px;background:none;border:none;font-size:1.05rem;cursor:pointer;line-height:1;padding:2px;opacity:.3;transition:opacity .15s,transform .15s;z-index:2}
-    .star-btn.on{opacity:1;transform:scale(1.15)}
+    /* card body — grid-rows animation */
+    .card-body-wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.2,.7,.3,1)}
+    .job-card.open .card-body-wrap{grid-template-rows:1fr}
+    .card-body-inner{overflow:hidden;min-height:0}
+    .card-body{padding:0 17px 15px;display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--lineSoft);padding-top:12px}
 
-    /* status pill */
-    .spill{display:inline-flex;align-items:center;gap:3px;font-size:.63rem;font-weight:700;padding:3px 8px;border-radius:999px;border:1.5px solid;white-space:nowrap}
-    .spill.s-todo{background:var(--gray-bg);color:var(--gray);border-color:var(--gray-border)}
-    .spill.s-applied{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)}
-    .spill.s-interview{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-border)}
-    .spill.s-rejected{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+    /* meta chips in body */
+    .meta-chips{display:flex;gap:6px;flex-wrap:wrap}
+    .meta-chip{background:var(--surfaceAlt);border:1px solid var(--line);border-radius:8px;padding:3px 8px;font-size:.72rem;color:var(--inkSoft);font-weight:500;display:inline-flex;align-items:center;gap:4px}
 
-    /* card body (collapsible) */
-    .card-body{display:none;padding:0 14px 14px;border-top:1px solid var(--line);flex-direction:column;gap:10px}
-    .job-card.open .card-body{display:flex}
-
-    /* status + date */
-    .card-status-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:12px}
-    .status-date{font-size:.67rem;color:var(--muted);font-weight:500}
-
-    /* tags */
-    .card-tags{display:flex;gap:6px;flex-wrap:wrap}
-    .tag{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:3px 8px;font-size:.71rem;color:#4b5563;font-weight:500;display:inline-flex;align-items:center;gap:3px}
-    .tag.t-date{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)}
-
-    /* reason */
-    .card-reason{font-size:.81rem;color:#374151;line-height:1.5}
+    /* AI note */
+    .ai-note{background:var(--accentSoft);border-radius:12px;padding:10px 12px}
+    .ai-note-head{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accentInk);margin-bottom:4px}
+    .ai-note-text{font-size:.81rem;color:var(--ink);line-height:1.5;direction:ltr;text-align:left}
 
     /* contact */
-    .contact-box{background:#f8fafc;border:1px solid var(--line);border-radius:11px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
-    .contact-head{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+    .contact-box{background:var(--surfaceAlt);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+    .contact-head{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--inkFaint)}
     .contact-main{display:flex;align-items:center;gap:9px}
-    .avatar{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.76rem;flex-shrink:0}
-    .contact-name{font-weight:700;font-size:.82rem}
-    .contact-title{font-size:.7rem;color:var(--muted)}
-    .contact-links{display:flex;gap:7px;flex-wrap:wrap}
-    .clink{font-size:.7rem;font-weight:600;text-decoration:none;padding:4px 9px;border-radius:7px;border:1px solid var(--line);background:#fff;color:#374151;display:inline-flex;align-items:center;gap:3px}
+    .avatar{width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--onAccent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.76rem;flex-shrink:0;font-family:var(--font-display)}
+    .contact-name{font-weight:700;font-size:.83rem}
+    .contact-title{font-size:.71rem;color:var(--inkSoft)}
+    .contact-links{display:flex;gap:6px;flex-wrap:wrap}
+    .clink{font-size:.71rem;font-weight:600;text-decoration:none;padding:4px 9px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--inkSoft);display:inline-flex;align-items:center;gap:3px;transition:all .13s}
+    .clink:hover{border-color:var(--accent);color:var(--accentInk)}
     .clink.li{color:#0a66c2}
-    .clink.em{color:var(--accent)}
 
     /* notes */
     .notes-wrap{display:flex;flex-direction:column;gap:5px}
-    .notes-lbl{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
-    .notes-ta{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;font-size:.8rem;font-family:inherit;color:var(--text);resize:vertical;min-height:60px;background:#fafbfd;outline:none;transition:border-color .15s;direction:rtl}
-    .notes-ta:focus{border-color:var(--accent);background:#fff}
-    .notes-ta.has-note{border-color:var(--accent-border);background:var(--accent-bg)}
+    .notes-lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--inkFaint)}
+    .notes-ta{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;font-size:.8rem;font-family:var(--font-ui);color:var(--ink);resize:vertical;min-height:58px;background:var(--surfaceAlt);outline:none;transition:border-color .15s,background .15s;direction:rtl}
+    .notes-ta:focus{border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px oklch(0.55 0.20 270 / 0.10)}
+    .notes-ta.has-note{border-color:oklch(0.85 0.04 270);background:var(--accentSoft)}
 
-    /* tracker */
-    .tracker{background:#fafbfd;border:1px dashed var(--line);border-radius:11px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
-    .tracker-lbl{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
-    .seg{display:flex;gap:5px;flex-wrap:wrap}
-    .seg button{flex:1;min-width:60px;padding:6px 4px;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:#6b7280;transition:all .12s;outline:none}
-    .seg button:hover{border-color:#9ca3af}
-    .seg button.on-todo{background:var(--gray);color:#fff;border-color:var(--gray)}
-    .seg button.on-applied{background:var(--accent);color:#fff;border-color:var(--accent)}
-    .seg button.on-interview{background:var(--purple);color:#fff;border-color:var(--purple)}
-    .seg button.on-rejected{background:var(--red);color:#fff;border-color:var(--red)}
+    /* stage stepper */
+    .stepper-wrap{display:flex;flex-direction:column;gap:6px}
+    .stepper-lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--inkFaint)}
+    .stepper{display:flex;gap:5px}
+    .step-btn{flex:1;padding:7px 4px;border-radius:9px;font-size:.72rem;font-weight:700;font-family:var(--font-ui);cursor:pointer;border:1.5px solid var(--line);background:var(--surfaceAlt);color:var(--inkSoft);transition:all .12s;outline:none}
+    .step-btn:hover{border-color:var(--s-solid);color:var(--s-fg)}
+    .step-btn.on{background:var(--s-solid);color:#fff;border-color:var(--s-solid)}
+
+    /* channel */
     .channel-wrap{display:flex;flex-direction:column;gap:5px}
-    .channel-lbl{font-size:.68rem;font-weight:600;color:var(--muted)}
+    .channel-lbl{font-size:.68rem;font-weight:600;color:var(--inkSoft)}
     .chan{display:flex;gap:5px;flex-wrap:wrap}
-    .chan button{padding:5px 10px;border-radius:999px;font-size:.71rem;font-weight:600;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:#6b7280;outline:none}
-    .chan button.on{background:#0f172a;color:#fff;border-color:#0f172a}
+    .chan-btn{padding:5px 10px;border-radius:999px;font-size:.72rem;font-weight:600;font-family:var(--font-ui);cursor:pointer;border:1.5px solid var(--line);background:var(--surfaceAlt);color:var(--inkSoft);outline:none;transition:all .12s}
+    .chan-btn.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 
     /* action buttons */
-    .card-actions{display:flex;gap:7px;flex-wrap:wrap}
-    .btn{flex:1;min-width:70px;padding:9px 6px;border-radius:10px;font-size:.77rem;font-weight:700;text-align:center;cursor:pointer;border:1px solid var(--line);transition:all .14s;display:flex;align-items:center;justify-content:center;gap:4px;text-decoration:none;white-space:nowrap}
-    .btn-view{background:var(--accent);color:#fff;border-color:var(--accent)}
-    .btn-copy{background:#fff;color:#374151}
-    .btn-copy.copied{color:var(--green);border-color:var(--green)}
-    .btn-cv{background:#0f172a;color:#fff;border-color:#0f172a}
-    .btn-wa{background:var(--wa);color:#fff;border-color:var(--wa)}
+    .actions{display:flex;gap:6px;flex-wrap:wrap}
+    .act-btn{flex:1;min-width:68px;padding:10px 6px;border-radius:11px;font-size:.78rem;font-weight:700;font-family:var(--font-ui);text-align:center;cursor:pointer;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);transition:all .14s;display:flex;align-items:center;justify-content:center;gap:4px;text-decoration:none;white-space:nowrap;active:transform:scale(.96)}
+    .act-btn:active{transform:scale(.96)}
+    .act-wa{background:var(--wa);color:#fff;border-color:var(--wa)}
+    .act-cv{background:var(--surfaceAlt)}
+    .act-open{background:var(--accent);color:var(--onAccent);border-color:var(--accent)}
+    .act-copy.copied{color:var(--accent);border-color:var(--accent)}
 
-    /* toast */
-    #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:#0f172a;color:#fff;border-radius:20px;padding:10px 20px;font-size:.84rem;font-weight:600;z-index:999;transition:transform .25s;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.22)}
-    #toast.show{transform:translateX(-50%) translateY(0)}
+    /* ── TOAST ── */
+    #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--toast-bg);color:#fff;border-radius:999px;padding:10px 22px;font-size:.83rem;font-weight:600;font-family:var(--font-ui);z-index:999;transition:transform .3s cubic-bezier(.2,.7,.3,1),opacity .3s;pointer-events:none;box-shadow:0 6px 24px rgba(0,0,0,.22);opacity:0;white-space:nowrap}
+    #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 
-    /* modal */
-    #modal{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:1000;display:none;align-items:flex-end;justify-content:center}
+    /* ── CV MODAL ── */
+    #modal{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:1000;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
     #modal.show{display:flex}
-    .modal-card{background:#fff;width:100%;max-width:760px;max-height:88vh;border-radius:20px 20px 0 0;display:flex;flex-direction:column;overflow:hidden}
+    .modal-card{background:var(--surface);width:100%;max-width:760px;max-height:88vh;border-radius:20px 20px 0 0;display:flex;flex-direction:column;overflow:hidden}
     @media(min-width:760px){#modal{align-items:center}.modal-card{border-radius:18px}}
     .modal-head{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
-    .modal-head h3{font-size:.95rem;font-weight:800}
-    .modal-head .sub{font-size:.72rem;color:var(--muted);margin-top:1px}
-    .modal-close{background:#f1f5f9;border:none;width:30px;height:30px;border-radius:50%;font-size:1rem;cursor:pointer;color:#475569;flex-shrink:0}
-    .modal-body{padding:14px 16px;overflow-y:auto;white-space:pre-wrap;font-size:.8rem;line-height:1.55;color:#1e293b;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+    .modal-head h3{font-size:.95rem;font-weight:800;font-family:var(--font-display)}
+    .modal-sub{font-size:.72rem;color:var(--inkSoft);margin-top:1px}
+    .modal-close{background:var(--surfaceAlt);border:none;width:30px;height:30px;border-radius:50%;font-size:1rem;cursor:pointer;color:var(--inkSoft)}
+    .modal-body{padding:14px 16px;overflow-y:auto;white-space:pre-wrap;font-size:.79rem;line-height:1.55;color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
     .modal-foot{padding:10px 16px;border-top:1px solid var(--line);display:flex;gap:7px}
-    .modal-foot .btn{min-width:0}
+    .modal-foot .act-btn{min-width:0}
 
-    @media(max-width:500px){
-      .card-actions .btn{font-size:.71rem;padding:8px 4px}
-      .seg button{font-size:.69rem;min-width:54px}
+    @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+    @media(max-width:480px){
+      .funnel{grid-template-columns:repeat(2,1fr);gap:4px}
+      .stepper{flex-wrap:wrap}
+      .step-btn{min-width:60px}
     }
   </style>
 </head>
 <body>
-<header>
-  <div class="header-inner">
-    <div>
-      <div class="header-title">🎯 Job Tracker — Omri</div>
-      <div class="header-meta">RevOps / GTM · עודכן __LAST_UPDATED__</div>
-    </div>
-    <div class="header-actions">
-      <div class="view-toggle">
-        <button class="vt-btn on" id="btn-list" onclick="setView('list')">☰ רשימה</button>
-        <button class="vt-btn" id="btn-kanban" onclick="setView('kanban')">⬛ Kanban</button>
+<div id="app">
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-top">
+      <div>
+        <div class="hero-greeting">בוקר טוב, עומרי 👋</div>
+        <div class="hero-meta" id="hero-meta"></div>
+        <div class="hero-coach" id="hero-coach" style="margin-top:5px"></div>
       </div>
       <a class="sheet-btn" href="https://docs.google.com/spreadsheets/d/1i33qr_r_xj_2LkHzg0Hxe5Dh4G_m4T21Xa4WNhQLkjg/edit" target="_blank">📊 Sheet</a>
     </div>
+    <div class="funnel" id="funnel"></div>
+    <div class="m-chips" id="m-chips"></div>
   </div>
-</header>
 
-<div class="filter-wrap">
-  <div class="filter-row">
-    <span class="filter-label">ציון</span>
-    <button class="fp active" data-grp="score" data-val="all" onclick="setScore(this)">הכל</button>
-    <button class="fp" data-grp="score" data-val="high" onclick="setScore(this)">🟢 8+</button>
-    <button class="fp" data-grp="score" data-val="mid" onclick="setScore(this)">🟡 5–7</button>
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="search-row">
+      <div class="search-wrap">
+        <span class="search-ico">🔍</span>
+        <input class="search-inp" id="search-inp" type="text" placeholder="חיפוש חברה או תפקיד…" oninput="onSearch(this)"/>
+        <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
+      </div>
+      <div class="sort-seg">
+        <button class="sort-btn on" data-val="score" onclick="setSort(this)">התאמה</button>
+        <button class="sort-btn" data-val="posted" onclick="setSort(this)">עדכני</button>
+        <button class="sort-btn" data-val="az" onclick="setSort(this)">A–Z</button>
+      </div>
+    </div>
+    <div class="filter-row">
+      <span class="filter-lbl">שלב</span>
+      <button class="sf-chip on-all" data-stage="all" onclick="setStageFilter(this)">הכל <span class="n" id="fc-all"></span></button>
+      <button class="sf-chip" data-stage="saved" onclick="setStageFilter(this)" style="--f-bg:oklch(0.955 0.045 235);--f-fg:oklch(0.46 0.13 235);--f-solid:oklch(0.56 0.16 235)">שמורות <span class="n" id="fc-saved"></span></button>
+      <button class="sf-chip" data-stage="applied" onclick="setStageFilter(this)" style="--f-bg:oklch(0.955 0.045 205);--f-fg:oklch(0.46 0.13 205);--f-solid:oklch(0.56 0.16 205)">הוגשו <span class="n" id="fc-applied"></span></button>
+      <button class="sf-chip" data-stage="interview" onclick="setStageFilter(this)" style="--f-bg:oklch(0.955 0.045 285);--f-fg:oklch(0.46 0.13 285);--f-solid:oklch(0.56 0.16 285)">ראיונות <span class="n" id="fc-interview"></span></button>
+      <button class="sf-chip" data-stage="offer" onclick="setStageFilter(this)" style="--f-bg:oklch(0.955 0.045 150);--f-fg:oklch(0.46 0.13 150);--f-solid:oklch(0.56 0.16 150)">הצעות <span class="n" id="fc-offer"></span></button>
+      <button class="sf-chip" data-stage="rejected" onclick="setStageFilter(this)" style="--f-bg:oklch(0.955 0.045 20);--f-fg:oklch(0.46 0.13 20);--f-solid:oklch(0.56 0.16 20)">נסגרו <span class="n" id="fc-rejected"></span></button>
+      <button class="sf-chip" data-stage="starred" onclick="setStageFilter(this)">⭐ נבחרות</button>
+    </div>
+    <div class="filter-row">
+      <span class="filter-lbl">ציון</span>
+      <button class="fit-chip on" data-fit="all" onclick="setFitFilter(this)">הכל</button>
+      <button class="fit-chip" data-fit="high" onclick="setFitFilter(this)">8+</button>
+      <button class="fit-chip" data-fit="mid" onclick="setFitFilter(this)">5–7</button>
+    </div>
+    <div class="exp-row">
+      <span class="exp-count" id="count-lbl"></span>
+      <div class="exp-btns">
+        <button class="exp-btn" onclick="expandAll()">פתח הכל ▾</button>
+        <button class="exp-btn" onclick="collapseAll()">סגור הכל ▴</button>
+      </div>
+    </div>
   </div>
-  <div class="filter-row">
-    <span class="filter-label">סטטוס</span>
-    <button class="fp active" data-grp="status" data-val="all" onclick="setStatusFilter(this)">הכל</button>
-    <button class="fp" data-grp="status" data-val="todo" onclick="setStatusFilter(this)">⬜ לא הוגש</button>
-    <button class="fp" data-grp="status" data-val="applied" onclick="setStatusFilter(this)">🔵 הוגש</button>
-    <button class="fp" data-grp="status" data-val="interview" onclick="setStatusFilter(this)">🟣 ראיון</button>
-    <button class="fp" data-grp="status" data-val="rejected" onclick="setStatusFilter(this)">🔴 נדחה</button>
-    <button class="fp" data-grp="status" data-val="starred" onclick="setStatusFilter(this)">⭐ נבחרות</button>
-  </div>
-  <div class="filter-row">
-    <span class="filter-label">מיון</span>
-    <button class="fp active" data-grp="sort" data-val="score" onclick="setSort(this)">לפי ציון</button>
-    <button class="fp" data-grp="sort" data-val="posted" onclick="setSort(this)">משרה חדשה</button>
-    <button class="fp" data-grp="sort" data-val="updated" onclick="setSort(this)">עודכן לאחרונה</button>
-  </div>
+
+  <!-- CARDS -->
+  <div id="container" style="display:flex;flex-direction:column;gap:14px"></div>
 </div>
 
-<div class="count-bar">
-  <span class="count-txt" id="count"></span>
-  <div class="expand-btns" id="expand-btns">
-    <button class="exp-btn" onclick="expandAll()">פתח הכל ▾</button>
-    <button class="exp-btn" onclick="collapseAll()">סגור הכל ▴</button>
-  </div>
-</div>
-
-<div class="jobs-wrap" id="container"></div>
-<div class="kanban-wrap" id="kanban"></div>
 <div id="toast"></div>
-
 <div id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-card">
     <div class="modal-head">
-      <div><h3 id="m-title">קורות חיים מותאמים</h3><div class="sub" id="m-sub"></div></div>
+      <div><h3 id="m-title"></h3><div class="modal-sub" id="m-sub"></div></div>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body" id="m-body"></div>
     <div class="modal-foot">
-      <button class="btn btn-copy" onclick="copyCV()">העתק 📋</button>
-      <button class="btn btn-cv" onclick="printCV()">PDF 🖨️</button>
-      <button class="btn btn-view" onclick="downloadCV()">.txt ⬇</button>
+      <button class="act-btn act-cv" onclick="copyCV()">העתק 📋</button>
+      <button class="act-btn act-open" onclick="printCV()">PDF 🖨️</button>
+      <button class="act-btn act-cv" onclick="downloadCV()">.txt ⬇</button>
     </div>
   </div>
 </div>
 
 <script>
 const JOBS=__JOBS_JSON__;
+
+/* ── stage config ── */
+const STAGES=[
+  {key:'saved',   he:'שמורות', verb:'שמור',  hue:235},
+  {key:'applied', he:'הוגשו',  verb:'הוגש',  hue:205},
+  {key:'interview',he:'ראיון', verb:'ראיון', hue:285},
+  {key:'offer',   he:'הצעה',   verb:'הצעה',  hue:150},
+  {key:'rejected',he:'נסגר',   verb:'נסגר',  hue:20},
+];
+function stageColor(hue){
+  return{
+    bg:`oklch(0.955 0.045 ${hue})`,
+    fg:`oklch(0.46 0.13 ${hue})`,
+    solid:`oklch(0.56 0.16 ${hue})`,
+  };
+}
+function fitColor(fit){
+  const h=fit>=8?150:fit>=5?78:28;
+  return{bg:`oklch(0.955 0.045 ${h})`,fg:`oklch(0.46 0.13 ${h})`};
+}
+function fitBand(f){return f>=8?'high':f>=5?'mid':'low';}
 
 /* ── CV base ── */
 const CV={
@@ -285,132 +326,162 @@ const CV={
   summary:"Growth executive with 15+ years architecting revenue engines across B2B SaaS, Fintech, and the Creator Economy. Specializes in deploying AI-driven GTM strategies, unifying Sales, Marketing, and Customer Success into cohesive RevOps systems, and scaling unit economics across complex international markets.",
   competencies:[
     {t:"Revenue Architecture & GTM Strategy",k:["gtm","revenue","strategy","architecture","pipeline"]},
-    {t:"RevOps Design & Cross-Functional Leadership (Sales, Marketing, CS)",k:["revops","revenue operations","sales","marketing","customer success","cross-functional","leadership"]},
-    {t:"AI-Native Growth Systems – Agentic Workflows, Omnichannel Automation",k:["ai","automation","agentic","workflow","gtm engineer","systems","openai","claude"]},
+    {t:"RevOps Design & Cross-Functional Leadership",k:["revops","revenue operations","sales","marketing","customer success","cross-functional","leadership"]},
+    {t:"AI-Native Growth Systems – Agentic Workflows, Omnichannel Automation",k:["ai","automation","agentic","workflow","gtm engineer","systems"]},
     {t:"Unit Economics: CAC/LTV Modeling, NRR, Pipeline Forecasting",k:["cac","ltv","forecasting","unit economics","nrr","metrics","modeling","analytics"]},
     {t:"Account-Based Marketing (ABM) & Enterprise Sales Enablement",k:["abm","account-based","enterprise","sales enablement","demand"]},
-    {t:"MarTech Stack: HubSpot, Salesforce, Braze, Mixpanel, Amplitude",k:["hubspot","salesforce","braze","mixpanel","amplitude","martech","crm","tableau","sql"]},
-    {t:"International Market Penetration – LATAM, EMEA, Global English",k:["international","latam","emea","global","market","expansion","territory"]}
+    {t:"MarTech Stack: HubSpot, Salesforce, Braze, Mixpanel, Amplitude",k:["hubspot","salesforce","braze","mixpanel","amplitude","martech","crm","sql"]},
+    {t:"International Market Penetration – LATAM, EMEA, Global English",k:["international","latam","emea","global","market","expansion"]}
   ],
   experience:[
-    {role:"Fractional Head of Revenue Operations & Growth",org:"Self-Employed",dates:"Jan 2025 – Present",
-     bullets:[
+    {role:"Fractional Head of Revenue Operations & Growth",org:"Self-Employed",dates:"Jan 2025 – Present",bullets:[
       {t:"Retained by multiple technology firms to architect scalable GTM frameworks and deploy AI-native revenue infrastructure.",k:["gtm","ai","revops","systems","strategy"]},
-      {t:"Deployed Agentic AI-powered omnichannel systems, automating 60%+ of tier-1 support and reducing operational overhead.",k:["ai","automation","agentic","workflow","systems"]},
+      {t:"Deployed Agentic AI-powered omnichannel systems, automating 60%+ of tier-1 support.",k:["ai","automation","agentic","workflow","systems"]},
       {t:"Redesigned ICP definitions and predictive pipeline architecture, accelerating enterprise revenue cycles by 50%.",k:["icp","pipeline","forecasting","enterprise","revenue"]},
       {t:"Unified fragmented tech stacks (HubSpot, Salesforce, Braze, Amplitude, Mixpanel) into a single source of truth for RevOps.",k:["hubspot","salesforce","braze","mixpanel","amplitude","crm","revops","data"]},
-      {t:"Built dynamic CAC/LTV segmentation models, generating 20–50% acquisition growth with a 40%+ reduction in CAC.",k:["cac","ltv","metrics","unit economics","modeling"]}
-     ]},
-    {role:"Head of Growth Marketing & Operations",org:"Tiebreak Solutions (Fintech / Trading Platform)",dates:"Mar 2023 – Jan 2025",
-     bullets:[
-      {t:"Owned full-funnel growth for AI-first financial trading platforms across global English-speaking and LATAM markets.",k:["fintech","ai","international","latam","growth","funnel"]},
-      {t:"Spearheaded international expansion into Brazil and Mexico through highly localized GTM strategies.",k:["international","latam","gtm","expansion","market"]},
-      {t:"Engineered the company's first marketing-to-revenue attribution system (Mixpanel, Customer.io, Intercom).",k:["attribution","mixpanel","analytics","marketing","revenue","data"]},
-      {t:"Launched acquisition engines across SEM, social, and display with structured full-funnel A/B testing.",k:["acquisition","demand","paid","marketing","testing"]},
+      {t:"Built dynamic CAC/LTV segmentation models, generating 20–50% acquisition growth with 40%+ CAC reduction.",k:["cac","ltv","metrics","unit economics","modeling"]}
+    ]},
+    {role:"Head of Growth Marketing & Operations",org:"Tiebreak Solutions (Fintech)",dates:"Mar 2023 – Jan 2025",bullets:[
+      {t:"Owned full-funnel growth for AI-first financial trading platforms across global LATAM markets.",k:["fintech","ai","international","latam","growth","funnel"]},
+      {t:"Spearheaded international expansion into Brazil and Mexico through localized GTM strategies.",k:["international","latam","gtm","expansion","market"]},
+      {t:"Engineered the company's first marketing-to-revenue attribution system (Mixpanel, Customer.io).",k:["attribution","mixpanel","analytics","marketing","revenue","data"]},
       {t:"Delivered 20% acquisition growth while reducing global CAC across all channels.",k:["cac","acquisition","metrics","growth"]}
-     ]},
-    {role:"Head of Marketing & Revenue Growth",org:"Make My Day App (B2B SaaS)",dates:"Aug 2022 – Feb 2023",
-     bullets:[
-      {t:"Led a strategic revenue transformation targeting complex enterprise software procurement committees.",k:["enterprise","revenue","strategy","saas","sales"]},
-      {t:"Launched an Account-Based Marketing (ABM) program targeting global enterprise accounts, increasing qualified B2B pipeline by 35%.",k:["abm","account-based","enterprise","pipeline","demand"]},
-      {t:"Implemented HubSpot CRM with predictive lead scoring to align marketing and sales handoff criteria.",k:["hubspot","crm","lead scoring","marketing operations","sales","routing"]},
-      {t:"Built lifecycle automation workflows via Braze, shortening enterprise sales cycles by 20%.",k:["braze","lifecycle","automation","workflow","marketing operations"]}
-     ]},
-    {role:"Growth Marketing Lead",org:"MassaPro (Professional Placement Agency)",dates:"Mar 2021 – Sep 2022",
-     bullets:[
-      {t:"Directed a 15-person cross-functional team managing a $200K monthly multi-channel performance marketing budget.",k:["leadership","team","marketing","budget","performance"]},
-      {t:"Constructed precise CAC forecasting and channel allocation models driving QoQ budget efficiency.",k:["cac","forecasting","metrics","modeling","analytics"]},
-      {t:"Executed advanced audience segmentation yielding a 40% increase in engagement and higher high-LTV share.",k:["ltv","segmentation","analytics","metrics"]}
-     ]},
-    {role:"Head of Marketing & Revenue Growth",org:"Payset (Global B2B Fintech)",dates:"Nov 2019 – Mar 2021",
-     bullets:[
-      {t:"Architected the global GTM strategy for a regulated electronic money institution (virtual IBANs, multi-currency accounts).",k:["fintech","gtm","international","global","strategy","enterprise"]},
-      {t:"Aligned Marketing, Sales, and Customer Success under a unified revenue architecture, driving 50% user-base expansion.",k:["revops","sales","marketing","customer success","cross-functional","revenue"]},
-      {t:"Built executive dashboards tying marketing spend to revenue via comprehensive LTV tracking models.",k:["ltv","dashboards","analytics","metrics","reporting","bi"]},
+    ]},
+    {role:"Head of Marketing & Revenue Growth",org:"Make My Day App (B2B SaaS)",dates:"Aug 2022 – Feb 2023",bullets:[
+      {t:"Launched ABM program targeting global enterprise accounts, increasing qualified B2B pipeline by 35%.",k:["abm","account-based","enterprise","pipeline","demand"]},
+      {t:"Implemented HubSpot CRM with predictive lead scoring to align marketing and sales handoff.",k:["hubspot","crm","lead scoring","marketing operations","sales"]},
+      {t:"Built lifecycle automation via Braze, shortening enterprise sales cycles by 20%.",k:["braze","lifecycle","automation","workflow","marketing operations"]}
+    ]},
+    {role:"Growth Marketing Lead",org:"MassaPro",dates:"Mar 2021 – Sep 2022",bullets:[
+      {t:"Directed a 15-person cross-functional team managing $200K monthly multi-channel budget.",k:["leadership","team","marketing","budget","performance"]},
+      {t:"Constructed CAC forecasting and channel allocation models driving QoQ budget efficiency.",k:["cac","forecasting","metrics","modeling","analytics"]}
+    ]},
+    {role:"Head of Marketing & Revenue Growth",org:"Payset (Global B2B Fintech)",dates:"Nov 2019 – Mar 2021",bullets:[
+      {t:"Architected the global GTM strategy for a regulated electronic money institution.",k:["fintech","gtm","international","global","strategy","enterprise"]},
+      {t:"Aligned Marketing, Sales, and CS under a unified revenue architecture, driving 50% user-base expansion.",k:["revops","sales","marketing","customer success","cross-functional","revenue"]},
       {t:"Improved enterprise customer retention by 25%, lifting Net Revenue Retention (NRR).",k:["nrr","retention","enterprise","metrics","unit economics"]}
-     ]}
+    ]}
   ],
   education:"MBA & BA, Business Administration – The Academic College of Management (MLA)"
 };
 
-/* ── state ── */
-const STATUS_META={
-  todo:{label:"לא הוגש",pill:"s-todo",on:"on-todo"},
-  applied:{label:"הוגש",pill:"s-applied",on:"on-applied"},
-  interview:{label:"ראיון ראשוני",pill:"s-interview",on:"on-interview"},
-  rejected:{label:"נדחה",pill:"s-rejected",on:"on-rejected"}
-};
-const CHANNELS=[["linkedin","LinkedIn"],["friend","חבר"],["website","אתר"],["email","מייל"],["whatsapp","וואטסאפ"]];
-const FOLLOW_DAYS=7;
-
+/* ── localStorage state ── */
 function jobKey(j){return(j.company+"|"+j.title).replace(/\s+/g,"_");}
 function loadState(){try{return JSON.parse(localStorage.getItem("jobState")||"{}");}catch(e){return{};}}
 function saveState(s){localStorage.setItem("jobState",JSON.stringify(s));}
 let STATE=loadState();
-function getJobState(j){return STATE[jobKey(j)]||{status:"todo",channel:null,statusDate:null,starred:false,note:""};}
+function getJobState(j){return STATE[jobKey(j)]||{status:"saved",channel:null,statusDate:null,starred:false,note:""};}
+// Map old "todo" status to "saved"
+function getStage(j){const s=getJobState(j).status||"saved";return s==="todo"?"saved":s;}
+
+const STAGE_TOASTS={
+  offer:"🎉 הצעה! עוד צעד קדימה — אתה במסלול הנכון",
+  interview:"💪 ראיון! המומנטום עובד בשבילך",
+  applied:"✓ הוגש. כל הגשה מקרבת אותך",
+  saved:"📌 שמור להגשה",
+  rejected:"— נסגר. מתקדמים לפנים"
+};
 
 function setStatus(j,status){
   const k=jobKey(j),cur=STATE[k]||{};
   cur.status=status;cur.statusDate=new Date().toISOString().slice(0,10);
-  STATE[k]=cur;saveState(STATE);render();
+  STATE[k]=cur;saveState(STATE);
+  if(STAGE_TOASTS[status])showToast(STAGE_TOASTS[status]);
+  render();
 }
 function setChannel(j,ch){
-  const k=jobKey(j),cur=STATE[k]||{status:"todo"};
+  const k=jobKey(j),cur=STATE[k]||{status:"saved"};
   cur.channel=ch;STATE[k]=cur;saveState(STATE);render();
 }
 function toggleStar(j){
-  const k=jobKey(j),cur=STATE[k]||{status:"todo"};
+  const k=jobKey(j),cur=STATE[k]||{status:"saved"};
   cur.starred=!cur.starred;STATE[k]=cur;saveState(STATE);render();
 }
 function saveNote(j,val){
-  const k=jobKey(j),cur=STATE[k]||{status:"todo"};
+  const k=jobKey(j),cur=STATE[k]||{status:"saved"};
   cur.note=val;STATE[k]=cur;saveState(STATE);
 }
+
+/* ── stats ── */
+function computeStats(){
+  const by={saved:0,applied:0,interview:0,offer:0,rejected:0};
+  let starred=0,followup=0;
+  JOBS.forEach(j=>{
+    const st=getJobState(j);
+    const stage=getStage(j);
+    if(by[stage]!==undefined)by[stage]++;
+    if(st.starred)starred++;
+    if(needsFollowup(st))followup++;
+  });
+  const inPlay=by.saved+by.applied+by.interview;
+  return{by,starred,followup,inPlay,interviews:by.interview,offers:by.offer,total:JOBS.length};
+}
+function coachLine(stats){
+  if(stats.offers>0)return`יש לך ${stats.offers} הצעות 🎉`;
+  if(stats.interviews>0)return`${stats.interviews} ראיונות בתהליך 💪`;
+  if(stats.inPlay>0)return`${stats.inPlay} מועמדויות בתהליך`;
+  return"בוא נצבור מומנטום 🚀";
+}
 function needsFollowup(st){
+  if(getStage({company:st.company,title:st.title}||{})==="applied"||st.status==="applied"){
+    if(!st.statusDate)return false;
+    return Math.round((new Date()-new Date(st.statusDate))/86400000)>=7;
+  }
+  return false;
+}
+function needsFollowupDirect(st){
   if(st.status!=="applied")return false;
   if(!st.statusDate)return false;
-  const days=Math.round((new Date()-new Date(st.statusDate))/86400000);
-  return days>=FOLLOW_DAYS;
+  return Math.round((new Date()-new Date(st.statusDate))/86400000)>=7;
 }
 
-/* ── filters / view ── */
-let fScore="all",fStatus="all",fSort="score",curView="list";
-function setScore(b){fScore=b.dataset.val;activate(b);render();}
-function setStatusFilter(b){fStatus=b.dataset.val;activate(b);render();}
-function setSort(b){fSort=b.dataset.val;activate(b);render();}
-function activate(b){document.querySelectorAll('[data-grp="'+b.dataset.grp+'"]').forEach(x=>x.classList.remove("active"));b.classList.add("active");}
-function setView(v){
-  curView=v;
-  document.getElementById("btn-list").classList.toggle("on",v==="list");
-  document.getElementById("btn-kanban").classList.toggle("on",v==="kanban");
-  document.getElementById("container").style.display=v==="list"?"flex":"none";
-  document.getElementById("kanban").style.display=v==="kanban"?"flex":"none";
-  document.getElementById("expand-btns").style.display=v==="list"?"flex":"none";
+/* ── filters ── */
+let fStage="all",fFit="all",fSort="score",fQ="";
+function setStageFilter(b){
+  const v=b.dataset.stage;
+  fStage=v;
+  // two-way sync with funnel
+  document.querySelectorAll(".sf-chip").forEach(c=>c.classList.remove("on-all","on-stage"));
+  if(v==="all"){b.classList.add("on-all");}
+  else{b.classList.add("on-stage");}
+  document.querySelectorAll(".f-stage").forEach(f=>f.classList.toggle("active",f.dataset.stage===v));
   render();
 }
+function setFunnelFilter(stage){
+  const btn=document.querySelector(`.sf-chip[data-stage="${stage}"]`);
+  if(btn)setStageFilter(btn);
+}
+function setFitFilter(b){
+  fFit=b.dataset.fit;
+  document.querySelectorAll(".fit-chip").forEach(c=>c.classList.remove("on"));
+  b.classList.add("on");render();
+}
+function setSort(b){
+  fSort=b.dataset.val;
+  document.querySelectorAll(".sort-btn").forEach(c=>c.classList.remove("on"));
+  b.classList.add("on");render();
+}
+function onSearch(inp){fQ=inp.value.trim().toLowerCase();document.getElementById("search-clear").classList.toggle("show",!!fQ);render();}
+function clearSearch(){fQ="";const i=document.getElementById("search-inp");i.value="";document.getElementById("search-clear").classList.remove("show");render();}
 
-/* ── collapse/expand ── */
+/* ── collapse / expand ── */
 function toggleCard(el){el.classList.toggle("open");}
-function expandAll(){document.querySelectorAll(".job-card").forEach(c=>{if(c.style.display!=="none")c.classList.add("open");});}
+function expandAll(){document.querySelectorAll(".job-card:not([style*='display:none']),.job-card:not([style*='display: none'])").forEach(c=>{if(c.offsetParent!==null)c.classList.add("open");});}
 function collapseAll(){document.querySelectorAll(".job-card").forEach(c=>c.classList.remove("open"));}
 
 /* ── helpers ── */
 const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const NOW=new Date();
-function badgeClass(s){return s>=8?"sg":s>=5?"sa":"sr";}
-function scoreBucket(s){return s>=8?"high":s>=5?"mid":"low";}
 function fmtDate(d){if(!d)return"";const dt=new Date(d);if(isNaN(dt))return"";return MONTHS[dt.getMonth()]+" "+dt.getDate();}
-function postedLabel(d){if(!d)return"";const dt=new Date(d);if(isNaN(dt))return"";const days=Math.round((NOW-dt)/86400000);const rel=days<=0?"today":days===1?"לפני יום":days+" ימים";return MONTHS[dt.getMonth()]+" "+dt.getDate()+" · "+rel;}
+function postedLabel(d){if(!d)return"";const dt=new Date(d);if(isNaN(dt))return"";const days=Math.round((NOW-dt)/86400000);if(days<=0)return"היום";if(days===1)return"אתמול";return`לפני ${days} ימים`;}
 function initials(n){return n.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase();}
-function daysSince(d){if(!d)return 999;return Math.round((NOW-new Date(d))/86400000);}
 
-/* ── CV tailoring ── */
+/* ── CV ── */
 function tailorData(j){
-  const text=((j.title||"")+" "+(j.description||"")+" "+(j.score_reason||"")).toLowerCase();
+  const text=((j.title||"")+" "+(j.description||"")+" "+(j.score_reason||"")+" "+(j.ai_opener||"")).toLowerCase();
   const score=arr=>arr.reduce((n,kw)=>n+(text.includes(kw)?1:0),0);
   const comps=[...CV.competencies].map(c=>({t:c.t,s:score(c.k)})).sort((a,b)=>b.s-a.s);
-  const topComps=comps.filter(c=>c.s>0).slice(0,4);
-  const useComps=(topComps.length?topComps:comps.slice(0,4)).map(c=>c.t);
+  const useComps=(comps.filter(c=>c.s>0).slice(0,4).length?comps.filter(c=>c.s>0).slice(0,4):comps.slice(0,4)).map(c=>c.t);
   const exp=CV.experience.map(e=>{
     const bl=[...e.bullets].map(b=>({t:b.t,s:score(b.k)})).sort((a,b)=>b.s-a.s);
     return{role:e.role,org:e.org,dates:e.dates,bullets:bl.slice(0,3).map(b=>b.t)};
@@ -419,14 +490,14 @@ function tailorData(j){
 }
 function tailorCV(j){
   const{useComps,exp}=tailorData(j);
-  let lines=[];
-  lines.push(CV.name,CV.tagline,CV.contact,"","— TAILORED FOR: "+j.title+" @ "+j.company+" —","","PROFILE");
-  lines.push(CV.summary+" Directly aligned with "+j.company+"'s need for "+j.title+".","","KEY STRENGTHS FOR THIS ROLE");
-  useComps.forEach(c=>lines.push("• "+c));
-  lines.push("","EXPERIENCE");
-  exp.forEach(e=>{lines.push(e.role+" | "+e.org+"  ("+e.dates+")");e.bullets.forEach(b=>lines.push("  • "+b));lines.push("");});
-  lines.push("EDUCATION",CV.education);
-  return lines.join("\n");
+  let L=[];
+  L.push(CV.name,CV.tagline,CV.contact,"","— TAILORED FOR: "+j.title+" @ "+j.company+" —","","PROFILE");
+  L.push(CV.summary+" Directly aligned with "+j.company+"'s need for "+j.title+".","","KEY STRENGTHS FOR THIS ROLE");
+  useComps.forEach(c=>L.push("• "+c));
+  L.push("","EXPERIENCE");
+  exp.forEach(e=>{L.push(e.role+" | "+e.org+"  ("+e.dates+")");e.bullets.forEach(b=>L.push("  • "+b));L.push("");});
+  L.push("EDUCATION",CV.education);
+  return L.join("\n");
 }
 let _cvText="",_cvCompany="",_cvJob=null;
 function openCV(i){
@@ -440,149 +511,178 @@ function openCV(i){
 function closeModal(){document.getElementById("modal").classList.remove("show");}
 function copyCV(){navigator.clipboard.writeText(_cvText).then(()=>showToast("קורות חיים הועתקו!"));}
 function downloadCV(){
-  const blob=new Blob([_cvText],{type:"text/plain;charset=utf-8"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
-  a.download="Omri_Gonen_CV_"+_cvCompany.replace(/[^a-z0-9]+/gi,"_")+".txt";a.click();showToast("ירד קובץ");
+  const b=new Blob([_cvText],{type:"text/plain;charset=utf-8"}),a=document.createElement("a");
+  a.href=URL.createObjectURL(b);a.download="Omri_Gonen_CV_"+_cvCompany.replace(/[^a-z0-9]+/gi,"_")+".txt";a.click();
 }
 function printCV(){
   if(!_cvJob)return;
   const j=_cvJob,{useComps,exp}=tailorData(j);
   const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-  const expHTML=exp.map(e=>`<div class="role"><div class="rh"><span class="rt">${esc(e.role)}</span><span class="rd">${esc(e.dates)}</span></div><div class="ro">${esc(e.org)}</div><ul>${e.bullets.map(b=>`<li>${esc(b)}</li>`).join("")}</ul></div>`).join("");
-  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Omri Gonen — CV — ${esc(j.company)}</title>
-  <style>@page{margin:14mm}*{box-sizing:border-box}body{font-family:Georgia,'Times New Roman',serif;color:#1a1a1a;line-height:1.4;max-width:780px;margin:0 auto;padding:10px}h1{font-size:24px;letter-spacing:.5px;margin:0}.tag{color:#2563eb;font-weight:bold;font-size:12.5px;margin:3px 0}.contact{font-size:11px;color:#555;margin-bottom:4px}.tailored{font-size:11px;color:#7c3aed;font-weight:bold;border:1px solid #e4d8fb;background:#f7f3ff;padding:5px 9px;border-radius:6px;display:inline-block;margin:6px 0}h2{font-size:12.5px;text-transform:uppercase;letter-spacing:1px;color:#2563eb;border-bottom:1.5px solid #2563eb;padding-bottom:2px;margin:16px 0 7px}p.sum{font-size:12.5px;margin:0}ul{margin:4px 0 0;padding-left:18px}li{font-size:12px;margin:2px 0}.role{margin-bottom:11px}.rh{display:flex;justify-content:space-between;align-items:baseline}.rt{font-weight:bold;font-size:13px}.rd{font-size:11px;color:#666}.ro{font-style:italic;font-size:11.5px;color:#444}.edu{font-size:12px}@media print{.noprint{display:none}}.noprint{text-align:center;margin:14px 0}.noprint button{font-family:sans-serif;font-size:14px;padding:9px 22px;border:none;border-radius:8px;background:#2563eb;color:#fff;cursor:pointer}</style></head><body>
-  <div class="noprint"><button onclick="window.print()">🖨️ הדפס / שמור כ-PDF</button></div>
+  const expH=exp.map(e=>`<div class="role"><div class="rh"><span class="rt">${esc(e.role)}</span><span class="rd">${esc(e.dates)}</span></div><div class="ro">${esc(e.org)}</div><ul>${e.bullets.map(b=>`<li>${esc(b)}</li>`).join("")}</ul></div>`).join("");
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Omri Gonen CV — ${esc(j.company)}</title>
+  <style>@page{margin:14mm}*{box-sizing:border-box}body{font-family:Georgia,serif;color:#1a1a1a;line-height:1.4;max-width:780px;margin:0 auto;padding:10px}h1{font-size:24px;margin:0}.tag{color:#2563eb;font-weight:bold;font-size:12.5px;margin:3px 0}.contact{font-size:11px;color:#555;margin-bottom:4px}.tailored{font-size:11px;color:#7c3aed;font-weight:bold;border:1px solid #e4d8fb;background:#f7f3ff;padding:5px 9px;border-radius:6px;display:inline-block;margin:6px 0}h2{font-size:12.5px;text-transform:uppercase;letter-spacing:1px;color:#2563eb;border-bottom:1.5px solid #2563eb;padding-bottom:2px;margin:16px 0 7px}p{font-size:12.5px;margin:0}ul{margin:4px 0 0;padding-left:18px}li{font-size:12px;margin:2px 0}.role{margin-bottom:11px}.rh{display:flex;justify-content:space-between}.rt{font-weight:bold;font-size:13px}.rd{font-size:11px;color:#666}.ro{font-style:italic;font-size:11.5px;color:#444}@media print{.np{display:none}}.np{text-align:center;margin:14px 0}.np button{font-family:sans-serif;font-size:14px;padding:9px 22px;border:none;border-radius:8px;background:#2563eb;color:#fff;cursor:pointer}</style>
+  </head><body>
+  <div class="np"><button onclick="window.print()">🖨️ הדפס / שמור כ-PDF</button></div>
   <h1>${esc(CV.name)}</h1><div class="tag">${esc(CV.tagline)}</div><div class="contact">${esc(CV.contact)}</div>
   <div class="tailored">Tailored for: ${esc(j.title)} @ ${esc(j.company)}</div>
-  <h2>Profile</h2><p class="sum">${esc(CV.summary)}</p>
-  <h2>Key Strengths for This Role</h2><ul class="comps">${useComps.map(c=>`<li>${esc(c)}</li>`).join("")}</ul>
-  <h2>Experience</h2>${expHTML}<h2>Education</h2><div class="edu">${esc(CV.education)}</div>
+  <h2>Profile</h2><p>${esc(CV.summary)}</p>
+  <h2>Key Strengths for This Role</h2><ul>${useComps.map(c=>`<li>${esc(c)}</li>`).join("")}</ul>
+  <h2>Experience</h2>${expH}<h2>Education</h2><p>${esc(CV.education)}</p>
   </body></html>`;
-  const w=window.open("","_blank");
-  if(!w){showToast("אפשר חלונות קופצים כדי להדפיס");return;}
+  const w=window.open("","_blank");if(!w){showToast("אפשר חלונות קופצים");return;}
   w.document.write(html);w.document.close();
 }
 
 /* ── RENDER ── */
 function render(){
-  let list=JOBS.map((j,idx)=>({j,idx,st:getJobState(j)}));
-  if(fSort==="score")list.sort((a,b)=>b.j.fit_score-a.j.fit_score);
-  else if(fSort==="posted")list.sort((a,b)=>new Date(b.j.posted||0)-new Date(a.j.posted||0));
-  else if(fSort==="updated")list.sort((a,b)=>new Date(b.st.statusDate||0)-new Date(a.st.statusDate||0));
+  const stats=computeStats();
+  // hero
+  document.getElementById("hero-meta").textContent=`__LAST_UPDATED__ · ${stats.total} משרות פעילות`;
+  document.getElementById("hero-coach").textContent=coachLine(stats);
+
+  // funnel
+  const funnelStages=STAGES.filter(s=>s.key!=="rejected");
+  const maxCount=Math.max(1,...funnelStages.map(s=>stats.by[s.key]||0));
+  document.getElementById("funnel").innerHTML=funnelStages.map((s,si)=>{
+    const cnt=stats.by[s.key]||0;
+    const c=stageColor(s.hue);
+    const w=cnt?Math.round(cnt/maxCount*100):0;
+    return`<div class="f-stage${fStage===s.key?" active":""}" data-stage="${s.key}"
+      style="--f-bg:${c.bg};--f-fg:${c.fg};--f-solid:${c.solid}"
+      onclick="fStage==='${s.key}'?setFunnelFilter('all'):setFunnelFilter('${s.key}')">
+      <div class="f-count${cnt===0?" zero":""}">${cnt}</div>
+      <div class="f-label">${s.he}</div>
+      <div class="f-track"><div class="f-fill" style="width:${w}%"></div></div>
+    </div>`;
+  }).join("");
+
+  // momentum chips
+  const chips=[];
+  chips.push(`<div class="m-chip">🔥 מחפש פעיל</div>`);
+  if(stats.interviews>0)chips.push(`<div class="m-chip">📅 <span class="val">${stats.interviews}</span> ראיונות בתהליך</div>`);
+  if(stats.offers>0)chips.push(`<div class="m-chip">★ <span class="val">${stats.offers}</span> הצעות</div>`);
+  if(stats.followup>0)chips.push(`<div class="m-chip">💬 <span class="val">${stats.followup}</span> follow-up</div>`);
+  document.getElementById("m-chips").innerHTML=chips.join("");
+
+  // stage filter counts
+  Object.keys(stats.by).forEach(k=>{
+    const el=document.getElementById("fc-"+k);if(el)el.textContent=stats.by[k]||0;
+  });
+  const allEl=document.getElementById("fc-all");if(allEl)allEl.textContent=stats.total;
+
+  // sort + filter
+  let list=JOBS.map((j,idx)=>({j,idx,st:getJobState(j),stage:getStage(j)}));
+  // starred float to top within sort
+  if(fSort==="score")list.sort((a,b)=>(b.st.starred-a.st.starred)||b.j.fit_score-a.j.fit_score);
+  else if(fSort==="posted")list.sort((a,b)=>(b.st.starred-a.st.starred)||new Date(b.j.posted||0)-new Date(a.j.posted||0));
+  else list.sort((a,b)=>(b.st.starred-a.st.starred)||(a.j.company||"").localeCompare(b.j.company||"","he"));
   window._sorted=list.map(x=>x.j);
 
   let v=0;
-  const starredCount=JOBS.filter(j=>getJobState(j).starred).length;
-  const followCount=JOBS.filter(j=>needsFollowup(getJobState(j))).length;
-
-  if(curView==="list"){
-    document.getElementById("container").innerHTML=list.map((x,i)=>{
-      const j=x.j,st=x.st;
-      const passScore=fScore==="all"||scoreBucket(j.fit_score)===fScore;
-      const passStatus=fStatus==="starred"?st.starred:(fStatus==="all"||st.status===fStatus);
-      const show=passScore&&passStatus;
-      if(show)v++;
-      const sm=STATUS_META[st.status]||STATUS_META.todo;
-      const c=j.contact;
-      const follow=needsFollowup(st);
-      const cardCls="job-card st-"+st.status+(follow?" has-followup":"");
-      const contactHTML=c?`<div class="contact-box">
-        <div class="contact-head">👤 למי לפנות · via Clay</div>
-        <div class="contact-main">
-          <div class="avatar">${initials(c.name)}</div>
-          <div><div class="contact-name">${c.name}</div><div class="contact-title">${c.title}</div></div>
+  document.getElementById("container").innerHTML=list.map((x,i)=>{
+    const j=x.j,st=x.st,stage=x.stage;
+    const passStage=fStage==="all"||(fStage==="starred"?st.starred:stage===fStage);
+    const passFit=fFit==="all"||fitBand(j.fit_score)===fFit;
+    const passQ=!fQ||(j.company||"").toLowerCase().includes(fQ)||(j.title||"").toLowerCase().includes(fQ);
+    const show=passStage&&passFit&&passQ;
+    if(show)v++;
+    const sc=stageColor(STAGES.find(s=>s.key===stage)?.hue||235);
+    const fc=fitColor(j.fit_score);
+    const follow=needsFollowupDirect(st);
+    const sm=STAGES.find(s=>s.key===stage)||STAGES[0];
+    const c=j.contact;
+    const delay=Math.min(i,12)*0.03;
+    const contactHTML=c?`<div class="contact-box">
+      <div class="contact-head">👤 למי לפנות · via Clay</div>
+      <div class="contact-main">
+        <div class="avatar">${initials(c.name)}</div>
+        <div><div class="contact-name">${c.name}</div><div class="contact-title">${c.title}</div></div>
+      </div>
+      <div class="contact-links">
+        ${c.email?`<a class="clink" href="mailto:${c.email}">✉️ ${c.email}</a>`:""}
+        ${c.linkedin?`<a class="clink li" href="${c.linkedin}" target="_blank" rel="noopener">in LinkedIn</a>`:""}
+      </div></div>`:"";
+    const stepBtns=STAGES.map(s=>{
+      const sc2=stageColor(s.hue);
+      return`<button class="step-btn${stage===s.key?" on":""}"
+        style="--s-solid:${sc2.solid};--s-fg:${sc2.fg}"
+        onclick='event.stopPropagation();setStatus(window._sorted[${i}],"${s.key}")'>${s.verb}</button>`;
+    }).join("");
+    const showChan=stage==="applied"||stage==="interview";
+    const chanBtns=["linkedin","חבר","אתר","מייל","וואטסאפ"].map((v2,ci)=>{
+      const vals=["linkedin","friend","website","email","whatsapp"];
+      return`<button class="chan-btn${st.channel===vals[ci]?" on":""}" onclick='event.stopPropagation();setChannel(window._sorted[${i}],"${vals[ci]}")'>${v2}</button>`;
+    }).join("");
+    const channelHTML=showChan?`<div class="channel-wrap"><div class="channel-lbl">דרך מה הוגש?</div><div class="chan">${chanBtns}</div></div>`:"";
+    const noteVal=(st.note||"").replace(/"/g,"&quot;");
+    const aiNote=j.ai_opener||j.score_reason||"";
+    return`<div class="job-card st-${stage}${follow?" has-followup":""}"
+      style="display:${show?"":"none"};--s-solid:${sc.solid};--s-bg:${sc.bg};--s-fg:${sc.fg};
+             animation:cardIn .45s ${delay}s both"
+      id="jc-${i}">
+      <div class="card-head" onclick="toggleCard(this.parentElement)">
+        <button class="star-btn${st.starred?" on":""}" onclick='event.stopPropagation();toggleStar(window._sorted[${i}])'>★</button>
+        <div class="fit-mark" style="background:${fc.bg}">
+          <div class="fit-num" style="color:${fc.fg}">${j.fit_score}</div>
+          <div class="fit-lbl" style="color:${fc.fg}">FIT</div>
         </div>
-        <div class="contact-links">
-          ${c.email?`<a class="clink em" href="mailto:${c.email}">✉️ ${c.email}</a>`:""}
-          ${c.linkedin?`<a class="clink li" href="${c.linkedin}" target="_blank" rel="noopener">in LinkedIn</a>`:""}
-        </div></div>`:"";
-      const segBtns=Object.keys(STATUS_META).map(key=>{
-        const on=st.status===key?" "+STATUS_META[key].on:"";
-        return`<button class="${on.trim()}" onclick='event.stopPropagation();setStatus(window._sorted[${i}],"${key}")'>${STATUS_META[key].label}</button>`;
-      }).join("");
-      const showChan=st.status==="applied"||st.status==="interview";
-      const chanBtns=CHANNELS.map(([v2,lbl])=>`<button class="${st.channel===v2?"on":""}" onclick='event.stopPropagation();setChannel(window._sorted[${i}],"${v2}")'>${lbl}</button>`).join("");
-      const channelHTML=showChan?`<div class="channel-wrap"><div class="channel-lbl">דרך מה הוגש?</div><div class="chan">${chanBtns}</div></div>`:"";
-      const statusDateHTML=st.statusDate?`<span class="status-date">· ${fmtDate(st.statusDate)}</span>`:"";
-      const noteVal=(st.note||"").replace(/"/g,"&quot;");
-      const noteClass=st.note?"notes-ta has-note":"notes-ta";
-      return`<div class="${cardCls}" style="display:${show?"":"none"}" id="jcard-${i}">
-        <button class="star-btn ${st.starred?"on":""}" onclick='event.stopPropagation();toggleStar(window._sorted[${i}])' title="סמן כנבחר">⭐</button>
-        <div class="card-summary" onclick="toggleCard(this.parentElement)">
-          <div class="score-badge ${badgeClass(j.fit_score)}"><span class="num">${j.fit_score}</span><span class="lbl">fit</span></div>
-          <div class="summary-info">
-            <div class="card-company">${j.company}</div>
-            <div class="card-role">${j.title}</div>
-          </div>
-          <div class="summary-right">
-            <span class="spill ${sm.pill}">${sm.label}${statusDateHTML}</span>
-            ${follow?`<span class="follow-badge">💬 Follow up?</span>`:""}
-            <span class="chevron">▾</span>
-          </div>
+        <div class="card-text">
+          <div class="card-company">${j.company}</div>
+          <div class="card-role">${j.title}</div>
         </div>
-        <div class="card-body">
-          <div class="card-tags">
-            ${j.posted?`<span class="tag t-date">🗓️ ${postedLabel(j.posted)}</span>`:""}
-            ${j.location?`<span class="tag">📍 ${j.location}</span>`:""}
-            ${j.job_type?`<span class="tag">${j.job_type}</span>`:""}
+        <div class="card-head-right">
+          <div class="s-pill" style="--s-bg:${sc.bg};--s-fg:${sc.fg};--s-solid:${sc.solid}">
+            <span class="s-dot"></span>${sm.he}${st.statusDate?" · "+fmtDate(st.statusDate):""}
           </div>
-          ${j.score_reason?`<div class="card-reason">${j.score_reason}</div>`:""}
-          ${contactHTML}
-          <div class="notes-wrap">
-            <div class="notes-lbl">📝 הערות אישיות</div>
-            <textarea class="${noteClass}" placeholder="פגשתי את X, ביקשו take-home, יש ראיון ב-15.6..." oninput='saveNote(window._sorted[${i}],this.value);this.className=this.value?"notes-ta has-note":"notes-ta"' onclick='event.stopPropagation()'>${noteVal}</textarea>
-          </div>
-          <div class="tracker">
-            <div class="tracker-lbl">📌 סטטוס מועמדות</div>
-            <div class="seg">${segBtns}</div>
+          ${follow?`<span class="follow-badge">💬 Follow up?</span>`:""}
+        </div>
+        <div class="chevron">▾</div>
+      </div>
+      <div class="card-body-wrap">
+        <div class="card-body-inner">
+          <div class="card-body">
+            <div class="meta-chips">
+              ${j.posted?`<span class="meta-chip">🕐 ${postedLabel(j.posted)}</span>`:""}
+              ${j.location?`<span class="meta-chip">📍 ${j.location}</span>`:""}
+              ${j.job_type?`<span class="meta-chip">⚡ ${j.job_type}</span>`:""}
+            </div>
+            ${aiNote?`<div class="ai-note"><div class="ai-note-head">⚡ התאמת AI</div><div class="ai-note-text">${aiNote}</div></div>`:""}
+            ${contactHTML}
+            <div class="notes-wrap">
+              <div class="notes-lbl">📝 הערות אישיות</div>
+              <textarea class="notes-ta${st.note?" has-note":""}" rows="2"
+                placeholder="מה קרה עד עכשיו? אנשי קשר, משימות, תאריכים…"
+                onclick="event.stopPropagation()"
+                oninput='saveNote(window._sorted[${i}],this.value);this.className=this.value?"notes-ta has-note":"notes-ta"'>${noteVal}</textarea>
+            </div>
+            <div class="stepper-wrap">
+              <div class="stepper-lbl">📌 איפה זה עומד?</div>
+              <div class="stepper">${stepBtns}</div>
+            </div>
             ${channelHTML}
-          </div>
-          <div class="card-actions">
-            <a href="${j.url}" target="_blank" rel="noopener" class="btn btn-view" onclick='event.stopPropagation()'>משרה ↗</a>
-            <button class="btn btn-cv" onclick='event.stopPropagation();openCV(${i})'>קו״ח 📄</button>
-            <button class="btn btn-copy" onclick='event.stopPropagation();copyOpener(this,${i})'>פנייה 📋</button>
-            <button class="btn btn-wa" onclick='event.stopPropagation();shareWA(${i})'>וואטסאפ</button>
+            <div class="actions">
+              <button class="act-btn act-wa" onclick='event.stopPropagation();shareWA(${i})'>וואטסאפ</button>
+              <button class="act-btn act-cv" onclick='event.stopPropagation();openCV(${i})'>קו״ח 📄</button>
+              <button class="act-btn act-copy" onclick='event.stopPropagation();copyOpener(this,${i})'>פנייה 📋</button>
+              <a href="${j.url}" target="_blank" rel="noopener" class="act-btn act-open" onclick='event.stopPropagation()'>משרה ↗</a>
+            </div>
           </div>
         </div>
-      </div>`;
-    }).join("");
-  } else {
-    /* ── KANBAN ── */
-    const cols=Object.keys(STATUS_META);
-    document.getElementById("kanban").innerHTML=cols.map(key=>{
-      const sm=STATUS_META[key];
-      const cards=list.filter(x=>{
-        const passScore=fScore==="all"||scoreBucket(x.j.fit_score)===fScore;
-        const passStatus=fStatus==="starred"?x.st.starred:(fStatus==="all"||x.st.status===key);
-        return x.st.status===key&&passScore&&(fStatus==="all"||fStatus===key||fStatus==="starred"&&x.st.starred);
-      });
-      v+=cards.length;
-      const cardsHTML=cards.map((x,ci)=>{
-        const j=x.j,st=x.st,i=list.indexOf(x);
-        const follow=needsFollowup(st);
-        return`<div class="kcard st-${key}" onclick="setView('list');setTimeout(()=>{const el=document.getElementById('jcard-${i}');if(el){el.classList.add('open');el.scrollIntoView({behavior:'smooth',block:'center'})}},80)">
-          <button class="kstar ${st.starred?"on":""}" onclick='event.stopPropagation();toggleStar(window._sorted[${i}])'>⭐</button>
-          <div class="kcard-score"><span class="${badgeClass(j.fit_score)}" style="background:none">${j.fit_score}/10</span></div>
-          <div class="kcard-company">${j.company}</div>
-          <div class="kcard-role">${j.title}</div>
-          <div class="kcard-loc">📍 ${j.location||""}</div>
-          ${follow?`<div class="kcard-follow">💬 Follow up?</div>`:""}
-        </div>`;
-      }).join("")||`<div style="padding:10px;font-size:.75rem;color:#9ca3af;text-align:center">אין משרות</div>`;
-      return`<div class="kanban-col">
-        <div class="kanban-head kh-${key}">${sm.label}<span class="kanban-count">${cards.length}</span></div>
-        <div class="kanban-cards">${cardsHTML}</div>
-      </div>`;
-    }).join("");
-  }
+      </div>
+    </div>`;
+  }).join("");
 
-  let countTxt=v+" משרות";
-  if(starredCount)countTxt+=` · ⭐ ${starredCount} נבחרות`;
-  if(followCount)countTxt+=` · 💬 ${followCount} follow-up`;
-  document.getElementById("count").textContent=countTxt;
+  const starredC=JOBS.filter(j=>getJobState(j).starred).length;
+  let ct=`${v} משרות`;
+  if(starredC)ct+=` · ⭐ ${starredC}`;
+  if(stats.followup)ct+=` · 💬 ${stats.followup} follow-up`;
+  document.getElementById("count-lbl").textContent=ct;
 }
 
-function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500);}
+function showToast(msg){
+  const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2400);
+}
 function copyOpener(btn,i){
   const j=window._sorted[i],text=j.ai_opener||"";
   if(!text){showToast("אין פנייה");return;}
