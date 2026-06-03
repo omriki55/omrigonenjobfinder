@@ -178,6 +178,11 @@
     .notes-ta{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;font-size:.8rem;font-family:var(--font-ui);color:var(--ink);resize:vertical;min-height:58px;background:var(--surfaceAlt);outline:none;transition:border-color .15s,background .15s;direction:rtl}
     .notes-ta:focus{border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px oklch(0.55 0.20 270 / 0.10)}
     .notes-ta.has-note{border-color:oklch(0.85 0.04 270);background:var(--accentSoft)}
+    .save-row{display:flex;align-items:center;gap:8px;margin-top:3px}
+    .save-btn{background:var(--accentSoft);border:1.5px solid var(--accent);color:var(--accentInk);border-radius:8px;padding:5px 13px;font-size:.74rem;font-weight:700;font-family:var(--font-ui);cursor:pointer;transition:all .13s;outline:none}
+    .save-btn:hover{background:var(--accent);color:var(--onAccent)}
+    .save-btn:active{transform:scale(.96)}
+    .saved-ack{font-size:.72rem;font-weight:600;transition:opacity .3s}
 
     /* stage stepper */
     .stepper-wrap{display:flex;flex-direction:column;gap:6px}
@@ -536,6 +541,21 @@ function saveNote(j,val){
   const k=jobKey(j),cur=STATE[k]||{status:"saved"};
   cur.note=val;STATE[k]=cur;saveState(STATE);
 }
+function saveField(type,i){
+  const j=window._sorted[i];
+  const ta=document.getElementById(type+"-"+i);
+  const ack=document.getElementById(type+"-ack-"+i);
+  if(!ta)return;
+  const val=ta.value;
+  if(type==="fb"){
+    saveScoringFeedback(j,val);
+    ta.className="notes-ta score-fb"+(val?" has-note":"");
+  } else {
+    saveNote(j,val);
+    ta.className=val?"notes-ta has-note":"notes-ta";
+  }
+  if(ack){ack.textContent="✓ נשמר";ack.style.color="var(--accent)";setTimeout(()=>{ack.textContent="";},2000);}
+}
 function saveScoringFeedback(j,val){
   const k=jobKey(j),cur=STATE[k]||{status:"saved"};
   cur.score_feedback=val;STATE[k]=cur;saveState(STATE);
@@ -859,17 +879,23 @@ function render(){
             ${contactHTML}
             <div class="notes-wrap">
               <div class="notes-lbl">🧠 פידבק לסינון <span style="font-weight:400;opacity:.6;font-size:.6rem">(משפר את הניקוד בסריקה הבאה)</span></div>
-              <textarea class="notes-ta score-fb${st.score_feedback?" has-note":""}" rows="2"
+              <textarea class="notes-ta score-fb${st.score_feedback?" has-note":""}" id="fb-${i}" rows="2"
                 placeholder="למשל: החברה קטנה מדי / התפקיד מדי טכני / מיקום בעייתי / שכר לא מספיק…"
-                onclick="event.stopPropagation()"
-                oninput='saveScoringFeedback(window._sorted[${i}],this.value);this.className="notes-ta score-fb"+(this.value?" has-note":"")'>${(st.score_feedback||"").replace(/"/g,"&quot;")}</textarea>
+                onclick="event.stopPropagation()">${(st.score_feedback||"").replace(/"/g,"&quot;")}</textarea>
+              <div class="save-row">
+                <button class="save-btn" id="fb-save-${i}" onclick='event.stopPropagation();saveField("fb",${i})'>שמור פידבק 💾</button>
+                <span class="saved-ack" id="fb-ack-${i}"></span>
+              </div>
             </div>
             <div class="notes-wrap">
               <div class="notes-lbl">📝 הערות אישיות</div>
-              <textarea class="notes-ta${st.note?" has-note":""}" rows="2"
+              <textarea class="notes-ta${st.note?" has-note":""}" id="note-${i}" rows="2"
                 placeholder="מה קרה עד עכשיו? אנשי קשר, משימות, תאריכים…"
-                onclick="event.stopPropagation()"
-                oninput='saveNote(window._sorted[${i}],this.value);this.className=this.value?"notes-ta has-note":"notes-ta"'>${noteVal}</textarea>
+                onclick="event.stopPropagation()">${noteVal}</textarea>
+              <div class="save-row">
+                <button class="save-btn" id="note-save-${i}" onclick='event.stopPropagation();saveField("note",${i})'>שמור הערות 💾</button>
+                <span class="saved-ack" id="note-ack-${i}"></span>
+              </div>
             </div>
             <div class="stepper-wrap">
               <div class="stepper-lbl">📌 איפה זה עומד?</div>
