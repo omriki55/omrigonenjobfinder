@@ -128,6 +128,7 @@
     .card-text{flex:1;min-width:0;padding-left:6px}
     .card-company{font-family:var(--font-display);font-weight:700;font-size:1rem;color:var(--ink);direction:ltr;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .card-role{font-size:.82rem;color:var(--inkSoft);direction:ltr;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+    .card-posted{font-size:.7rem;color:var(--inkFaint);margin-top:2px;direction:rtl;text-align:right}
     .card-head-right{display:flex;flex-direction:column;align-items:flex-start;gap:5px;flex-shrink:0}
     .next-pill{background:var(--accentSoft);color:var(--accentInk);border-radius:999px;padding:3px 8px;font-size:.65rem;font-weight:600;display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
     /* stage pill */
@@ -308,15 +309,22 @@
       <button class="sf-chip" data-stage="applied" onclick="setStageFilter(this)" style="--f-bg:oklch(0.955 0.045 205);--f-fg:oklch(0.46 0.13 205);--f-solid:oklch(0.56 0.16 205)">הוגשו <span class="n" id="fc-applied"></span></button>
       <button class="sf-chip" data-stage="interview" onclick="setStageFilter(this)" style="--f-bg:oklch(0.955 0.045 285);--f-fg:oklch(0.46 0.13 285);--f-solid:oklch(0.56 0.16 285)">ראיונות <span class="n" id="fc-interview"></span></button>
       <button class="sf-chip" data-stage="offer" onclick="setStageFilter(this)" style="--f-bg:oklch(0.955 0.045 150);--f-fg:oklch(0.46 0.13 150);--f-solid:oklch(0.56 0.16 150)">הצעות <span class="n" id="fc-offer"></span></button>
-      <button class="sf-chip" data-stage="rejected" onclick="setStageFilter(this)" style="--f-bg:oklch(0.955 0.045 20);--f-fg:oklch(0.46 0.13 20);--f-solid:oklch(0.56 0.16 20)">נסגרו <span class="n" id="fc-rejected"></span></button>
+      <button class="sf-chip" data-stage="rejected" onclick="setStageFilter(this)" style="--f-bg:oklch(0.955 0.045 20);--f-fg:oklch(0.46 0.13 20);--f-solid:oklch(0.56 0.16 20)">נדחה <span class="n" id="fc-rejected"></span></button>
       <button class="sf-chip" data-stage="starred" onclick="setStageFilter(this)">⭐ נבחרות</button>
-      <button class="sf-chip" data-stage="dismissed" onclick="setStageFilter(this)" style="--f-bg:oklch(0.975 0.01 20);--f-fg:oklch(0.46 0.13 20);--f-solid:oklch(0.56 0.16 20)">🗑️ נסגרו <span class="n" id="fc-dismissed"></span></button>
+      <button class="sf-chip" data-stage="dismissed" onclick="setStageFilter(this)" style="--f-bg:oklch(0.975 0.01 20);--f-fg:oklch(0.46 0.13 20);--f-solid:oklch(0.56 0.16 20)">🗑️ ארכיון <span class="n" id="fc-dismissed"></span></button>
     </div>
     <div class="filter-row">
       <span class="filter-lbl">ציון</span>
       <button class="fit-chip on" data-fit="all" onclick="setFitFilter(this)">הכל</button>
       <button class="fit-chip" data-fit="high" onclick="setFitFilter(this)">8+</button>
       <button class="fit-chip" data-fit="mid" onclick="setFitFilter(this)">5–7</button>
+    </div>
+    <div class="filter-row">
+      <span class="filter-lbl">תאריך</span>
+      <button class="fit-chip on" data-age="all" onclick="setAgeFilter(this)">הכל <span id="age-all" class="n" style="font-family:var(--font-mono);font-size:.68rem"></span></button>
+      <button class="fit-chip" data-age="day" onclick="setAgeFilter(this)">24 שעות <span id="age-day" class="n" style="font-family:var(--font-mono);font-size:.68rem"></span></button>
+      <button class="fit-chip" data-age="week" onclick="setAgeFilter(this)">שבוע <span id="age-week" class="n" style="font-family:var(--font-mono);font-size:.68rem"></span></button>
+      <button class="fit-chip" data-age="month" onclick="setAgeFilter(this)">חודש <span id="age-month" class="n" style="font-family:var(--font-mono);font-size:.68rem"></span></button>
     </div>
     <div class="exp-row">
       <span class="exp-count" id="count-lbl"></span>
@@ -587,7 +595,7 @@ function needsFollowupDirect(st){
 }
 
 /* ── filters ── */
-let fStage="all",fFit="all",fSort="score",fQ="";
+let fStage="all",fFit="all",fSort="score",fQ="",fAge="all";
 function setStageFilter(b){
   const v=b.dataset.stage;
   fStage=v;
@@ -611,6 +619,7 @@ function setSort(b){
   document.querySelectorAll(".sort-btn").forEach(c=>c.classList.remove("on"));
   b.classList.add("on");render();
 }
+function setAgeFilter(b){fAge=b.dataset.age;document.querySelectorAll("[data-age]").forEach(c=>c.classList.remove("on"));b.classList.add("on");render();}
 function onSearch(inp){fQ=inp.value.trim().toLowerCase();document.getElementById("search-clear").classList.toggle("show",!!fQ);render();}
 function clearSearch(){fQ="";const i=document.getElementById("search-inp");i.value="";document.getElementById("search-clear").classList.remove("show");render();}
 
@@ -724,6 +733,11 @@ function render(){
   });
   const allEl=document.getElementById("fc-all");if(allEl)allEl.textContent=stats.total;
   const dismissedEl=document.getElementById("fc-dismissed");if(dismissedEl)dismissedEl.textContent=stats.dismissed||0;
+  // age counts (active jobs only)
+  const activeJobs=JOBS.filter(j=>!getJobState(j).dismissed);
+  const ageCounts={all:activeJobs.length,day:0,week:0,month:0};
+  activeJobs.forEach(j=>{if(!j.posted)return;const d=Math.round((NOW-new Date(j.posted))/86400000);if(d<=1)ageCounts.day++;if(d<=7)ageCounts.week++;if(d<=30)ageCounts.month++;});
+  ["all","day","week","month"].forEach(k=>{const el=document.getElementById("age-"+k);if(el)el.textContent=ageCounts[k]?ageCounts[k]:"";});
 
   // sort + filter
   let list=JOBS.map((j,idx)=>({j,idx,st:getJobState(j),stage:getStage(j)}));
@@ -745,7 +759,8 @@ function render(){
         const passStage=fStage==="all"||(fStage==="starred"?st.starred:stage===fStage);
         const passFit=fFit==="all"||fitBand(j.fit_score)===fFit;
         const passQ=!fQ||(j.company||"").toLowerCase().includes(fQ)||(j.title||"").toLowerCase().includes(fQ);
-        show=passStage&&passFit&&passQ;
+        const passAge=(()=>{if(fAge==="all")return true;if(!j.posted)return false;const d=Math.round((NOW-new Date(j.posted))/86400000);if(fAge==="day")return d<=1;if(fAge==="week")return d<=7;if(fAge==="month")return d<=30;return true;})();
+        show=passStage&&passFit&&passQ&&passAge;
       }
     }
     if(show)v++;
@@ -813,6 +828,7 @@ function render(){
         <div class="card-text">
           <div class="card-company">${j.company}</div>
           <div class="card-role">${j.title}</div>
+          ${j.posted?`<div class="card-posted">🕐 ${postedLabel(j.posted)}</div>`:""}
         </div>
         <div class="card-head-right">
           <div class="s-pill" style="--s-bg:${sc.bg};--s-fg:${sc.fg};--s-solid:${sc.solid}">
