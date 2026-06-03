@@ -15,6 +15,7 @@
       --purple:#7c3aed;--purple-bg:#ede9fe;--purple-border:#c4b5fd;
       --star:#d97706;--star-bg:#fffbeb;--star-border:#fde68a;
       --gray:#374151;--gray-bg:#f3f4f6;--gray-border:#d1d5db;
+      --orange:#ea580c;--orange-bg:#fff7ed;--orange-border:#fed7aa;
       --wa:#25d366;
       --radius:14px;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.06);
     }
@@ -22,20 +23,22 @@
 
     /* ── HEADER ── */
     header{background:#fff;border-bottom:1px solid var(--line);padding:14px 16px 10px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.04)}
-    .header-inner{max-width:780px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .header-title{font-size:1.2rem;font-weight:800;letter-spacing:-.02em;color:var(--text)}
+    .header-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .header-title{font-size:1.2rem;font-weight:800;letter-spacing:-.02em}
     .header-meta{font-size:.72rem;color:var(--muted);margin-top:2px}
-    .sheet-btn{display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--line);color:var(--muted);border-radius:10px;padding:7px 11px;font-size:.76rem;text-decoration:none;font-weight:600;white-space:nowrap;transition:background .15s}
+    .header-actions{display:flex;gap:7px;align-items:center}
+    .sheet-btn{display:inline-flex;align-items:center;gap:4px;background:var(--bg);border:1px solid var(--line);color:var(--muted);border-radius:10px;padding:7px 11px;font-size:.76rem;text-decoration:none;font-weight:600;white-space:nowrap;cursor:pointer;transition:background .15s}
     .sheet-btn:hover{background:var(--line)}
+    .view-toggle{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+    .vt-btn{padding:7px 11px;font-size:.78rem;font-weight:600;cursor:pointer;border:none;background:none;color:var(--muted);transition:all .13s}
+    .vt-btn.on{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 
     /* ── FILTER BAR ── */
-    .filter-wrap{max-width:780px;margin:0 auto;padding:10px 16px 0}
+    .filter-wrap{max-width:900px;margin:0 auto;padding:10px 16px 0}
     .filter-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:6px}
     .filter-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);width:46px;flex-shrink:0;text-align:right}
-    /* base pill */
     .fp{background:#fff;border:1.5px solid var(--line);color:var(--muted);border-radius:999px;padding:5px 13px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .13s;outline:none}
     .fp:hover{border-color:#9ca3af}
-    /* active variants per status */
     .fp.active{color:#fff}
     .fp[data-val="all"].active{background:var(--text);border-color:var(--text)}
     .fp[data-val="todo"].active{background:var(--gray);border-color:var(--gray)}
@@ -45,81 +48,121 @@
     .fp[data-val="starred"].active{background:var(--star);border-color:var(--star)}
     .fp[data-val="high"].active{background:var(--green);border-color:var(--green)}
     .fp[data-val="mid"].active{background:var(--amber);border-color:var(--amber)}
-    /* inactive tint hints */
     .fp[data-val="todo"]:not(.active):hover{background:var(--gray-bg);border-color:var(--gray-border);color:var(--gray)}
     .fp[data-val="applied"]:not(.active):hover{background:var(--accent-bg);border-color:var(--accent-border);color:var(--accent)}
     .fp[data-val="interview"]:not(.active):hover{background:var(--purple-bg);border-color:var(--purple-border);color:var(--purple)}
     .fp[data-val="rejected"]:not(.active):hover{background:var(--red-bg);border-color:var(--red-border);color:var(--red)}
     .fp[data-val="starred"]:not(.active):hover{background:var(--star-bg);border-color:var(--star-border);color:var(--star)}
 
-    /* ── COUNT ── */
-    .count-bar{max-width:780px;margin:6px auto 0;padding:0 16px;display:flex;align-items:center;justify-content:space-between}
+    /* ── COUNT + EXPAND BAR ── */
+    .count-bar{max-width:900px;margin:6px auto 0;padding:0 16px;display:flex;align-items:center;justify-content:space-between}
     .count-txt{font-size:.78rem;font-weight:600;color:var(--muted)}
+    .expand-btns{display:flex;gap:6px}
+    .exp-btn{background:#fff;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 10px;font-size:.73rem;font-weight:600;cursor:pointer;transition:all .13s}
+    .exp-btn:hover{background:var(--bg);border-color:#9ca3af;color:var(--text)}
 
-    /* ── CARDS ── */
-    .jobs-wrap{max-width:780px;margin:0 auto;padding:10px 16px 0;display:flex;flex-direction:column;gap:12px}
+    /* ── LIST VIEW ── */
+    .jobs-wrap{max-width:900px;margin:0 auto;padding:10px 16px 0;display:flex;flex-direction:column;gap:10px}
 
-    .job-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);position:relative;transition:opacity .2s}
-    /* left-bar color per status (rtl → border-right) */
+    /* ── KANBAN VIEW ── */
+    .kanban-wrap{max-width:1200px;margin:0 auto;padding:10px 16px 0;display:none;gap:12px;overflow-x:auto}
+    .kanban-col{flex:0 0 260px;display:flex;flex-direction:column;gap:8px}
+    .kanban-head{padding:10px 12px;border-radius:10px;font-size:.78rem;font-weight:700;display:flex;align-items:center;justify-content:space-between}
+    .kh-todo{background:var(--gray-bg);color:var(--gray)}
+    .kh-applied{background:var(--accent-bg);color:var(--accent)}
+    .kh-interview{background:var(--purple-bg);color:var(--purple)}
+    .kh-rejected{background:var(--red-bg);color:var(--red)}
+    .kanban-count{background:rgba(0,0,0,.08);border-radius:999px;padding:1px 7px;font-size:.7rem}
+    .kanban-cards{display:flex;flex-direction:column;gap:7px;min-height:60px}
+    .kcard{background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 12px;box-shadow:0 1px 3px rgba(0,0,0,.05);cursor:pointer;position:relative}
+    .kcard.st-todo{border-right:3px solid var(--gray-border)}
+    .kcard.st-applied{border-right:3px solid var(--accent)}
+    .kcard.st-interview{border-right:3px solid var(--purple)}
+    .kcard.st-rejected{border-right:3px solid var(--red);opacity:.65}
+    .kcard-score{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:700;margin-bottom:5px}
+    .kcard-company{font-weight:800;font-size:.88rem}
+    .kcard-role{font-size:.74rem;color:var(--muted);margin-top:1px}
+    .kcard-loc{font-size:.7rem;color:var(--muted);margin-top:4px}
+    .kcard-follow{font-size:.68rem;background:var(--orange-bg);color:var(--orange);border:1px solid var(--orange-border);border-radius:6px;padding:2px 6px;margin-top:5px;display:inline-block}
+    .kstar{position:absolute;top:8px;left:10px;font-size:.9rem;opacity:.3;background:none;border:none;cursor:pointer;padding:0}
+    .kstar.on{opacity:1}
+
+    /* ── JOB CARD ── */
+    .job-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);position:relative;overflow:hidden;transition:opacity .2s}
     .job-card.st-todo{border-right:4px solid var(--gray-border)}
     .job-card.st-applied{border-right:4px solid var(--accent)}
     .job-card.st-interview{border-right:4px solid var(--purple)}
     .job-card.st-rejected{border-right:4px solid var(--red);opacity:.68}
-    .job-card.st-starred-card{outline:2px solid var(--star);outline-offset:-2px}
+    .job-card.has-followup{outline:2px solid var(--orange);outline-offset:-2px}
 
-    /* top row */
-    .card-top{display:flex;align-items:flex-start;gap:12px}
-    .score-badge{flex-shrink:0;width:48px;height:48px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1}
-    .score-badge .num{font-size:1.35rem}
-    .score-badge .lbl{font-size:.5rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;opacity:.7}
+    /* card summary row (always visible) */
+    .card-summary{display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer;user-select:none}
+    .card-summary:hover{background:#fafbfc}
+    .score-badge{flex-shrink:0;width:44px;height:44px;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1}
+    .score-badge .num{font-size:1.25rem}
+    .score-badge .lbl{font-size:.48rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;opacity:.7}
     .sg{background:var(--green-bg);color:var(--green)}
     .sa{background:var(--amber-bg);color:var(--amber)}
     .sr{background:var(--red-bg);color:var(--red)}
-
-    .card-title{flex:1;min-width:0;padding-left:32px}
-    .card-company{font-weight:800;font-size:1rem;letter-spacing:-.01em}
-    .card-role{font-size:.84rem;color:var(--muted);margin-top:1px}
+    .summary-info{flex:1;min-width:0;padding-left:28px}
+    .card-company{font-weight:800;font-size:.98rem;letter-spacing:-.01em}
+    .card-role{font-size:.82rem;color:var(--muted);margin-top:1px}
+    .summary-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+    .follow-badge{font-size:.65rem;background:var(--orange-bg);color:var(--orange);border:1px solid var(--orange-border);border-radius:999px;padding:2px 7px;font-weight:700;white-space:nowrap}
+    .chevron{font-size:.75rem;color:var(--muted);transition:transform .2s;margin-top:2px}
+    .job-card.open .chevron{transform:rotate(180deg)}
 
     /* star button */
-    .star-btn{position:absolute;top:14px;left:14px;background:none;border:none;font-size:1.15rem;cursor:pointer;line-height:1;padding:2px;opacity:.35;transition:opacity .15s,transform .15s}
+    .star-btn{position:absolute;top:12px;left:12px;background:none;border:none;font-size:1.05rem;cursor:pointer;line-height:1;padding:2px;opacity:.3;transition:opacity .15s,transform .15s;z-index:2}
     .star-btn.on{opacity:1;transform:scale(1.15)}
 
     /* status pill */
-    .spill{display:inline-flex;align-items:center;gap:4px;font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:999px;border:1.5px solid;white-space:nowrap}
+    .spill{display:inline-flex;align-items:center;gap:3px;font-size:.63rem;font-weight:700;padding:3px 8px;border-radius:999px;border:1.5px solid;white-space:nowrap}
     .spill.s-todo{background:var(--gray-bg);color:var(--gray);border-color:var(--gray-border)}
     .spill.s-applied{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)}
     .spill.s-interview{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-border)}
     .spill.s-rejected{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
 
-    /* status + date row */
-    .card-status-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    /* card body (collapsible) */
+    .card-body{display:none;padding:0 14px 14px;border-top:1px solid var(--line);flex-direction:column;gap:10px}
+    .job-card.open .card-body{display:flex}
+
+    /* status + date */
+    .card-status-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:12px}
     .status-date{font-size:.67rem;color:var(--muted);font-weight:500}
 
     /* tags */
-    .card-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
-    .tag{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:3px 8px;font-size:.72rem;color:#4b5563;font-weight:500;display:inline-flex;align-items:center;gap:3px}
+    .card-tags{display:flex;gap:6px;flex-wrap:wrap}
+    .tag{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:3px 8px;font-size:.71rem;color:#4b5563;font-weight:500;display:inline-flex;align-items:center;gap:3px}
     .tag.t-date{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)}
 
     /* reason */
-    .card-reason{font-size:.82rem;color:#374151;line-height:1.5;margin-top:2px}
+    .card-reason{font-size:.81rem;color:#374151;line-height:1.5}
 
-    /* contact box */
+    /* contact */
     .contact-box{background:#f8fafc;border:1px solid var(--line);border-radius:11px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
-    .contact-head{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
-    .contact-main{display:flex;align-items:center;gap:10px}
-    .avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0}
-    .contact-name{font-weight:700;font-size:.84rem}
-    .contact-title{font-size:.72rem;color:var(--muted)}
+    .contact-head{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+    .contact-main{display:flex;align-items:center;gap:9px}
+    .avatar{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.76rem;flex-shrink:0}
+    .contact-name{font-weight:700;font-size:.82rem}
+    .contact-title{font-size:.7rem;color:var(--muted)}
     .contact-links{display:flex;gap:7px;flex-wrap:wrap}
-    .clink{font-size:.72rem;font-weight:600;text-decoration:none;padding:4px 9px;border-radius:7px;border:1px solid var(--line);background:#fff;color:#374151;display:inline-flex;align-items:center;gap:3px}
+    .clink{font-size:.7rem;font-weight:600;text-decoration:none;padding:4px 9px;border-radius:7px;border:1px solid var(--line);background:#fff;color:#374151;display:inline-flex;align-items:center;gap:3px}
     .clink.li{color:#0a66c2}
     .clink.em{color:var(--accent)}
 
-    /* status tracker */
+    /* notes */
+    .notes-wrap{display:flex;flex-direction:column;gap:5px}
+    .notes-lbl{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+    .notes-ta{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;font-size:.8rem;font-family:inherit;color:var(--text);resize:vertical;min-height:60px;background:#fafbfd;outline:none;transition:border-color .15s;direction:rtl}
+    .notes-ta:focus{border-color:var(--accent);background:#fff}
+    .notes-ta.has-note{border-color:var(--accent-border);background:var(--accent-bg)}
+
+    /* tracker */
     .tracker{background:#fafbfd;border:1px dashed var(--line);border-radius:11px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
     .tracker-lbl{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
     .seg{display:flex;gap:5px;flex-wrap:wrap}
-    .seg button{flex:1;min-width:62px;padding:6px 4px;border-radius:8px;font-size:.74rem;font-weight:700;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:#6b7280;transition:all .12s;outline:none}
+    .seg button{flex:1;min-width:60px;padding:6px 4px;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:#6b7280;transition:all .12s;outline:none}
     .seg button:hover{border-color:#9ca3af}
     .seg button.on-todo{background:var(--gray);color:#fff;border-color:var(--gray)}
     .seg button.on-applied{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -128,20 +171,17 @@
     .channel-wrap{display:flex;flex-direction:column;gap:5px}
     .channel-lbl{font-size:.68rem;font-weight:600;color:var(--muted)}
     .chan{display:flex;gap:5px;flex-wrap:wrap}
-    .chan button{padding:5px 10px;border-radius:999px;font-size:.72rem;font-weight:600;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:#6b7280;outline:none;transition:all .12s}
+    .chan button{padding:5px 10px;border-radius:999px;font-size:.71rem;font-weight:600;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:#6b7280;outline:none}
     .chan button.on{background:#0f172a;color:#fff;border-color:#0f172a}
 
     /* action buttons */
     .card-actions{display:flex;gap:7px;flex-wrap:wrap}
-    .btn{flex:1;min-width:72px;padding:10px 6px;border-radius:10px;font-size:.79rem;font-weight:700;text-align:center;cursor:pointer;border:1px solid var(--line);transition:all .14s;display:flex;align-items:center;justify-content:center;gap:4px;text-decoration:none;white-space:nowrap}
+    .btn{flex:1;min-width:70px;padding:9px 6px;border-radius:10px;font-size:.77rem;font-weight:700;text-align:center;cursor:pointer;border:1px solid var(--line);transition:all .14s;display:flex;align-items:center;justify-content:center;gap:4px;text-decoration:none;white-space:nowrap}
     .btn-view{background:var(--accent);color:#fff;border-color:var(--accent)}
     .btn-copy{background:#fff;color:#374151}
     .btn-copy.copied{color:var(--green);border-color:var(--green)}
     .btn-cv{background:#0f172a;color:#fff;border-color:#0f172a}
     .btn-wa{background:var(--wa);color:#fff;border-color:var(--wa)}
-
-    /* divider between sections */
-    .card-section{display:flex;flex-direction:column;gap:10px}
 
     /* toast */
     #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:#0f172a;color:#fff;border-radius:20px;padding:10px 20px;font-size:.84rem;font-weight:600;z-index:999;transition:transform .25s;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.22)}
@@ -161,8 +201,8 @@
     .modal-foot .btn{min-width:0}
 
     @media(max-width:500px){
-      .card-actions .btn{font-size:.72rem;padding:9px 4px}
-      .seg button{font-size:.7rem;min-width:56px}
+      .card-actions .btn{font-size:.71rem;padding:8px 4px}
+      .seg button{font-size:.69rem;min-width:54px}
     }
   </style>
 </head>
@@ -173,7 +213,13 @@
       <div class="header-title">🎯 Job Tracker — Omri</div>
       <div class="header-meta">RevOps / GTM · עודכן __LAST_UPDATED__</div>
     </div>
-    <a class="sheet-btn" href="https://docs.google.com/spreadsheets/d/1i33qr_r_xj_2LkHzg0Hxe5Dh4G_m4T21Xa4WNhQLkjg/edit" target="_blank">📊 Sheet</a>
+    <div class="header-actions">
+      <div class="view-toggle">
+        <button class="vt-btn on" id="btn-list" onclick="setView('list')">☰ רשימה</button>
+        <button class="vt-btn" id="btn-kanban" onclick="setView('kanban')">⬛ Kanban</button>
+      </div>
+      <a class="sheet-btn" href="https://docs.google.com/spreadsheets/d/1i33qr_r_xj_2LkHzg0Hxe5Dh4G_m4T21Xa4WNhQLkjg/edit" target="_blank">📊 Sheet</a>
+    </div>
   </div>
 </header>
 
@@ -201,8 +247,16 @@
   </div>
 </div>
 
-<div class="count-bar"><span class="count-txt" id="count"></span></div>
+<div class="count-bar">
+  <span class="count-txt" id="count"></span>
+  <div class="expand-btns" id="expand-btns">
+    <button class="exp-btn" onclick="expandAll()">פתח הכל ▾</button>
+    <button class="exp-btn" onclick="collapseAll()">סגור הכל ▴</button>
+  </div>
+</div>
+
 <div class="jobs-wrap" id="container"></div>
+<div class="kanban-wrap" id="kanban"></div>
 <div id="toast"></div>
 
 <div id="modal" onclick="if(event.target===this)closeModal()">
@@ -287,11 +341,14 @@ const STATUS_META={
   rejected:{label:"נדחה",pill:"s-rejected",on:"on-rejected"}
 };
 const CHANNELS=[["linkedin","LinkedIn"],["friend","חבר"],["website","אתר"],["email","מייל"],["whatsapp","וואטסאפ"]];
+const FOLLOW_DAYS=7;
+
 function jobKey(j){return(j.company+"|"+j.title).replace(/\s+/g,"_");}
 function loadState(){try{return JSON.parse(localStorage.getItem("jobState")||"{}");}catch(e){return{};}}
 function saveState(s){localStorage.setItem("jobState",JSON.stringify(s));}
 let STATE=loadState();
-function getJobState(j){return STATE[jobKey(j)]||{status:"todo",channel:null,statusDate:null,starred:false};}
+function getJobState(j){return STATE[jobKey(j)]||{status:"todo",channel:null,statusDate:null,starred:false,note:""};}
+
 function setStatus(j,status){
   const k=jobKey(j),cur=STATE[k]||{};
   cur.status=status;cur.statusDate=new Date().toISOString().slice(0,10);
@@ -305,13 +362,37 @@ function toggleStar(j){
   const k=jobKey(j),cur=STATE[k]||{status:"todo"};
   cur.starred=!cur.starred;STATE[k]=cur;saveState(STATE);render();
 }
+function saveNote(j,val){
+  const k=jobKey(j),cur=STATE[k]||{status:"todo"};
+  cur.note=val;STATE[k]=cur;saveState(STATE);
+}
+function needsFollowup(st){
+  if(st.status!=="applied")return false;
+  if(!st.statusDate)return false;
+  const days=Math.round((new Date()-new Date(st.statusDate))/86400000);
+  return days>=FOLLOW_DAYS;
+}
 
-/* ── filters ── */
-let fScore="all",fStatus="all",fSort="score";
+/* ── filters / view ── */
+let fScore="all",fStatus="all",fSort="score",curView="list";
 function setScore(b){fScore=b.dataset.val;activate(b);render();}
 function setStatusFilter(b){fStatus=b.dataset.val;activate(b);render();}
 function setSort(b){fSort=b.dataset.val;activate(b);render();}
 function activate(b){document.querySelectorAll('[data-grp="'+b.dataset.grp+'"]').forEach(x=>x.classList.remove("active"));b.classList.add("active");}
+function setView(v){
+  curView=v;
+  document.getElementById("btn-list").classList.toggle("on",v==="list");
+  document.getElementById("btn-kanban").classList.toggle("on",v==="kanban");
+  document.getElementById("container").style.display=v==="list"?"flex":"none";
+  document.getElementById("kanban").style.display=v==="kanban"?"flex":"none";
+  document.getElementById("expand-btns").style.display=v==="list"?"flex":"none";
+  render();
+}
+
+/* ── collapse/expand ── */
+function toggleCard(el){el.classList.toggle("open");}
+function expandAll(){document.querySelectorAll(".job-card").forEach(c=>{if(c.style.display!=="none")c.classList.add("open");});}
+function collapseAll(){document.querySelectorAll(".job-card").forEach(c=>c.classList.remove("open"));}
 
 /* ── helpers ── */
 const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -321,6 +402,7 @@ function scoreBucket(s){return s>=8?"high":s>=5?"mid":"low";}
 function fmtDate(d){if(!d)return"";const dt=new Date(d);if(isNaN(dt))return"";return MONTHS[dt.getMonth()]+" "+dt.getDate();}
 function postedLabel(d){if(!d)return"";const dt=new Date(d);if(isNaN(dt))return"";const days=Math.round((NOW-dt)/86400000);const rel=days<=0?"today":days===1?"לפני יום":days+" ימים";return MONTHS[dt.getMonth()]+" "+dt.getDate()+" · "+rel;}
 function initials(n){return n.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase();}
+function daysSince(d){if(!d)return 999;return Math.round((NOW-new Date(d))/86400000);}
 
 /* ── CV tailoring ── */
 function tailorData(j){
@@ -381,79 +463,123 @@ function printCV(){
   w.document.write(html);w.document.close();
 }
 
-/* ── render ── */
+/* ── RENDER ── */
 function render(){
   let list=JOBS.map((j,idx)=>({j,idx,st:getJobState(j)}));
   if(fSort==="score")list.sort((a,b)=>b.j.fit_score-a.j.fit_score);
   else if(fSort==="posted")list.sort((a,b)=>new Date(b.j.posted||0)-new Date(a.j.posted||0));
   else if(fSort==="updated")list.sort((a,b)=>new Date(b.st.statusDate||0)-new Date(a.st.statusDate||0));
   window._sorted=list.map(x=>x.j);
+
   let v=0;
-  document.getElementById("container").innerHTML=list.map((x,i)=>{
-    const j=x.j,st=x.st;
-    const passScore=fScore==="all"||scoreBucket(j.fit_score)===fScore;
-    const passStatus=fStatus==="starred"?st.starred:(fStatus==="all"||st.status===fStatus);
-    const show=passScore&&passStatus;
-    if(show)v++;
-    const sm=STATUS_META[st.status]||STATUS_META.todo;
-    const c=j.contact;
-    const starCls=st.starred?"on":"";
-    const cardCls="job-card st-"+st.status+(st.starred?" st-starred-card":"");
-    const contactHTML=c?`<div class="contact-box">
-      <div class="contact-head">👤 למי לפנות · via Clay</div>
-      <div class="contact-main">
-        <div class="avatar">${initials(c.name)}</div>
-        <div><div class="contact-name">${c.name}</div><div class="contact-title">${c.title}</div></div>
-      </div>
-      <div class="contact-links">
-        ${c.email?`<a class="clink em" href="mailto:${c.email}">✉️ ${c.email}</a>`:""}
-        ${c.linkedin?`<a class="clink li" href="${c.linkedin}" target="_blank" rel="noopener">in LinkedIn</a>`:""}
-      </div></div>`:"";
-    const segBtns=Object.keys(STATUS_META).map(key=>{
-      const on=st.status===key?(" "+STATUS_META[key].on):"";
-      return`<button class="${on.trim()}" onclick='setStatus(window._sorted[${i}],"${key}")'>${STATUS_META[key].label}</button>`;
-    }).join("");
-    const showChan=(st.status==="applied"||st.status==="interview");
-    const chanBtns=CHANNELS.map(([v2,lbl])=>`<button class="${st.channel===v2?"on":""}" onclick='setChannel(window._sorted[${i}],"${v2}")'>${lbl}</button>`).join("");
-    const channelHTML=showChan?`<div class="channel-wrap"><div class="channel-lbl">דרך מה הוגש?</div><div class="chan">${chanBtns}</div></div>`:"";
-    const statusDateHTML=st.statusDate?`<span class="status-date">· ${fmtDate(st.statusDate)}</span>`:"";
-    return`<div class="${cardCls}" style="display:${show?"":"none"}">
-      <button class="star-btn ${starCls}" onclick='toggleStar(window._sorted[${i}])' title="סמן כנבחר">⭐</button>
-      <div class="card-section">
-        <div class="card-top">
+  const starredCount=JOBS.filter(j=>getJobState(j).starred).length;
+  const followCount=JOBS.filter(j=>needsFollowup(getJobState(j))).length;
+
+  if(curView==="list"){
+    document.getElementById("container").innerHTML=list.map((x,i)=>{
+      const j=x.j,st=x.st;
+      const passScore=fScore==="all"||scoreBucket(j.fit_score)===fScore;
+      const passStatus=fStatus==="starred"?st.starred:(fStatus==="all"||st.status===fStatus);
+      const show=passScore&&passStatus;
+      if(show)v++;
+      const sm=STATUS_META[st.status]||STATUS_META.todo;
+      const c=j.contact;
+      const follow=needsFollowup(st);
+      const cardCls="job-card st-"+st.status+(follow?" has-followup":"");
+      const contactHTML=c?`<div class="contact-box">
+        <div class="contact-head">👤 למי לפנות · via Clay</div>
+        <div class="contact-main">
+          <div class="avatar">${initials(c.name)}</div>
+          <div><div class="contact-name">${c.name}</div><div class="contact-title">${c.title}</div></div>
+        </div>
+        <div class="contact-links">
+          ${c.email?`<a class="clink em" href="mailto:${c.email}">✉️ ${c.email}</a>`:""}
+          ${c.linkedin?`<a class="clink li" href="${c.linkedin}" target="_blank" rel="noopener">in LinkedIn</a>`:""}
+        </div></div>`:"";
+      const segBtns=Object.keys(STATUS_META).map(key=>{
+        const on=st.status===key?" "+STATUS_META[key].on:"";
+        return`<button class="${on.trim()}" onclick='event.stopPropagation();setStatus(window._sorted[${i}],"${key}")'>${STATUS_META[key].label}</button>`;
+      }).join("");
+      const showChan=st.status==="applied"||st.status==="interview";
+      const chanBtns=CHANNELS.map(([v2,lbl])=>`<button class="${st.channel===v2?"on":""}" onclick='event.stopPropagation();setChannel(window._sorted[${i}],"${v2}")'>${lbl}</button>`).join("");
+      const channelHTML=showChan?`<div class="channel-wrap"><div class="channel-lbl">דרך מה הוגש?</div><div class="chan">${chanBtns}</div></div>`:"";
+      const statusDateHTML=st.statusDate?`<span class="status-date">· ${fmtDate(st.statusDate)}</span>`:"";
+      const noteVal=(st.note||"").replace(/"/g,"&quot;");
+      const noteClass=st.note?"notes-ta has-note":"notes-ta";
+      return`<div class="${cardCls}" style="display:${show?"":"none"}" id="jcard-${i}">
+        <button class="star-btn ${st.starred?"on":""}" onclick='event.stopPropagation();toggleStar(window._sorted[${i}])' title="סמן כנבחר">⭐</button>
+        <div class="card-summary" onclick="toggleCard(this.parentElement)">
           <div class="score-badge ${badgeClass(j.fit_score)}"><span class="num">${j.fit_score}</span><span class="lbl">fit</span></div>
-          <div class="card-title">
+          <div class="summary-info">
             <div class="card-company">${j.company}</div>
             <div class="card-role">${j.title}</div>
           </div>
+          <div class="summary-right">
+            <span class="spill ${sm.pill}">${sm.label}${statusDateHTML}</span>
+            ${follow?`<span class="follow-badge">💬 Follow up?</span>`:""}
+            <span class="chevron">▾</span>
+          </div>
         </div>
-        <div class="card-status-row">
-          <span class="spill ${sm.pill}">${sm.label}</span>
-          ${statusDateHTML}
+        <div class="card-body">
+          <div class="card-tags">
+            ${j.posted?`<span class="tag t-date">🗓️ ${postedLabel(j.posted)}</span>`:""}
+            ${j.location?`<span class="tag">📍 ${j.location}</span>`:""}
+            ${j.job_type?`<span class="tag">${j.job_type}</span>`:""}
+          </div>
+          ${j.score_reason?`<div class="card-reason">${j.score_reason}</div>`:""}
+          ${contactHTML}
+          <div class="notes-wrap">
+            <div class="notes-lbl">📝 הערות אישיות</div>
+            <textarea class="${noteClass}" placeholder="פגשתי את X, ביקשו take-home, יש ראיון ב-15.6..." oninput='saveNote(window._sorted[${i}],this.value);this.className=this.value?"notes-ta has-note":"notes-ta"' onclick='event.stopPropagation()'>${noteVal}</textarea>
+          </div>
+          <div class="tracker">
+            <div class="tracker-lbl">📌 סטטוס מועמדות</div>
+            <div class="seg">${segBtns}</div>
+            ${channelHTML}
+          </div>
+          <div class="card-actions">
+            <a href="${j.url}" target="_blank" rel="noopener" class="btn btn-view" onclick='event.stopPropagation()'>משרה ↗</a>
+            <button class="btn btn-cv" onclick='event.stopPropagation();openCV(${i})'>קו״ח 📄</button>
+            <button class="btn btn-copy" onclick='event.stopPropagation();copyOpener(this,${i})'>פנייה 📋</button>
+            <button class="btn btn-wa" onclick='event.stopPropagation();shareWA(${i})'>וואטסאפ</button>
+          </div>
         </div>
-        <div class="card-tags">
-          ${j.posted?`<span class="tag t-date">🗓️ ${postedLabel(j.posted)}</span>`:""}
-          ${j.location?`<span class="tag">📍 ${j.location}</span>`:""}
-          ${j.job_type?`<span class="tag">${j.job_type}</span>`:""}
-        </div>
-        ${j.score_reason?`<div class="card-reason">${j.score_reason}</div>`:""}
-      </div>
-      ${contactHTML}
-      <div class="tracker">
-        <div class="tracker-lbl">📌 סטטוס מועמדות</div>
-        <div class="seg">${segBtns}</div>
-        ${channelHTML}
-      </div>
-      <div class="card-actions">
-        <a href="${j.url}" target="_blank" rel="noopener" class="btn btn-view">משרה ↗</a>
-        <button class="btn btn-cv" onclick='openCV(${i})'>קו״ח 📄</button>
-        <button class="btn btn-copy" onclick='copyOpener(this,${i})'>פנייה 📋</button>
-        <button class="btn btn-wa" onclick='shareWA(${i})'>וואטסאפ</button>
-      </div>
-    </div>`;
-  }).join("");
-  const starredCount=JOBS.filter(j=>getJobState(j).starred).length;
-  document.getElementById("count").textContent=v+" משרות"+(starredCount?` · ⭐ ${starredCount} נבחרות`:"");
+      </div>`;
+    }).join("");
+  } else {
+    /* ── KANBAN ── */
+    const cols=Object.keys(STATUS_META);
+    document.getElementById("kanban").innerHTML=cols.map(key=>{
+      const sm=STATUS_META[key];
+      const cards=list.filter(x=>{
+        const passScore=fScore==="all"||scoreBucket(x.j.fit_score)===fScore;
+        const passStatus=fStatus==="starred"?x.st.starred:(fStatus==="all"||x.st.status===key);
+        return x.st.status===key&&passScore&&(fStatus==="all"||fStatus===key||fStatus==="starred"&&x.st.starred);
+      });
+      v+=cards.length;
+      const cardsHTML=cards.map((x,ci)=>{
+        const j=x.j,st=x.st,i=list.indexOf(x);
+        const follow=needsFollowup(st);
+        return`<div class="kcard st-${key}" onclick="setView('list');setTimeout(()=>{const el=document.getElementById('jcard-${i}');if(el){el.classList.add('open');el.scrollIntoView({behavior:'smooth',block:'center'})}},80)">
+          <button class="kstar ${st.starred?"on":""}" onclick='event.stopPropagation();toggleStar(window._sorted[${i}])'>⭐</button>
+          <div class="kcard-score"><span class="${badgeClass(j.fit_score)}" style="background:none">${j.fit_score}/10</span></div>
+          <div class="kcard-company">${j.company}</div>
+          <div class="kcard-role">${j.title}</div>
+          <div class="kcard-loc">📍 ${j.location||""}</div>
+          ${follow?`<div class="kcard-follow">💬 Follow up?</div>`:""}
+        </div>`;
+      }).join("")||`<div style="padding:10px;font-size:.75rem;color:#9ca3af;text-align:center">אין משרות</div>`;
+      return`<div class="kanban-col">
+        <div class="kanban-head kh-${key}">${sm.label}<span class="kanban-count">${cards.length}</span></div>
+        <div class="kanban-cards">${cardsHTML}</div>
+      </div>`;
+    }).join("");
+  }
+
+  let countTxt=v+" משרות";
+  if(starredCount)countTxt+=` · ⭐ ${starredCount} נבחרות`;
+  if(followCount)countTxt+=` · 💬 ${followCount} follow-up`;
+  document.getElementById("count").textContent=countTxt;
 }
 
 function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500);}
