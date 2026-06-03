@@ -26,7 +26,13 @@ def _get_sheet():
         _sheet = spreadsheet.worksheet(SHEET_NAME)
     return _sheet
 
+def _has_credentials() -> bool:
+    return CREDENTIALS_PATH.exists()
+
 def get_existing_urls() -> set[str]:
+    if not _has_credentials():
+        logger.warning("No Google credentials — skipping existing URL check")
+        return set()
     try:
         sheet = _get_sheet()
         records = sheet.get_all_records()
@@ -37,6 +43,8 @@ def get_existing_urls() -> set[str]:
         return set()
 
 def get_existing_rows() -> list[dict]:
+    if not _has_credentials():
+        return []
     try:
         sheet = _get_sheet()
         return sheet.get_all_records()
