@@ -269,8 +269,16 @@ def build_html(jobs: list[dict], last_updated: str) -> str:
 
 
 def update_github_pages(jobs: list[dict], last_updated: str):
-    """Write updated HTML to docs/index.html and push to GitHub."""
-    good_jobs = attach_contacts([j for j in jobs if j.get("location_ok") and j.get("fit_score", 0) >= 4])
+    """Write updated HTML to docs/index.html and push to GitHub.
+
+    `jobs` is the FULL combined list (pipeline + manual). Manual jobs
+    (those with initial_status) are always kept; pipeline jobs must pass
+    the location_ok + fit_score >= 4 filter.
+    """
+    good_jobs = attach_contacts([
+        j for j in jobs
+        if j.get("initial_status") or (j.get("location_ok") and j.get("fit_score", 0) >= 4)
+    ])
     html = build_html(good_jobs, last_updated)
     DOCS_HTML.write_text(html, encoding="utf-8")
     print(f"  Updated docs/index.html ({len(good_jobs)} jobs)")
@@ -384,9 +392,9 @@ def main():
     SCORED_JSON.write_text(json.dumps(combined, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"💾 Saved {len(pipeline_jobs)} pipeline + {len(manual)} manual jobs = {len(combined)} total")
 
-    # 6. Update GitHub Pages
+    # 6. Update GitHub Pages — pass the FULL combined list so manual jobs persist
     print("\n🌐 Updating GitHub Pages...")
-    update_github_pages(good, last_updated)
+    update_github_pages(combined, last_updated)
 
     # 7. Email
     print("\n📧 Sending email summary...")

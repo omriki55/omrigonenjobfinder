@@ -2,7 +2,10 @@ name: Job Scan
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 6 * * 1-5'   # 9am Israel time weekdays
+    # 3x daily, every day (UTC). Israel is UTC+3 (IDT).
+    - cron: '0 5 * * *'    # 08:00 Israel
+    - cron: '0 10 * * *'   # 13:00 Israel
+    - cron: '0 15 * * *'   # 18:00 Israel
 jobs:
   scan:
     runs-on: ubuntu-latest
