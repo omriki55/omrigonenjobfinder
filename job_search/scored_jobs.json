@@ -195,7 +195,16 @@
     "location_ok": true,
     "scan_date": "2026-06-03",
     "initial_status": "interview",
-    "initial_status_date": "2026-06-04"
+    "initial_status_date": "2026-06-04",
+    "initial_rounds": [
+      {
+        "date": "2026-06-04",
+        "interviewer": "Plus500 Recruiting",
+        "stage": "ראיון מקצועי",
+        "outcome": "pending",
+        "note": "Video interview • Google Meet hzf-ovyy-fwt • 14:00"
+      }
+    ]
   },
   {
     "company": "Gambit Security",
@@ -211,7 +220,16 @@
     "location_ok": true,
     "scan_date": "2026-06-03",
     "initial_status": "interview",
-    "initial_status_date": "2026-06-03"
+    "initial_status_date": "2026-06-03",
+    "initial_rounds": [
+      {
+        "date": "2026-06-03",
+        "interviewer": "Mor Ben-Kalifa",
+        "stage": "טלפוני / HR",
+        "outcome": "pending",
+        "note": "Intro • mor.benkalifa@gambit.security • 17:30"
+      }
+    ]
   },
   {
     "company": "Sauce",
@@ -227,7 +245,16 @@
     "location_ok": true,
     "scan_date": "2026-06-03",
     "initial_status": "interview",
-    "initial_status_date": "2026-06-01"
+    "initial_status_date": "2026-06-01",
+    "initial_rounds": [
+      {
+        "date": "2026-06-01",
+        "interviewer": "Vladimir Slavkovski",
+        "stage": "טלפוני / HR",
+        "outcome": "pending",
+        "note": "Recruiter Screen • vladimir.slavkovski@getsauce.com • 12:00"
+      }
+    ]
   },
   {
     "company": "GoTribal.ai",
@@ -611,7 +638,16 @@
     "location_ok": true,
     "scan_date": "2026-06-03",
     "initial_status": "interview",
-    "initial_status_date": "2026-06-03"
+    "initial_status_date": "2026-06-03",
+    "initial_rounds": [
+      {
+        "date": "2026-06-03",
+        "interviewer": "Yair Fradkin",
+        "stage": "ראיון מקצועי",
+        "outcome": "pending",
+        "note": "GM, Growth & Monetization • Zoom • yair@smartupacademy.org • 13:15"
+      }
+    ]
   },
   {
     "company": "Undisclosed",
@@ -808,6 +844,15 @@
     "location_ok": true,
     "scan_date": "2026-05-27",
     "initial_status": "interview",
-    "initial_status_date": "2026-05-27"
+    "initial_status_date": "2026-05-27",
+    "initial_rounds": [
+      {
+        "date": "2026-05-27",
+        "interviewer": "Inna",
+        "stage": "טלפוני / HR",
+        "outcome": "pending",
+        "note": "30 min • Google Meet gjy-zbbg-ybm • inna@neonsecurity.ai • 09:30"
+      }
+    ]
   }
 ]

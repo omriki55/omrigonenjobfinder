@@ -610,22 +610,21 @@ function saveField(type,i){
 /* ── interview rounds ── */
 const ROUND_STAGES=["טלפוני / HR","ראיון מקצועי","ראיון טכני","פגישה עם מנהל","מטלה / תרגיל","ראיון סופי","אחר"];
 const ROUND_OUTCOMES=[["pending","⏳ ממתין"],["passed","✅ עבר"],["rejected","❌ נדחה"]];
-function getRounds(j){const k=jobKey(j),cur=STATE[k]||{};return cur.interviews||[];}
+function getRounds(j){const k=jobKey(j),cur=STATE[k]||{};return cur.interviews||j.initial_rounds||[];}
+function seedRounds(j,cur){if(!cur.interviews)cur.interviews=j.initial_rounds?JSON.parse(JSON.stringify(j.initial_rounds)):[];return cur;}
 function addRound(i){
-  const j=window._sorted[i],k=jobKey(j),cur=STATE[k]||{status:"saved"};
-  cur.interviews=cur.interviews||[];
+  const j=window._sorted[i],k=jobKey(j);let cur=STATE[k]||{status:"saved"};seedRounds(j,cur);
   cur.interviews.push({date:new Date().toISOString().slice(0,10),interviewer:"",stage:ROUND_STAGES[0],outcome:"pending",note:""});
   STATE[k]=cur;saveState(STATE);render();
 }
 function updateRound(i,ri,field,val){
-  const j=window._sorted[i],k=jobKey(j),cur=STATE[k]||{status:"saved"};
-  if(!cur.interviews||!cur.interviews[ri])return;
+  const j=window._sorted[i],k=jobKey(j);let cur=STATE[k]||{status:"saved"};seedRounds(j,cur);
+  if(!cur.interviews[ri])return;
   cur.interviews[ri][field]=val;STATE[k]=cur;saveState(STATE);
   if(field==="outcome")render();
 }
 function removeRound(i,ri){
-  const j=window._sorted[i],k=jobKey(j),cur=STATE[k]||{};
-  if(!cur.interviews)return;
+  const j=window._sorted[i],k=jobKey(j);let cur=STATE[k]||{status:"saved"};seedRounds(j,cur);
   cur.interviews.splice(ri,1);STATE[k]=cur;saveState(STATE);render();
 }
 function roundsHTML(j,i){
