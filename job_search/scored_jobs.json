@@ -793,5 +793,21 @@
     "scan_date": "2026-06-03",
     "contact": null,
     "initial_status": "saved"
+  },
+  {
+    "company": "Neon Security",
+    "title": "Revenue Operations / GTM",
+    "location": "Israel",
+    "url": "https://neonsecurity.ai",
+    "job_type": "Full-time",
+    "posted": "2026-05-20",
+    "description": "Cybersecurity startup. ראיון התקיים עם Inna.",
+    "fit_score": 8,
+    "score_reason": "סטארטאפ סייבר — התאמה ל-RevOps/GTM.",
+    "ai_opener": "📅 ראיון 30 דק׳ עם Inna: 27/5 בשעה 09:30 • Google Meet: meet.google.com/gjy-zbbg-ybm • inna@neonsecurity.ai",
+    "location_ok": true,
+    "scan_date": "2026-05-27",
+    "initial_status": "interview",
+    "initial_status_date": "2026-05-27"
   }
 ]

@@ -184,6 +184,25 @@
     .save-btn:active{transform:scale(.96)}
     .saved-ack{font-size:.72rem;font-weight:600;transition:opacity .3s}
 
+    /* interview rounds */
+    .rounds-wrap{display:flex;flex-direction:column;gap:7px}
+    .rounds-lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--inkFaint);display:flex;align-items:center;justify-content:space-between}
+    .round-card{border:1.5px solid var(--line);border-radius:11px;padding:9px 10px;background:var(--surfaceAlt);display:flex;flex-direction:column;gap:6px;position:relative}
+    .round-card.r-passed{border-color:oklch(0.78 0.12 150);background:oklch(0.97 0.03 150)}
+    .round-card.r-rejected{border-color:oklch(0.82 0.10 20);background:oklch(0.97 0.03 20)}
+    .round-row{display:flex;gap:6px;flex-wrap:wrap}
+    .round-inp,.round-sel{border:1.5px solid var(--line);border-radius:8px;padding:5px 8px;font-size:.76rem;font-family:var(--font-ui);color:var(--ink);background:var(--surface);outline:none;direction:rtl}
+    .round-inp:focus,.round-sel:focus{border-color:var(--accent)}
+    .round-inp.r-date{flex:0 0 auto}
+    .round-inp.r-name{flex:1 1 110px}
+    .round-sel{flex:1 1 auto;cursor:pointer}
+    .round-note{width:100%;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;font-size:.76rem;font-family:var(--font-ui);color:var(--ink);background:var(--surface);resize:vertical;min-height:34px;outline:none;direction:rtl}
+    .round-note:focus{border-color:var(--accent)}
+    .round-del{position:absolute;top:6px;left:6px;background:none;border:none;cursor:pointer;font-size:.85rem;opacity:.45;padding:2px}
+    .round-del:hover{opacity:1}
+    .round-add{background:var(--surface);border:1.5px dashed var(--accent);color:var(--accentInk);border-radius:9px;padding:6px 12px;font-size:.74rem;font-weight:700;font-family:var(--font-ui);cursor:pointer;align-self:flex-start}
+    .round-add:hover{background:var(--accentSoft)}
+
     /* stage stepper */
     .stepper-wrap{display:flex;flex-direction:column;gap:6px}
     .stepper-lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--inkFaint)}
@@ -588,6 +607,52 @@ function saveField(type,i){
   }
   if(ack){ack.textContent="✓ נשמר";ack.style.color="var(--accent)";setTimeout(()=>{ack.textContent="";},2000);}
 }
+/* ── interview rounds ── */
+const ROUND_STAGES=["טלפוני / HR","ראיון מקצועי","ראיון טכני","פגישה עם מנהל","מטלה / תרגיל","ראיון סופי","אחר"];
+const ROUND_OUTCOMES=[["pending","⏳ ממתין"],["passed","✅ עבר"],["rejected","❌ נדחה"]];
+function getRounds(j){const k=jobKey(j),cur=STATE[k]||{};return cur.interviews||[];}
+function addRound(i){
+  const j=window._sorted[i],k=jobKey(j),cur=STATE[k]||{status:"saved"};
+  cur.interviews=cur.interviews||[];
+  cur.interviews.push({date:new Date().toISOString().slice(0,10),interviewer:"",stage:ROUND_STAGES[0],outcome:"pending",note:""});
+  STATE[k]=cur;saveState(STATE);render();
+}
+function updateRound(i,ri,field,val){
+  const j=window._sorted[i],k=jobKey(j),cur=STATE[k]||{status:"saved"};
+  if(!cur.interviews||!cur.interviews[ri])return;
+  cur.interviews[ri][field]=val;STATE[k]=cur;saveState(STATE);
+  if(field==="outcome")render();
+}
+function removeRound(i,ri){
+  const j=window._sorted[i],k=jobKey(j),cur=STATE[k]||{};
+  if(!cur.interviews)return;
+  cur.interviews.splice(ri,1);STATE[k]=cur;saveState(STATE);render();
+}
+function roundsHTML(j,i){
+  const rounds=getRounds(j);
+  const cards=rounds.map((r,ri)=>{
+    const cls=r.outcome==="passed"?" r-passed":r.outcome==="rejected"?" r-rejected":"";
+    const stageOpts=ROUND_STAGES.map(s=>`<option ${s===r.stage?"selected":""}>${s}</option>`).join("");
+    const outOpts=ROUND_OUTCOMES.map(([v,l])=>`<option value="${v}" ${v===r.outcome?"selected":""}>${l}</option>`).join("");
+    return `<div class="round-card${cls}">
+      <button class="round-del" title="מחק סבב" onclick='event.stopPropagation();removeRound(${i},${ri})'>🗑️</button>
+      <div class="round-row">
+        <input class="round-inp r-date" type="date" value="${r.date||""}" onclick="event.stopPropagation()" onchange='updateRound(${i},${ri},"date",this.value)'/>
+        <input class="round-inp r-name" type="text" placeholder="שם המראיין" value="${(r.interviewer||"").replace(/"/g,"&quot;")}" onclick="event.stopPropagation()" onchange='updateRound(${i},${ri},"interviewer",this.value)'/>
+      </div>
+      <div class="round-row">
+        <select class="round-sel" onclick="event.stopPropagation()" onchange='updateRound(${i},${ri},"stage",this.value)'>${stageOpts}</select>
+        <select class="round-sel" onclick="event.stopPropagation()" onchange='updateRound(${i},${ri},"outcome",this.value)'>${outOpts}</select>
+      </div>
+      <textarea class="round-note" rows="1" placeholder="סיכום הסבב, שאלות, רושם…" onclick="event.stopPropagation()" onchange='updateRound(${i},${ri},"note",this.value)'>${(r.note||"").replace(/</g,"&lt;")}</textarea>
+    </div>`;
+  }).join("");
+  return `<div class="rounds-wrap">
+    <div class="rounds-lbl"><span>🎙️ סבבי ראיונות${rounds.length?` (${rounds.length})`:""}</span></div>
+    ${cards}
+    <button class="round-add" onclick='event.stopPropagation();addRound(${i})'>➕ הוסף סבב ראיון</button>
+  </div>`;
+}
 function saveScoringFeedback(j,val){
   const k=jobKey(j),cur=STATE[k]||{status:"saved"};
   cur.score_feedback=val;STATE[k]=cur;saveState(STATE);
@@ -919,6 +984,7 @@ function render(){
                 <span class="saved-ack" id="fb-ack-${i}"></span>
               </div>
             </div>
+            ${roundsHTML(j,i)}
             <div class="notes-wrap">
               <div class="notes-lbl">📝 הערות אישיות</div>
               <textarea class="notes-ta${st.note?" has-note":""}" id="note-${i}" rows="2"
