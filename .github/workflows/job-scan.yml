@@ -4,10 +4,11 @@ permissions:
 on:
   workflow_dispatch:
   schedule:
-    # 3x daily, every day (UTC). Israel is UTC+3 (IDT).
-    - cron: '0 5 * * *'    # 08:00 Israel
-    - cron: '0 10 * * *'   # 13:00 Israel
-    - cron: '0 15 * * *'   # 18:00 Israel
+    # 3x daily, Sunday–Thursday only (Israeli work week). Israel is UTC+3 (IDT).
+    # Day-of-week 0=Sun … 4=Thu — skips Fri/Sat when no jobs are posted.
+    - cron: '0 5 * * 0-4'    # 08:00 Israel
+    - cron: '0 10 * * 0-4'   # 13:00 Israel
+    - cron: '0 15 * * 0-4'   # 18:00 Israel
 jobs:
   scan:
     runs-on: ubuntu-latest
