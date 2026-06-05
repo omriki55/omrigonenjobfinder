@@ -336,6 +336,7 @@
       .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
       .act-btn{min-width:0;padding:13px 6px;font-size:.76rem}
       .act-open{grid-column:span 2}
+      .act-dismiss{grid-column:span 2}
       .step-btn{padding:11px 3px;font-size:.72rem}
       .fab{padding:15px 22px;font-size:.88rem}
       .modal-card{max-height:92vh}
@@ -677,7 +678,10 @@ function dismissJob(j,reason){
   const k=jobKey(j),cur=STATE[k]||{status:"saved"};
   cur.dismissed=true;cur.dismiss_reason=reason;cur.dismiss_date=new Date().toISOString().slice(0,10);cur.company=j.company;
   STATE[k]=cur;saveState(STATE);
-  if(localStorage.getItem('gh_token'))syncFeedback();
+  const hasToken=localStorage.getItem('gh_token');
+  if(hasToken)syncFeedback();
+  if(reason==="irrelevant")
+    showToast(hasToken?"🧠 נלמד — "+j.company+" לא יוצע שוב בסריקה הבאה":"🧠 נשמר. הוסף GitHub token בהגדרות כדי שהסורק ילמד");
   render();
 }
 function undismissJob(j){
@@ -919,7 +923,7 @@ function closeAnalytics(){document.getElementById("sheet").classList.remove("sho
 /* ── RENDER ── */
 function render(){
   const stats=computeStats();
-  document.getElementById("hero-meta").textContent=`05/06/2026 19:49 UTC · ${stats.total} משרות פעילות`;
+  document.getElementById("hero-meta").textContent=`05/06/2026 19:51 UTC · ${stats.total} משרות פעילות`;
   document.getElementById("hero-coach").textContent=coachLine(stats);
 
   const funnelStages=STAGES.filter(s=>s.key!=="rejected");
@@ -1094,6 +1098,7 @@ function render(){
               <button class="act-btn act-copy" onclick='event.stopPropagation();copyOpener(this,${i})'>פנייה 📋</button>
               <button class="act-btn act-wa" onclick='event.stopPropagation();shareWA(${i})'>וואטסאפ</button>
               <a href="${j.url}" target="_blank" rel="noopener" class="act-btn act-open" onclick='event.stopPropagation()'><span class="material-symbols-rounded">open_in_new</span>פתח משרה</a>
+              <button class="act-btn act-dismiss" onclick='event.stopPropagation();dismissJob(window._sorted[${i}],"irrelevant")'><span class="material-symbols-rounded">thumb_down</span>לא רלוונטי — למד מזה</button>
             </div>
             ${dismissSection}
           </div>
