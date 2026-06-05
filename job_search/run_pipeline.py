@@ -193,10 +193,14 @@ def search_jobs() -> list[dict]:
         return jobs
     except Exception as e:
         print(f"  ⚠️  Web search failed: {e}")
-        # Fall back to existing scored_jobs if available
+        # Fall back to existing PIPELINE jobs only. Never re-feed manual jobs
+        # (those with initial_status) into scoring — they are user-curated and
+        # re-scoring them risks transient 0-scores from rate limits.
         if SCORED_JSON.exists():
-            print("  Using cached results from previous run")
-            return json.load(open(SCORED_JSON))
+            cached = json.load(open(SCORED_JSON))
+            pipeline_only = [j for j in cached if not j.get("initial_status")]
+            print(f"  Using {len(pipeline_only)} cached pipeline jobs from previous run")
+            return pipeline_only
         return []
 
 
