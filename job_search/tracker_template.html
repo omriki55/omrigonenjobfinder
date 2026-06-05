@@ -360,22 +360,42 @@
     /* ===== DESKTOP / MAC WIDE LAYOUT ===== */
     @media(hover:hover) and (pointer:fine){
       .job-card{cursor:pointer}
-      .job-card:hover{background:var(--surface-container-high)}
-      .act-btn:hover,.d-btn:hover,.step-btn:hover,.chan-btn:hover,.sf-chip:hover,.fit-chip:hover{filter:brightness(.97)}
+      /* Material elevation lift on hover */
+      .job-card:hover{background:var(--surface-container-high);transform:translateY(-2px);box-shadow:0 4px 16px rgba(20,20,40,.10)}
+      .job-card.open:hover{transform:none}
+      .act-btn:hover,.d-btn:hover,.step-btn:hover,.chan-btn:hover,.sf-chip:hover,.fit-chip:hover,.sort-btn:hover,.exp-btn:hover,.round-add:hover,.clink:hover{filter:brightness(.97)}
       .sheet-btn:hover,.scan-btn:hover,.settings-btn:hover{background:#fff}
+      .fab:hover{box-shadow:0 8px 26px rgba(79,107,237,.55);transform:translateX(-50%) translateY(-1px)}
+      .modal-close:hover,.drawer-close:hover{filter:brightness(.94)}
+      /* scrollbars — subtle, Apple-like */
+      *::-webkit-scrollbar{width:10px;height:10px}
+      *::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px;border:2px solid transparent;background-clip:padding-box}
+      *::-webkit-scrollbar-thumb:hover{background:var(--inkFaint)}
+      *::-webkit-scrollbar-track{background:transparent}
     }
-    @media(min-width:900px){
-      #app{max-width:1100px;padding-bottom:60px}
-      .hero-coach{font-size:1.7rem}
-      #container{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
-      .job-card{align-self:start}
-      .fab{left:auto;right:30px;transform:none}
+    /* fluid grid: auto-fit columns, breathes with the viewport */
+    @media(min-width:860px){
+      #app{max-width:1180px;padding:22px 22px 80px}
+      .hero{padding:28px 30px}
+      .hero-coach{font-size:1.9rem}
+      .f-count{font-size:2.2rem}
+      #container{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px;align-items:start}
+      .job-card{align-self:start;transition:background .2s,transform .18s cubic-bezier(.2,.7,.3,1),box-shadow .2s}
+      /* desktop FAB → bottom-right corner (Material) */
+      .fab{left:auto;right:32px;transform:none;border-radius:18px}
       .fab:active{transform:scale(.96)}
+      .toolbar{top:14px}
+      /* roomier cards */
+      .card-head{padding:20px 22px}
+      .card-body{padding:0 22px 20px}
+      .modal-card{max-width:620px}
     }
-    @media(min-width:1300px){
-      #app{max-width:1400px}
-      #container{grid-template-columns:repeat(3,minmax(0,1fr))}
+    @media(min-width:1320px){
+      #app{max-width:1500px}
     }
+    /* keyboard-shortcut hint chip */
+    .kbd{font-family:var(--font-mono);font-size:.62rem;background:var(--surface-container-highest);border-radius:6px;padding:1px 6px;color:var(--inkFaint);margin-inline-start:6px}
+    @media(max-width:859px){.kbd{display:none}}
     /* keyboard accessibility */
     :focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:8px}
 
@@ -1401,6 +1421,20 @@ function toggleTheme(){
   showToast(cur==='dark'?'🌙 מצב כהה':'☀️ מצב בהיר');
 }
 initTheme();
+
+/* ── keyboard shortcuts (desktop) ── */
+document.addEventListener('keydown',e=>{
+  const typing=/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement&&document.activeElement.tagName);
+  if(e.key==='Escape'){
+    closeModal();closeAnalytics();closeSettings();
+    document.querySelectorAll('.dismiss-panel.open').forEach(p=>p.classList.remove('open'));
+    if(typing)document.activeElement.blur();
+    return;
+  }
+  if(typing)return;
+  if(e.key==='/'){e.preventDefault();const s=document.getElementById('search-inp');if(s){s.focus();s.select();}}
+  else if(e.key==='t'||e.key==='ת'){toggleTheme();}
+});
 
 render();
 
