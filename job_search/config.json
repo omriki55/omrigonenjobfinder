@@ -8,9 +8,10 @@
     "Sales Operations Manager"
   ],
   "ats": {
-    "greenhouse": ["gong", "monday", "wiz", "fireblocks", "melio"],
-    "lever": ["yotpo", "bigpanda"],
-    "ashby": ["ramp", "vanta"]
+    "greenhouse": ["monday", "wiz", "fireblocks", "melio", "gong", "riskified", "similarweb", "lemonade", "jfrog", "snyk", "taboola", "verbit"],
+    "lever": ["yotpo", "bigpanda", "deel"],
+    "ashby": ["island"]
   },
+  "ats_note": "Israeli-HQ companies only — listings are pre-filtered to Israel/remote locations before scoring (see ats_scraper._DEFAULT_LOCATIONS).",
   "updated": "2026-06-05"
 }

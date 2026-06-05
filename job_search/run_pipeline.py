@@ -381,8 +381,8 @@ def main():
     ats_jobs = []
     if cfg.get("ats"):
         print("\n🏢 Scraping public ATS boards (Greenhouse/Lever/Ashby)...")
-        ats_jobs = scrape_ats(cfg["ats"], cfg.get("ats_keywords"))
-        print(f"  Found {len(ats_jobs)} role-relevant jobs from ATS boards")
+        ats_jobs = scrape_ats(cfg["ats"], cfg.get("ats_keywords"), cfg.get("ats_locations"))
+        print(f"  Found {len(ats_jobs)} role+location-relevant jobs from ATS boards")
     # Merge, deduplicating by direct URL then by company+title
     seen_urls = {j.get("url") for j in jobs if j.get("url")}
     seen_keys = {(j.get("company", "").lower(), j.get("title", "").lower()) for j in jobs}

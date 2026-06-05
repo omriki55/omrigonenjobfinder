@@ -147,18 +147,37 @@ _DEFAULT_KEYWORDS = [
 ]
 
 
+# Location keywords — a job is kept only if its location matches one of these.
+# Covers Israel-based roles plus genuinely remote/global ones.
+_DEFAULT_LOCATIONS = [
+    "israel", "tel aviv", "tel-aviv", "herzliya", "ra'anana", "raanana",
+    "petah tikva", "netanya", "haifa", "jerusalem", "remote", "global",
+    "anywhere", "worldwide",
+]
+
+
 def _title_relevant(title: str, keywords: list[str]) -> bool:
     t = (title or "").lower()
     return any(k in t for k in keywords)
 
 
-def scrape_ats(ats_config: dict, keywords: list[str] | None = None) -> list[dict]:
-    """Run all configured ATS scrapers, returning only role-relevant jobs.
+def _location_ok(location: str, locations: list[str]) -> bool:
+    loc = (location or "").lower()
+    if not loc or loc == "not specified":
+        return True  # let the scorer decide when location is unknown
+    return any(l in loc for l in locations)
 
-    `keywords` filters by job title (case-insensitive substring match) so we
-    only score listings that plausibly fit the target roles.
+
+def scrape_ats(ats_config: dict, keywords: list[str] | None = None,
+               locations: list[str] | None = None) -> list[dict]:
+    """Run all configured ATS scrapers, returning role- and location-relevant jobs.
+
+    `keywords`  filters by job title (target roles).
+    `locations` filters by job location (Israel + remote by default) so we never
+    waste scoring tokens on roles that can't pass the location constraint.
     """
     keywords = [k.lower() for k in (keywords or _DEFAULT_KEYWORDS)]
+    locations = [l.lower() for l in (locations or _DEFAULT_LOCATIONS)]
     jobs = []
     for provider, tokens in (ats_config or {}).items():
         fn = _SCRAPERS.get(provider)
@@ -166,9 +185,12 @@ def scrape_ats(ats_config: dict, keywords: list[str] | None = None) -> list[dict
             continue
         for token in tokens:
             found = fn(token)
-            relevant = [j for j in found if _title_relevant(j["title"], keywords)]
+            relevant = [
+                j for j in found
+                if _title_relevant(j["title"], keywords) and _location_ok(j["location"], locations)
+            ]
             if found:
-                print(f"    {provider}/{token}: {len(relevant)}/{len(found)} relevant")
+                print(f"    {provider}/{token}: {len(relevant)}/{len(found)} relevant (title+location)")
             jobs.extend(relevant)
     return jobs
 
