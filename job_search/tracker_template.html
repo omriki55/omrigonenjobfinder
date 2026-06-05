@@ -3,9 +3,15 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <meta name="theme-color" content="#dde1ff"/>
+  <meta name="theme-color" content="#dde1ff" media="(prefers-color-scheme:light)"/>
+  <meta name="theme-color" content="#1e1f25" media="(prefers-color-scheme:dark)"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="Jobs"/>
   <meta name="mobile-web-app-capable" content="yes"/>
+  <link rel="manifest" href="manifest.webmanifest"/>
+  <link rel="apple-touch-icon" href="icon.svg"/>
+  <link rel="icon" href="icon.svg" type="image/svg+xml"/>
   <title>Job Tracker — Omri</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -345,6 +351,80 @@
     @media(max-width:340px){
       .stepper{flex-wrap:wrap}
       .step-btn{flex:1 1 28%}
+    }
+
+    /* ===== STICKY TOOLBAR ===== */
+    .toolbar{position:sticky;top:8px;z-index:30;box-shadow:0 2px 14px rgba(20,20,40,.06)}
+
+    /* ===== DESKTOP / MAC WIDE LAYOUT ===== */
+    @media(hover:hover) and (pointer:fine){
+      .job-card{cursor:pointer}
+      .job-card:hover{background:var(--surface-container-high)}
+      .act-btn:hover,.d-btn:hover,.step-btn:hover,.chan-btn:hover,.sf-chip:hover,.fit-chip:hover{filter:brightness(.97)}
+      .sheet-btn:hover,.scan-btn:hover,.settings-btn:hover{background:#fff}
+    }
+    @media(min-width:900px){
+      #app{max-width:1100px;padding-bottom:60px}
+      .hero-coach{font-size:1.7rem}
+      #container{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+      .job-card{align-self:start}
+      .fab{left:auto;right:30px;transform:none}
+      .fab:active{transform:scale(.96)}
+    }
+    @media(min-width:1300px){
+      #app{max-width:1400px}
+      #container{grid-template-columns:repeat(3,minmax(0,1fr))}
+    }
+    /* keyboard accessibility */
+    :focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:8px}
+
+    /* ===== DARK MODE (Material 3 dark palette) ===== */
+    @media(prefers-color-scheme:dark){
+      :root{
+        --primary:#b9c3ff;
+        --on-primary:#001257;
+        --primary-container:#33479b;
+        --on-primary-container:#dde1ff;
+        --secondary-container:#3a3f57;
+        --on-secondary-container:#dfe1f9;
+        --tertiary-container:#5c3f4a;
+        --on-tertiary-container:#ffd8e8;
+        --canvas:#121318;
+        --surface:#121318;
+        --surfaceAlt:#1e1f25;
+        --surface-container:#1e1f25;
+        --surface-container-high:#282a30;
+        --surface-container-highest:#33343b;
+        --ink:#e4e1e9;
+        --inkSoft:#c7c5d0;
+        --inkFaint:#918f9a;
+        --line:#46464f;
+        --lineSoft:#33343b;
+        --accent:#b9c3ff;
+        --accentDeep:#dde1ff;
+        --accentSoft:#33479b;
+        --accentInk:#dde1ff;
+        --onAccent:#001257;
+        --heroBg:#33479b;
+        --wa:#7ad6a0;
+        --star:#e8c45a;
+        --toast-bg:#e4e1e9;
+        --success:#7ad6a0;
+        --success-container:#1d4a30;
+        --error-container:#5c1414;
+      }
+      body{color:var(--ink)}
+      #toast{color:#1b1b21}
+      .save-btn,.act-open,.chan-btn.on,.step-btn.on,.fab,.d-btn.primary{color:#001257}
+      .new-badge{color:#001257}
+      .act-wa{background:var(--success-container);color:#b3f1c7}
+      .act-dismiss,.dismiss-btn{background:var(--error-container);color:#ffdad6}
+      .act-dossier{background:#1f3a5f;color:#cfe0ff}
+      .round-card.r-passed{background:#1d4a30}
+      .round-card.r-rejected{background:#5c1414}
+    }
+    @media(prefers-color-scheme:dark){
+      meta[name="theme-color"]{}
     }
   </style>
 </head>
@@ -1301,6 +1381,11 @@ function saveGhToken(){
 }
 
 render();
+
+/* ── PWA: register service worker for offline + installability ── */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});
+}
 </script>
 </body>
 </html>
