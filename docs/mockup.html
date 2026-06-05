@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Job Tracker — 3 Design Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0b;font-family:'Heebo',sans-serif;padding:24px;color:#fff}
+.wrap{max-width:1300px;margin:0 auto}
+.intro{text-align:center;margin-bottom:32px}
+.intro h1{font-size:1.6rem;font-weight:900;margin-bottom:6px}
+.intro p{color:#888;font-size:.9rem}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:1000px){.grid{grid-template-columns:1fr}}
+.col-label{text-align:center;font-weight:800;font-size:1.05rem;margin-bottom:14px;padding:8px;border-radius:8px}
+.demo{border-radius:16px;overflow:hidden;height:100%}
+
+/* ============ 1. BLOOMBERG / FINANCIAL DARK ============ */
+.bb{background:#0d1117;border:1px solid #1f2937;font-family:'IBM Plex Mono',monospace;padding:18px}
+.bb .hd{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1f2937;padding-bottom:12px;margin-bottom:14px}
+.bb .logo{color:#f7931a;font-weight:700;font-size:.8rem;letter-spacing:1px}
+.bb .live{color:#22c55e;font-size:.62rem;display:flex;align-items:center;gap:5px}
+.bb .live::before{content:"";width:6px;height:6px;background:#22c55e;border-radius:50%;animation:pulse 1.5s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.bb .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#1f2937;border:1px solid #1f2937;margin-bottom:14px}
+.bb .stat{background:#0d1117;padding:10px 8px;text-align:center}
+.bb .stat .v{font-size:1.5rem;font-weight:700;color:#fff}
+.bb .stat .l{font-size:.55rem;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.bb .stat.up .v{color:#22c55e}
+.bb .row{border:1px solid #1f2937;padding:11px;margin-bottom:8px;background:#0d1117;display:flex;justify-content:space-between;align-items:center;transition:.15s}
+.bb .row:hover{border-color:#f7931a;background:#11151c}
+.bb .co{font-weight:700;font-size:.82rem;color:#fff}
+.bb .ti{font-size:.66rem;color:#9ca3af;margin-top:2px}
+.bb .score{font-size:1.3rem;font-weight:700;color:#22c55e;text-align:center}
+.bb .score .max{font-size:.6rem;color:#6b7280}
+.bb .tag{font-size:.55rem;padding:2px 7px;border:1px solid #f7931a;color:#f7931a;border-radius:2px;text-transform:uppercase}
+
+/* ============ 2. EDITORIAL / MAGAZINE ============ */
+.ed{background:#faf8f3;color:#1a1a1a;font-family:'Frank Ruhl Libre',serif;padding:22px}
+.ed .kicker{font-family:'Heebo',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#c2410c;margin-bottom:4px}
+.ed h2{font-size:1.9rem;font-weight:900;line-height:1;margin-bottom:16px;letter-spacing:-.5px}
+.ed .stat-line{display:flex;gap:20px;border-top:2px solid #1a1a1a;border-bottom:1px solid #ddd;padding:12px 0;margin-bottom:18px;font-family:'Heebo',sans-serif}
+.ed .sl-item .v{font-size:1.5rem;font-weight:900}
+.ed .sl-item .l{font-size:.6rem;color:#888;text-transform:uppercase;letter-spacing:1px}
+.ed .art{border-bottom:1px solid #ddd;padding:14px 0;display:flex;gap:14px;align-items:baseline}
+.ed .art:hover .co{color:#c2410c}
+.ed .num{font-family:'Heebo',sans-serif;font-size:1.6rem;font-weight:900;color:#c2410c;min-width:38px}
+.ed .co{font-size:1.15rem;font-weight:700;transition:.15s}
+.ed .ti{font-family:'Heebo',sans-serif;font-size:.72rem;color:#666;margin-top:2px}
+.ed .meta{font-family:'Heebo',sans-serif;font-size:.6rem;color:#999;margin-top:5px;letter-spacing:.5px}
+.ed .pill{display:inline-block;font-family:'Heebo',sans-serif;font-size:.58rem;font-weight:700;background:#1a1a1a;color:#faf8f3;padding:2px 8px;border-radius:99px}
+
+/* ============ 3. BRUTALIST ============ */
+.br{background:#e8e6dc;color:#000;font-family:'Space Grotesk',sans-serif;padding:20px}
+.br .hd{background:#000;color:#e8e6dc;padding:10px 14px;font-weight:700;font-size:.9rem;display:flex;justify-content:space-between;margin-bottom:14px}
+.br .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+.br .stat{border:3px solid #000;padding:10px 12px;background:#fff}
+.br .stat:nth-child(2){background:#ffe600}
+.br .stat:nth-child(3){background:#ff5c00;color:#fff}
+.br .stat .v{font-size:1.7rem;font-weight:700;line-height:1}
+.br .stat .l{font-size:.6rem;font-weight:600;text-transform:uppercase}
+.br .card{border:3px solid #000;background:#fff;padding:12px;margin-bottom:10px;box-shadow:5px 5px 0 #000;transition:.1s}
+.br .card:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 #000}
+.br .top{display:flex;justify-content:space-between;align-items:flex-start}
+.br .co{font-size:1.05rem;font-weight:700;text-transform:uppercase}
+.br .ti{font-size:.72rem;font-weight:500;margin-top:2px}
+.br .score{font-size:1.5rem;font-weight:700;background:#000;color:#ffe600;padding:2px 9px}
+.br .tag{display:inline-block;border:2px solid #000;font-size:.58rem;font-weight:700;padding:2px 8px;margin-top:8px;text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="intro">
+    <h1>3 כיווני עיצוב — Job Tracker</h1>
+    <p>אותם נתונים אמיתיים, שלוש שפות ויזואליות. בחר אחד ואבנה את האפליקציה המלאה.</p>
+  </div>
+  <div class="grid">
+
+    <!-- 1. BLOOMBERG -->
+    <div>
+      <div class="col-label" style="background:#0d1117;color:#f7931a;border:1px solid #1f2937">① Bloomberg / פיננסי כהה</div>
+      <div class="demo bb">
+        <div class="hd"><span class="logo">◢ JOB TERMINAL</span><span class="live">LIVE · 13:42</span></div>
+        <div class="stats">
+          <div class="stat up"><div class="v">53</div><div class="l">Active</div></div>
+          <div class="stat up"><div class="v">25</div><div class="l">Applied</div></div>
+          <div class="stat up"><div class="v">5</div><div class="l">Interview</div></div>
+          <div class="stat"><div class="v">3</div><div class="l">Passed</div></div>
+        </div>
+        <div class="row"><div><div class="co">FINOUT</div><div class="ti">Head of Revenue Operations</div><span class="tag">remote</span></div><div class="score">9<span class="max">/10</span></div></div>
+        <div class="row"><div><div class="co">GONG.IO</div><div class="ti">RevOps Manager</div><span class="tag">tel aviv</span></div><div class="score">9<span class="max">/10</span></div></div>
+        <div class="row"><div><div class="co">PLUS500</div><div class="ti">Sales Ops · ראיון היום</div><span class="tag" style="border-color:#a855f7;color:#a855f7">interview</span></div><div class="score" style="color:#a855f7">9<span class="max">/10</span></div></div>
+      </div>
+    </div>
+
+    <!-- 2. EDITORIAL -->
+    <div>
+      <div class="col-label" style="background:#faf8f3;color:#c2410c;border:1px solid #ddd">② Editorial / מגזין</div>
+      <div class="demo ed">
+        <div class="kicker">מצב נכון ל-5 ביוני 2026</div>
+        <h2>מנוע חיפוש<br/>העבודה</h2>
+        <div class="stat-line">
+          <div class="sl-item"><div class="v">53</div><div class="l">משרות</div></div>
+          <div class="sl-item"><div class="v">25</div><div class="l">הוגשו</div></div>
+          <div class="sl-item"><div class="v">5</div><div class="l">ראיונות</div></div>
+          <div class="sl-item"><div class="v" style="color:#c2410c">3</div><div class="l">עברו</div></div>
+        </div>
+        <div class="art"><div class="num">01</div><div><div class="co">Finout</div><div class="ti">Head of Revenue Operations</div><div class="meta">REMOTE · עלתה לפני 3 ימים</div></div></div>
+        <div class="art"><div class="num">02</div><div><div class="co">Gong.io</div><div class="ti">RevOps Manager</div><div class="meta">TEL AVIV · עלתה לפני 5 ימים</div></div></div>
+        <div class="art"><div class="num">03</div><div><div class="co">Plus500</div><div class="ti">Sales Operations <span class="pill">ראיון היום</span></div><div class="meta">נתניה · בתהליך</div></div></div>
+      </div>
+    </div>
+
+    <!-- 3. BRUTALIST -->
+    <div>
+      <div class="col-label" style="background:#ffe600;color:#000;border:3px solid #000">③ Brutalist / אסרטיבי</div>
+      <div class="demo br">
+        <div class="hd"><span>JOB_TRACKER.EXE</span><span>● 05.06.26</span></div>
+        <div class="stats">
+          <div class="stat"><div class="v">53</div><div class="l">משרות פעילות</div></div>
+          <div class="stat"><div class="v">25</div><div class="l">הוגשו</div></div>
+          <div class="stat"><div class="v">5</div><div class="l">ראיונות</div></div>
+          <div class="stat"><div class="v">3</div><div class="l">עברו ✓</div></div>
+        </div>
+        <div class="card"><div class="top"><div><div class="co">Finout</div><div class="ti">Head of Revenue Operations</div></div><div class="score">9</div></div><span class="tag">REMOTE</span></div>
+        <div class="card"><div class="top"><div><div class="co">Gong.io</div><div class="ti">RevOps Manager</div></div><div class="score">9</div></div><span class="tag">TEL AVIV</span></div>
+        <div class="card" style="box-shadow:5px 5px 0 #ff5c00"><div class="top"><div><div class="co">Plus500</div><div class="ti">Sales Operations</div></div><div class="score" style="background:#ff5c00;color:#fff">9</div></div><span class="tag" style="border-color:#ff5c00;color:#ff5c00">ראיון היום</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
