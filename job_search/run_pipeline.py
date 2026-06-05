@@ -15,6 +15,8 @@ from pathlib import Path
 from anthropic import Anthropic
 from dotenv import load_dotenv
 
+from ats_scraper import scrape_ats
+
 # Resolve paths relative to this file, not cwd
 HERE = Path(__file__).parent
 REPO_ROOT = HERE.parent
@@ -358,8 +360,24 @@ def main():
     print(f"🎯 Job Search Pipeline — {today}")
     print(f"{'='*60}")
 
-    # 1. Search
+    # 1. Search — web_search (Opus) + public ATS APIs (Greenhouse/Lever/Ashby)
     jobs = search_jobs()
+    cfg = load_config()
+    ats_jobs = []
+    if cfg.get("ats"):
+        print("\n🏢 Scraping public ATS boards (Greenhouse/Lever/Ashby)...")
+        ats_jobs = scrape_ats(cfg["ats"])
+        print(f"  Found {len(ats_jobs)} jobs from ATS boards")
+    # Merge, deduplicating by direct URL then by company+title
+    seen_urls = {j.get("url") for j in jobs if j.get("url")}
+    seen_keys = {(j.get("company", "").lower(), j.get("title", "").lower()) for j in jobs}
+    for j in ats_jobs:
+        key = (j.get("company", "").lower(), j.get("title", "").lower())
+        if j.get("url") in seen_urls or key in seen_keys:
+            continue
+        seen_urls.add(j.get("url"))
+        seen_keys.add(key)
+        jobs.append(j)
     if not jobs:
         print("No jobs found. Exiting.")
         sys.exit(0)

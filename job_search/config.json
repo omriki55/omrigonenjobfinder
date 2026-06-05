@@ -7,5 +7,10 @@
     "Marketing Operations Lead",
     "Sales Operations Manager"
   ],
-  "updated": "2026-06-03"
+  "ats": {
+    "greenhouse": ["gong", "monday", "wiz", "fireblocks", "melio"],
+    "lever": ["yotpo", "bigpanda"],
+    "ashby": ["ramp", "vanta"]
+  },
+  "updated": "2026-06-05"
 }
