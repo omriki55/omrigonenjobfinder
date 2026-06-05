@@ -332,17 +332,15 @@
       .fit-mark{width:48px;height:48px;border-radius:15px}
       .fit-num{font-size:1.25rem}
       .card-body{padding:0 16px 16px}
-      /* action buttons: 2-per-row grid for thumb reach */
+      /* action buttons: stable 2-per-row grid for thumb reach */
       .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-      .act-btn{min-width:0;padding:13px 8px}
-      .act-dismiss{grid-column:span 2}
+      .act-btn{min-width:0;padding:13px 6px;font-size:.76rem}
+      .act-open{grid-column:span 2}
       .step-btn{padding:11px 3px;font-size:.72rem}
       .fab{padding:15px 22px;font-size:.88rem}
       .modal-card{max-height:92vh}
     }
-    @media(max-width:360px){
-      .actions{grid-template-columns:1fr}
-      .act-dismiss{grid-column:span 1}
+    @media(max-width:340px){
       .stepper{flex-wrap:wrap}
       .step-btn{flex:1 1 28%}
     }
@@ -1095,8 +1093,7 @@ function render(){
               <button class="act-btn act-cv" onclick='event.stopPropagation();openCV(${i})'><span class="material-symbols-rounded">description</span>קו״ח</button>
               <button class="act-btn act-copy" onclick='event.stopPropagation();copyOpener(this,${i})'>פנייה 📋</button>
               <button class="act-btn act-wa" onclick='event.stopPropagation();shareWA(${i})'>וואטסאפ</button>
-              <a href="${j.url}" target="_blank" rel="noopener" class="act-btn act-open" onclick='event.stopPropagation()'><span class="material-symbols-rounded">open_in_new</span>משרה</a>
-              <button class="act-btn act-dismiss" onclick='event.stopPropagation();dismissJob(window._sorted[${i}],"irrelevant")' title="הסר מהרשימה">🚫</button>
+              <a href="${j.url}" target="_blank" rel="noopener" class="act-btn act-open" onclick='event.stopPropagation()'><span class="material-symbols-rounded">open_in_new</span>פתח משרה</a>
             </div>
             ${dismissSection}
           </div>
