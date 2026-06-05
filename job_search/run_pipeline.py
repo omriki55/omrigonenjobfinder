@@ -408,9 +408,22 @@ def main():
     # 3. Update feedback with low-score companies
     update_feedback_after_scoring(scored)
 
-    # 4. Filter
-    good = [j for j in scored if j.get("location_ok") and j.get("fit_score", 0) >= 4]
-    print(f"\n✅ {len(good)}/{len(scored)} jobs passed filter (score ≥ 4, location OK)")
+    # 4. Filter — score, location, and freshness (posted within 30 days)
+    from datetime import datetime
+
+    def posted_age_days(j):
+        p = (j.get("posted") or "")[:10]
+        try:
+            return (date.today() - datetime.fromisoformat(p).date()).days
+        except Exception:
+            return None  # unknown date
+
+    def fresh(j):
+        a = posted_age_days(j)
+        return a is not None and a <= 30
+
+    good = [j for j in scored if j.get("location_ok") and j.get("fit_score", 0) >= 4 and fresh(j)]
+    print(f"\n✅ {len(good)}/{len(scored)} jobs passed filter (score ≥ 4, location OK, posted ≤ 30d)")
     for j in sorted(good, key=lambda x: x.get("fit_score", 0), reverse=True):
         print(f"   [{j['fit_score']}/10] {j['title']} @ {j['company']} ({j['location']})")
 
@@ -426,8 +439,8 @@ def main():
     # returned nothing), keep the previous run's pipeline jobs instead of
     # wiping them out.
     if not good:
-        good = [j for j in existing if not j.get("initial_status")]
-        print(f"  ⚠️  No new pipeline jobs — keeping {len(good)} from previous run")
+        good = [j for j in existing if not j.get("initial_status") and fresh(j)]
+        print(f"  ⚠️  No new pipeline jobs — keeping {len(good)} fresh from previous run")
     # Deduplicate: drop pipeline jobs whose company+title match a manual entry
     manual_keys = {(j["company"].lower(), j["title"].lower()) for j in manual}
     pipeline_jobs = [j for j in good if (j["company"].lower(), j["title"].lower()) not in manual_keys]
