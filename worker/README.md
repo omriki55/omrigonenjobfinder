@@ -11,11 +11,11 @@ Browser → Worker (holds ANTHROPIC_API_KEY) → Anthropic API → back
 ## Deploy (one time, free)
 
 ```bash
-npm i -g wrangler
-wrangler login                      # opens browser, authorize once
 cd worker
-wrangler deploy                     # deploys anthropic-proxy.js
-wrangler secret put ANTHROPIC_API_KEY   # paste your sk-ant-... key
+npm install            # installs wrangler locally (no -g needed)
+npm run login          # opens browser, authorize Cloudflare once
+npm run deploy         # deploys anthropic-proxy.js
+npm run set-key        # paste your sk-ant-... key when prompted
 ```
 
 `wrangler deploy` prints a URL like:

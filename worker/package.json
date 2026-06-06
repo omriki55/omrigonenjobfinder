@@ -1,0 +1,15 @@
+{
+  "name": "anthropic-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloudflare Worker proxy for Anthropic API — keeps the key server-side",
+  "scripts": {
+    "login": "wrangler login",
+    "deploy": "wrangler deploy",
+    "set-key": "wrangler secret put ANTHROPIC_API_KEY",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  }
+}
