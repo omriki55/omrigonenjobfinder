@@ -503,10 +503,23 @@
       .dtb-scan:disabled{opacity:.5;cursor:not-allowed}
       .dtb-scan .material-symbols-rounded{font-size:18px}
 
-      /* Hide mobile hero + standalone FAB + standalone toolbar on desktop */
+      /* Hide mobile-only elements on desktop */
       .hero{display:none!important}
       .fab{display:none!important}
-      .toolbar{display:none!important}
+      /* Toolbar stays visible — now lives inside #list-col */
+      .toolbar{
+        border-radius:0!important;
+        box-shadow:none!important;
+        position:sticky!important;top:0!important;
+        z-index:20!important;
+        border-bottom:1px solid var(--lineSoft);
+        background:var(--surface-container)!important;
+        padding:10px 12px!important;
+        gap:8px!important;
+        flex-shrink:0;
+      }
+      .toolbar .filter-row{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+      .toolbar .filter-row::-webkit-scrollbar{display:none}
 
       /* Work area — fills remaining height */
       #work{
@@ -525,7 +538,7 @@
         border-left:1px solid var(--lineSoft);
       }
       #list-search-bar{
-        display:flex!important;
+        display:none!important;
         padding:10px 10px 6px;
         background:var(--surface-container);
         border-bottom:1px solid var(--lineSoft);
@@ -713,58 +726,50 @@
     <div class="m-chips" id="m-chips"></div>
   </div>
 
-  <!-- TOOLBAR -->
-  <div class="toolbar">
-    <div class="search-row">
-      <div class="search-wrap">
-        <span class="search-ico material-symbols-rounded">search</span>
-        <input class="search-inp" id="search-inp" type="text" placeholder="חיפוש חברה או תפקיד…" oninput="onSearch(this)"/>
-        <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
-      </div>
-      <div class="sort-seg">
-        <button class="sort-btn" data-val="score" onclick="setSort(this)">התאמה</button>
-        <button class="sort-btn on" data-val="posted" onclick="setSort(this)">עדכני</button>
-        <button class="sort-btn" data-val="az" onclick="setSort(this)">A–Z</button>
-      </div>
-    </div>
-    <div class="filter-row">
-      <button class="sf-chip on-all" data-stage="all" onclick="setStageFilter(this)"><span class="material-symbols-rounded" style="font-size:17px">tune</span>הכל <span class="n" id="fc-all"></span></button>
-      <button class="sf-chip" data-stage="saved" onclick="setStageFilter(this)" style="--f-bg:#dde1ff;--f-fg:#001257;--f-solid:#4F6BED">שמורות <span class="n" id="fc-saved"></span></button>
-      <button class="sf-chip" data-stage="applied" onclick="setStageFilter(this)" style="--f-bg:#d7e3ff;--f-fg:#0b4ba0;--f-solid:#0b66c2">הוגשו <span class="n" id="fc-applied"></span></button>
-      <button class="sf-chip" data-stage="interview" onclick="setStageFilter(this)" style="--f-bg:#ffd8e8;--f-fg:#31101d;--f-solid:#9c4267">ראיונות <span class="n" id="fc-interview"></span></button>
-      <button class="sf-chip" data-stage="offer" onclick="setStageFilter(this)" style="--f-bg:#b3f1c7;--f-fg:#0c3a22;--f-solid:#2e6b46">הצעות <span class="n" id="fc-offer"></span></button>
-      <button class="sf-chip" data-stage="rejected" onclick="setStageFilter(this)" style="--f-bg:#ffdad6;--f-fg:#5c0d0d;--f-solid:#ba1a1a">נדחה <span class="n" id="fc-rejected"></span></button>
-      <button class="sf-chip" data-stage="starred" onclick="setStageFilter(this)">⭐ נבחרות</button>
-      <button class="sf-chip" data-stage="dismissed" onclick="setStageFilter(this)" style="--f-bg:#ffdad6;--f-fg:#5c0d0d;--f-solid:#ba1a1a">🗑️ ארכיון <span class="n" id="fc-dismissed"></span></button>
-    </div>
-    <div class="filter-row">
-      <span class="filter-lbl">ציון</span>
-      <button class="fit-chip on" data-fit="all" onclick="setFitFilter(this)">הכל</button>
-      <button class="fit-chip" data-fit="high" onclick="setFitFilter(this)">8+</button>
-      <button class="fit-chip" data-fit="mid" onclick="setFitFilter(this)">5–7</button>
-      <span class="filter-lbl" style="margin-right:6px">תאריך</span>
-      <button class="fit-chip on" data-age="all" onclick="setAgeFilter(this)">הכל <span id="age-all" class="n"></span></button>
-      <button class="fit-chip" data-age="day" onclick="setAgeFilter(this)">24ש <span id="age-day" class="n"></span></button>
-      <button class="fit-chip" data-age="week" onclick="setAgeFilter(this)">שבוע <span id="age-week" class="n"></span></button>
-      <button class="fit-chip" data-age="month" onclick="setAgeFilter(this)">חודש <span id="age-month" class="n"></span></button>
-    </div>
-    <div class="exp-row">
-      <span class="exp-count" id="count-lbl"></span>
-      <div class="exp-btns">
-        <button class="exp-btn" onclick="expandAll()">פתח הכל</button>
-        <button class="exp-btn" onclick="collapseAll()">סגור הכל</button>
-      </div>
-    </div>
-  </div>
-
   <!-- CARDS -->
   <div id="work">
     <div id="list-col">
-      <div id="list-search-bar">
-        <div class="search-wrap" style="flex:1">
-          <span class="search-ico material-symbols-rounded">search</span>
-          <input class="search-inp" id="search-inp-d" type="text" placeholder="חיפוש…" oninput="onSearchDesktop(this)"/>
-          <button class="search-clear" id="search-clear-d" onclick="clearSearchDesktop()">✕</button>
+      <!-- TOOLBAR — lives here so desktop can show it inside the list column -->
+      <div class="toolbar">
+        <div class="search-row">
+          <div class="search-wrap">
+            <span class="search-ico material-symbols-rounded">search</span>
+            <input class="search-inp" id="search-inp" type="text" placeholder="חיפוש חברה או תפקיד…" oninput="onSearch(this)"/>
+            <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
+          </div>
+          <div class="sort-seg">
+            <button class="sort-btn" data-val="score" onclick="setSort(this)">התאמה</button>
+            <button class="sort-btn on" data-val="posted" onclick="setSort(this)">עדכני</button>
+            <button class="sort-btn" data-val="az" onclick="setSort(this)">A–Z</button>
+          </div>
+        </div>
+        <div class="filter-row">
+          <button class="sf-chip on-all" data-stage="all" onclick="setStageFilter(this)"><span class="material-symbols-rounded" style="font-size:17px">tune</span>הכל <span class="n" id="fc-all"></span></button>
+          <button class="sf-chip" data-stage="saved" onclick="setStageFilter(this)" style="--f-bg:#dde1ff;--f-fg:#001257;--f-solid:#4F6BED">שמורות <span class="n" id="fc-saved"></span></button>
+          <button class="sf-chip" data-stage="applied" onclick="setStageFilter(this)" style="--f-bg:#d7e3ff;--f-fg:#0b4ba0;--f-solid:#0b66c2">הוגשו <span class="n" id="fc-applied"></span></button>
+          <button class="sf-chip" data-stage="interview" onclick="setStageFilter(this)" style="--f-bg:#ffd8e8;--f-fg:#31101d;--f-solid:#9c4267">ראיונות <span class="n" id="fc-interview"></span></button>
+          <button class="sf-chip" data-stage="offer" onclick="setStageFilter(this)" style="--f-bg:#b3f1c7;--f-fg:#0c3a22;--f-solid:#2e6b46">הצעות <span class="n" id="fc-offer"></span></button>
+          <button class="sf-chip" data-stage="rejected" onclick="setStageFilter(this)" style="--f-bg:#ffdad6;--f-fg:#5c0d0d;--f-solid:#ba1a1a">נדחה <span class="n" id="fc-rejected"></span></button>
+          <button class="sf-chip" data-stage="starred" onclick="setStageFilter(this)">⭐ נבחרות</button>
+          <button class="sf-chip" data-stage="dismissed" onclick="setStageFilter(this)" style="--f-bg:#ffdad6;--f-fg:#5c0d0d;--f-solid:#ba1a1a">🗑️ ארכיון <span class="n" id="fc-dismissed"></span></button>
+        </div>
+        <div class="filter-row">
+          <span class="filter-lbl">ציון</span>
+          <button class="fit-chip on" data-fit="all" onclick="setFitFilter(this)">הכל</button>
+          <button class="fit-chip" data-fit="high" onclick="setFitFilter(this)">8+</button>
+          <button class="fit-chip" data-fit="mid" onclick="setFitFilter(this)">5–7</button>
+          <span class="filter-lbl" style="margin-right:6px">תאריך</span>
+          <button class="fit-chip on" data-age="all" onclick="setAgeFilter(this)">הכל <span id="age-all" class="n"></span></button>
+          <button class="fit-chip" data-age="day" onclick="setAgeFilter(this)">24ש <span id="age-day" class="n"></span></button>
+          <button class="fit-chip" data-age="week" onclick="setAgeFilter(this)">שבוע <span id="age-week" class="n"></span></button>
+          <button class="fit-chip" data-age="month" onclick="setAgeFilter(this)">חודש <span id="age-month" class="n"></span></button>
+        </div>
+        <div class="exp-row">
+          <span class="exp-count" id="count-lbl"></span>
+          <div class="exp-btns">
+            <button class="exp-btn" onclick="expandAll()">פתח הכל</button>
+            <button class="exp-btn" onclick="collapseAll()">סגור הכל</button>
+          </div>
         </div>
       </div>
       <div id="container" style="display:flex;flex-direction:column;gap:14px"></div>
