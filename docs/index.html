@@ -1037,6 +1037,7 @@
         <div class="d-lbl">🔑 Anthropic API Key — חלופה (מפתח בדפדפן)</div>
         <input class="d-inp" id="api-key-inp" type="password" placeholder="sk-ant-..." autocomplete="off"/>
         <button class="d-btn primary" onclick="saveApiKey()" style="margin-top:6px">שמור מפתח</button>
+        <button class="d-btn" onclick="testConnection()" style="margin-top:6px">🔌 בדוק חיבור</button>
         <div class="d-status" id="api-key-status"></div>
         <div class="d-hint">נשמר רק בדפדפן שלך (localStorage). השתמש בזה לשימוש אישי בלבד — לא לשתף. אם הגדרת Proxy, הוא קודם. בלי שניהם — הכפתורים מעתיקים פרומפט.</div>
       </div>
@@ -1466,6 +1467,28 @@ async function callClaude(){
   }
   const data=await res.json();
   return (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
+}
+async function testConnection(){
+  const st=document.getElementById('api-key-status');
+  const proxy=getProxy(),key=getApiKey();
+  if(!proxy&&!key){st.textContent='✗ אין מפתח ולא Proxy — הדבק מפתח ולחץ "שמור מפתח" קודם';st.style.color='var(--error)';return;}
+  st.textContent='בודק חיבור…';st.style.color='var(--inkSoft)';
+  try{
+    const payload={model:CHAT_MODEL,max_tokens:8,messages:[{role:'user',content:'ping'}]};
+    let res;
+    if(proxy){res=await fetch(proxy,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});}
+    else{res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(payload)});}
+    if(res.ok){st.textContent='✓ החיבור עובד! הכפתורים יפתחו צ\'אט חי 🎉';st.style.color='var(--success)';showToast('✓ החיבור ל-Claude עובד');}
+    else{
+      const t=await res.text();let m;
+      if(res.status===401)m='✗ המפתח שגוי או פג תוקף (401) — בדוק שהעתקת אותו במלואו';
+      else if(res.status===403)m='✗ אין הרשאה/קרדיט (403) — הוסף קרדיט ב-console.anthropic.com';
+      else if(res.status===429)m='✗ חריגה ממכסה (429) — בדוק קרדיט';
+      else if(res.status===404)m='✗ מודל לא נמצא (404): '+t.slice(0,80);
+      else m='✗ שגיאה '+res.status+': '+t.slice(0,80);
+      st.textContent=m;st.style.color='var(--error)';
+    }
+  }catch(e){st.textContent='✗ הקריאה נכשלה (רשת/CORS): '+e.message;st.style.color='var(--error)';}
 }
 async function runChatTurn(){
   _chat.busy=true;
@@ -2250,7 +2273,7 @@ function render(){
   const stats=computeStats();
   const gEl=document.getElementById("hero-greeting");
   if(gEl){const h=new Date().getHours();const g=h<5?"לילה טוב":h<12?"בוקר טוב":h<17?"צהריים טובים":h<21?"ערב טוב":"לילה טוב";gEl.textContent=`${g}, עומרי 👋`;}
-  document.getElementById("hero-meta").textContent=`06/06/2026 20:43 · ${stats.total} משרות פעילות`;
+  document.getElementById("hero-meta").textContent=`06/06/2026 20:52 · ${stats.total} משרות פעילות`;
   document.getElementById("hero-coach").textContent=coachLine(stats);
 
   /* ── Desktop top-bar stats chips ── */
