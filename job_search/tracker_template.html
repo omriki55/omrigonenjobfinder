@@ -229,6 +229,7 @@
     .act-letter{background:var(--success-container);color:#0c3a22}
     .act-prep{background:var(--tertiary-container);color:var(--on-tertiary-container)}
     .act-dossier{background:#d7e3ff;color:#0b4ba0}
+    .act-practice{background:#ffe0ec;color:#a01050}
 
     /* dismiss section */
     .dismiss-toggle{background:none;border:none;font-size:.74rem;color:var(--inkFaint);cursor:pointer;padding:4px 0;font-family:var(--font-ui);text-align:right;direction:rtl}
@@ -465,6 +466,7 @@
     html[data-theme="dark"] .act-dismiss,
     html[data-theme="dark"] .dismiss-btn{background:var(--error-container);color:#ffdad6}
     html[data-theme="dark"] .act-dossier{background:#1f3a5f;color:#cfe0ff}
+    html[data-theme="dark"] .act-practice{background:#5f1f3a;color:#ffcfe0}
     html[data-theme="dark"] .round-card.r-passed{background:#1d4a30}
     html[data-theme="dark"] .round-card.r-rejected{background:#5c1414}
   </style>
@@ -992,6 +994,65 @@ ${cvData.summary}
   document.getElementById("modal").classList.add("show");
 }
 
+/* ── FEATURE: interactive interview practice (stage-aware, emotionally supportive) ── */
+function currentStage(j){
+  const rounds=getRounds(j);
+  // last pending round defines what we're practicing for; else next stage after last completed; else first
+  for(const r of rounds){if(r.outcome==="pending"&&r.stage)return r.stage;}
+  if(rounds.length){const last=rounds[rounds.length-1];const idx=ROUND_STAGES.indexOf(last.stage);if(idx>=0&&idx<ROUND_STAGES.length-1)return ROUND_STAGES[idx+1];}
+  return ROUND_STAGES[0];
+}
+const STAGE_GUIDE={
+  "ראיון טלפוני":"שיחת סינון ראשונית עם מגייס/ת. קצרה, אנושית. מתמקדת ב-fit כללי, מוטיבציה, ציפיות שכר וזמינות. טון: חם, פתוח.",
+  "ראיון HR":"ראיון משאבי אנוש. בודק התאמה תרבותית, ערכים, soft skills ושאלות התנהגותיות (STAR). טון: אישי, אמפתי.",
+  "ראיון וידאו":"ראיון מוקלט/חי בזום. חשובה נוכחות, בהירות וקצב. מערב גם שאלות התנהגותיות וגם מקצועיות.",
+  "ראיון מקצועי":"ראיון עומק עם מנהל/ת מקצועי. צלילה ל-RevOps/GTM — מטריקות, פייפליין, lead scoring, אופרציה, מערכות. טון: ענייני, חד.",
+  "ראיון טכני":"ראיון יישומי/טכני. תרחישים, כלים (CRM, אוטומציה, SQL/דשבורדים), פתרון בעיות בזמן אמת.",
+  "עבודת בית / מטלה":"מטלה ביתית. תרגול הצגת התוצר — איך מסבירים החלטות, הנחות, ו-tradeoffs בפגישת הצגה.",
+  "ראיון מנהל":"ראיון עם מנהל בכיר/VP. אסטרטגיה, חשיבה עסקית, איך תיצור impact ב-90 הימים הראשונים. טון: בוגר, בטוח.",
+  "ראיון סופי":"שלב אחרון — לרוב מנכ\"ל/מייסד. חזון, אנרגיה, התאמה לטווח ארוך, וסגירה. טון: מנהיגותי, אנושי.",
+  "אחר":"ראיון כללי — שילוב של התנהגותי, מקצועי ומוטיבציה."
+};
+function openPractice(i){
+  const j=window._sorted[i],cvData=getCV();
+  const stage=currentStage(j);
+  _modalMode="practice";_cvCompany=j.company;
+  _cvText=`אתה מאמן ראיונות בכיר וגם מאמן מנטלי. אנהל איתך **סימולציית ראיון אינטראקטיבית** בעברית — שאלה, התשובה שלי, ואז הפידבק שלך. עבור אחת-אחת, לא הכל ביחד.
+
+## השלב שאני מתאמן עליו: ${stage}
+${STAGE_GUIDE[stage]||""}
+
+## המשרה
+חברה: ${j.company}
+תפקיד: ${j.title}
+מיקום: ${j.location||""}
+${j.description?`תיאור התפקיד:\n${j.description.slice(0,800)}`:""}
+
+## הפרופיל שלי
+עומרי גונן — ${cvData.tagline}
+${cvData.summary}
+
+## איך הסימולציה עובדת
+1. שאל אותי **שאלה אחת בכל פעם**, מותאמת לשלב "${stage}" ולמשרה הזו (ערבב: שאלות ספציפיות לחברה/תפקיד, שאלות RevOps/GTM מקצועיות, שאלות התנהגותיות STAR, ולפעמים שאלה קשה/מלכודת אחת).
+2. חכה לתשובה שלי. אל תענה במקומי.
+3. אחרי כל תשובה, תן פידבק במבנה הבא:
+   • 💪 **מה היה חזק** — קודם החיובי, מה עבד ואיפה שכנעתי
+   • 🎯 **שיפור עניני** — מה לחדד, מה חסר, איך לבנות תשובת STAR טובה יותר
+   • 📊 **ניקוד** — מספר 1-10 לתשובה
+   • ➡️ עבור לשאלה הבאה
+4. אחרי 6-8 שאלות, תן לי **סיכום**: ציון ממוצע, מגמה (השתפרתי?), 3 חוזקות ו-2 דברים לתרגל לפני הראיון האמיתי.
+
+## הטון שלך (חשוב מאוד)
+אתה מאמן שמעצים, לא שובר. גם כשאתה מבקר — תעשה את זה בצורה שמשאירה אותי עם ביטחון ואנרגיה לראיון. הזכר לי כמה כבר הגעתי. המטרה היא שאצא מהתרגול חזק יותר, לא מותש.
+
+תתחיל עכשיו עם השאלה הראשונה.`;
+  document.getElementById("m-title").textContent="🎙️ תרגול ראיון — "+j.company;
+  document.getElementById("m-sub").textContent=stage+" · "+j.title;
+  document.getElementById("m-body").textContent=_cvText;
+  document.getElementById("m-pdf-btn").style.display="none";
+  document.getElementById("modal").classList.add("show");
+}
+
 /* ── FEATURE: company dossier prompt ── */
 function openDossier(i){
   const j=window._sorted[i];
@@ -1222,6 +1283,7 @@ function render(){
             <div class="actions">
               <button class="act-btn act-letter" onclick='event.stopPropagation();copyLetterPrompt(this,${i})'><span class="material-symbols-rounded">mail</span>מכתב</button>
               <button class="act-btn act-prep" onclick='event.stopPropagation();openPrep(${i})'><span class="material-symbols-rounded">quiz</span>הכנה לראיון</button>
+              <button class="act-btn act-practice" onclick='event.stopPropagation();openPractice(${i})'><span class="material-symbols-rounded">record_voice_over</span>תרגול ראיון</button>
               <button class="act-btn act-dossier" onclick='event.stopPropagation();openDossier(${i})'><span class="material-symbols-rounded">corporate_fare</span>דוסייר</button>
               <button class="act-btn act-cv" onclick='event.stopPropagation();openCV(${i})'><span class="material-symbols-rounded">description</span>קו״ח</button>
               <button class="act-btn act-copy" onclick='event.stopPropagation();copyOpener(this,${i})'>פנייה 📋</button>
