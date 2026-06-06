@@ -152,7 +152,7 @@
     .fit-mark{display:flex;flex-direction:column;align-items:center;justify-content:center;width:52px;height:52px;border-radius:17px;background:var(--f-bg);flex-shrink:0}
     .fit-num{font-weight:800;font-size:1.5rem;line-height:1;color:var(--f-fg);font-feature-settings:'tnum'}
     .fit-lbl{display:none}
-    .chevron{font-size:.8rem;color:var(--inkFaint);transition:transform .25s cubic-bezier(.2,.7,.3,1);flex-shrink:0}
+    .chevron{font-size:22px;color:var(--inkFaint);transition:transform .25s var(--ease);flex-shrink:0;line-height:1}
     .job-card.open .chevron{transform:rotate(180deg)}
     .follow-badge{font-size:.64rem;background:#fef0d8;color:#7a5900;border-radius:999px;padding:3px 9px;font-weight:700;white-space:nowrap}
     .new-badge{background:var(--primary);color:#fff;border-radius:999px;padding:3px 9px;font-size:.64rem;font-weight:700;white-space:nowrap}
@@ -851,7 +851,7 @@
   <div class="hero">
     <div class="hero-top">
       <div>
-        <div class="hero-greeting">בוקר טוב, עומרי 👋</div>
+        <div class="hero-greeting" id="hero-greeting">שלום, עומרי 👋</div>
         <div class="hero-meta" id="hero-meta"></div>
       </div>
       </div>
@@ -2212,7 +2212,9 @@ function openJobSupport(i){
 /* ── RENDER ── */
 function render(){
   const stats=computeStats();
-  document.getElementById("hero-meta").textContent=`06/06/2026 20:11 · ${stats.total} משרות פעילות`;
+  const gEl=document.getElementById("hero-greeting");
+  if(gEl){const h=new Date().getHours();const g=h<5?"לילה טוב":h<12?"בוקר טוב":h<17?"צהריים טובים":h<21?"ערב טוב":"לילה טוב";gEl.textContent=`${g}, עומרי 👋`;}
+  document.getElementById("hero-meta").textContent=`06/06/2026 20:15 · ${stats.total} משרות פעילות`;
   document.getElementById("hero-coach").textContent=coachLine(stats);
 
   /* ── Desktop top-bar stats chips ── */
@@ -2335,7 +2337,6 @@ function render(){
         <button class="star-btn${st.starred?" on":""}" onclick='event.stopPropagation();toggleStar(window._sorted[${i}])'>★</button>
         <div class="fit-mark" style="background:${fc.bg}">
           <div class="fit-num" style="color:${fc.fg}">${j.fit_score}</div>
-          <div class="fit-lbl" style="color:${fc.fg}">FIT</div>
         </div>
         <div class="card-text">
           <div class="card-company">${j.company}</div>
@@ -2349,7 +2350,7 @@ function render(){
           ${follow?`<span class="follow-badge">💬 Follow up?</span>`:""}
           ${novel?`<span class="new-badge">חדש ✨</span>`:""}
         </div>
-        <div class="chevron">▾</div>
+        <span class="chevron material-symbols-rounded">expand_more</span>
       </div>
       <div class="card-body-wrap">
         <div class="card-body-inner">
