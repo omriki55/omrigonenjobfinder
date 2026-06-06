@@ -77,6 +77,9 @@
     .sheet-btn:hover,.scan-btn:hover,.settings-btn:hover{background:#fff}
     .scan-btn:disabled{opacity:.5;cursor:not-allowed}
     .scan-btn .material-symbols-rounded,.settings-btn .material-symbols-rounded,.sheet-btn .material-symbols-rounded{font-size:19px}
+    .support-btn{background:rgba(255,210,220,.7) !important;color:#8b0033 !important}
+    .support-btn:hover{background:#ffd2dc !important}
+    .act-support{background:#ffd2dc;color:#8b0033}
 
     /* funnel */
     .funnel{display:flex;justify-content:space-between;align-items:flex-end;gap:4px}
@@ -483,6 +486,7 @@
       <div class="hero-actions">
         <button class="settings-btn" onclick="toggleTheme()" id="theme-btn" title="מצב תצוגה"><span class="material-symbols-rounded" id="theme-ico">dark_mode</span></button>
         <button class="settings-btn" onclick="openAnalytics()" title="ניתוח"><span class="material-symbols-rounded">analytics</span></button>
+        <button class="settings-btn support-btn" onclick="openSupport()" title="תמיכה רגשית"><span class="material-symbols-rounded">favorite</span></button>
         <button class="settings-btn" onclick="openSettings()" title="הגדרות"><span class="material-symbols-rounded">settings</span></button>
       </div>
     </div>
@@ -1114,6 +1118,77 @@ function openAnalytics(){
 }
 function closeAnalytics(){document.getElementById("sheet").classList.remove("show");}
 
+/* ── FEATURE: emotional support ── */
+function _supportPrompt(context){
+  const stats=computeStats();
+  const applied=stats.by.applied+stats.by.interview+stats.by.offer+stats.by.rejected;
+  const interviews=stats.by.interview+stats.by.offer;
+  const rejected=stats.by.rejected||0;
+  // rounds passed
+  let roundsPassed=0,roundsTotal=0;
+  JOBS.forEach(j=>{getRounds(j).forEach(r=>{roundsTotal++;if(r.outcome==="passed")roundsPassed++;});});
+  const trackerSummary=`מצב הטראקר הנוכחי שלי:
+- ${stats.total} משרות פעילות בטראקר
+- ${applied} הגשות עד כה
+- ${interviews} ראיונות
+- ${roundsPassed} מתוך ${roundsTotal} סבבי ראיון שעברתי בהצלחה
+- ${rejected} דחיות${context||""}`;
+
+  return`אתה מאמן מנטלי ותומך רגשי שמלווה אנשים בתהליך חיפוש עבודה. ענה בעברית.
+
+${trackerSummary}
+
+## איך לנהל את השיחה
+התחל בלשאול אותי שאלה אחת פתוחה: "איך אתה מרגיש היום בתהליך?"
+השתמש בתשובה כדי להבין איפה אני נמצא — ואז:
+
+אם אני עייף / מיואש / מרגיש תקוע:
+  → הזכר לי כמה כבר עשיתי (תן נתונים מהטראקר)
+  → עזור לי לנסח מחדש את המצב — לא "אני נכשל" אלא "אני בתהליך"
+  → תן לי פעולה קטנה אחת שאפשר לעשות היום — כדי לחזור לתחושת שליטה
+
+אם אני בסדר / אנרגטי:
+  → חזק את מה שעובד
+  → שאל אותי מה הצעד הבא שאני רוצה לעשות
+  → עזור לי להגיע לראיון הבא עם האנרגיה הנכונה
+
+אם אני לפני ראיון ספציפי:
+  → עזור לי להיכנס לזון — מה אני מביא לשיחה, מה הכוחות שלי, מה לזכור
+
+## טון
+חם, אמיתי, לא קלישאתי. אל תגיד "אתה נהדר" — תגיד מה עבד לי בפועל.
+שאל שאלה אחת בכל פעם. תן לי לדבר.
+
+תתחיל עכשיו.`;
+}
+
+function openSupport(){
+  const cvData=getCV();
+  _modalMode="support";_cvCompany="";
+  _cvText=_supportPrompt("");
+  document.getElementById("m-title").textContent="💙 תמיכה רגשית";
+  document.getElementById("m-sub").textContent="שיחה עם מאמן מנטלי — הדבק ל-Claude";
+  document.getElementById("m-body").textContent=_cvText;
+  document.getElementById("m-pdf-btn").style.display="none";
+  document.getElementById("modal").classList.add("show");
+}
+
+function openJobSupport(i){
+  const j=window._sorted[i];
+  const st=getJobState(j);
+  const rounds=getRounds(j);
+  const lastRound=rounds.length?rounds[rounds.length-1]:null;
+  const stageCtx=lastRound?`\n- שלב נוכחי בחברה הזו: ${lastRound.stage} (${lastRound.outcome==="pending"?"ממתין לתשובה":lastRound.outcome==="passed"?"עבר ✅":"נדחה ❌"})`:"";
+  const jobCtx=`\n\nהקשר ספציפי — חברה: ${j.company} | תפקיד: ${j.title} | סטטוס: ${st.status||"שמור"}${stageCtx}`;
+  _modalMode="support";_cvCompany=j.company;
+  _cvText=_supportPrompt(jobCtx);
+  document.getElementById("m-title").textContent="💙 תמיכה — "+j.company;
+  document.getElementById("m-sub").textContent=j.title+" · "+j.location;
+  document.getElementById("m-body").textContent=_cvText;
+  document.getElementById("m-pdf-btn").style.display="none";
+  document.getElementById("modal").classList.add("show");
+}
+
 /* ── RENDER ── */
 function render(){
   const stats=computeStats();
@@ -1289,6 +1364,7 @@ function render(){
               <button class="act-btn act-copy" onclick='event.stopPropagation();copyOpener(this,${i})'>פנייה 📋</button>
               <button class="act-btn act-wa" onclick='event.stopPropagation();shareWA(${i})'>וואטסאפ</button>
               <a href="${j.url}" target="_blank" rel="noopener" class="act-btn act-open" onclick='event.stopPropagation()'><span class="material-symbols-rounded">open_in_new</span>פתח משרה</a>
+              <button class="act-btn act-support" onclick='event.stopPropagation();openJobSupport(${i})'><span class="material-symbols-rounded">favorite</span>תמיכה רגשית</button>
               <button class="act-btn act-dismiss" onclick='event.stopPropagation();learnIrrelevant(this,${i})'><span class="material-symbols-rounded">thumb_down</span>לא רלוונטי — למד מזה</button>
             </div>
             ${dismissSection}
