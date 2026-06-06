@@ -1,15 +1,15 @@
 [
   {
-    "company": "LumApps",
-    "title": "Senior RevOps Manager",
-    "location": "Texas / Remote (US)",
-    "url": "https://www.remoterocketship.com/us/company/lumapps/jobs/senior-revops-manager-texas-remote/",
+    "company": "SymphonyAI",
+    "title": "GTM Engineer",
+    "location": "Remote",
+    "url": "https://jobgether.com/offer/6a1ba578f8af0ea2c4fec5a7-gtm-engineer-remote",
     "job_type": "Full-time",
-    "posted": "2026-05-16",
-    "description": "LumApps, an enterprise employee experience SaaS platform, seeks a Senior RevOps Manager to lead strategic initiatives aligned with the business plan, define and analyze commercial metrics across lifecycle stages, and partner with VP RevOps, CFO, and Business Leaders on the annual revenue model. Requires 6-10+ years in Revenue Operations, Strategy, Analytics, or Business Operations in SaaS, executive partnership experience, expertise in KPI frameworks and forecasting, strong data capabilities (Excel, SQL, BI), and hands-on experience with Salesforce, Clari, or Planhat.",
+    "posted": "2026-06-02",
+    "description": "SymphonyAI, an enterprise AI SaaS company serving 1,500+ enterprise customers globally, seeks its founding GTM Engineer to build the AI-native version of go-to-market operations from scratch. Reporting to the Head of AI GTM, you'll automate lead qualification, enrichment, routing, and reporting using AI agents built on Clay and powered by Claude and other LLMs. The role starts at roughly 60% AI systems and 40% traditional marketing ops, shifting toward 100% AI as data stabilizes. Requires real AI agent work experience and CRM/data architecture skills.",
     "fit_score": 8,
-    "score_reason": "Strong alignment with Omri's 15+ years B2B SaaS RevOps expertise, executive partnership experience, and deep proficiency in Salesforce and forecasting. Remote flexibility is perfect, though US-based role may require relocation discussion.",
-    "ai_opener": "I've spent 15+ years building revenue operations infrastructure at scaling B2B SaaS companies, and LumApps' focus on strategic commercial metrics and lifecycle analytics resonates deeply with my work. Your need for someone who can architect KPI frameworks and partner closely with executive leadership on revenue models aligns perfectly with how I've driven GTM alignment and predictable revenue growth.",
+    "score_reason": "Excellent match for founding GTM Engineer role given Omri's 15+ years RevOps expertise, deep CRM/data architecture skills, and B2B SaaS pipeline forecasting background. The main constraint is lack of demonstrated AI agent work experience (Clay, Claude), which is listed as a hard requirement, though his GTM ops foundation is exceptionally strong.",
+    "ai_opener": "Hi team—I've spent 15+ years building and scaling B2B SaaS revenue operations from the ground up, including designing CRM data architectures and automation workflows that drove pipeline velocity and predictability. SymphonyAI's vision of founding an AI-native GTM function is exactly the kind of foundational, high-leverage problem I'm drawn to. I'd love to explore whether my RevOps infrastructure expertise could accelerate your AI agent implementation, even as I'd need to level up on Clay and Claude-specific workflows.",
     "location_ok": true,
     "scan_date": "2026-06-06"
   },
