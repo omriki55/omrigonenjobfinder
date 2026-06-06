@@ -1,4 +1,4 @@
-# 🚀 Bootstrap Prompt — בנה מנוע חיפוש עבודה מלא מבוסס Claude
+# Bootstrap Prompt — בנה מנוע חיפוש עבודה מלא מבוסס Claude
 
 > העתק את כל הבלוק שבין הקווים ל-Claude Code (או claude.ai/code).
 > הוא יתחיל בשיחת אונבורדינג, יבנה את המערכת המלאה, ויפרוס אותה ל-GitHub Pages.
@@ -21,7 +21,7 @@
 
 מהתשובות צור:
 - job_search/config.json  → roles, ats (greenhouse/lever/ashby tokens), ats_keywords, ats_locations
-- job_search/profile.md    → הפרופיל המלא + ניסיון + קורות חיים מובנים
+- job_search/profile.md   → הפרופיל המלא + ניסיון + קורות חיים מובנים
 
 ==================================================
 שלב 1 — מבנה הפרויקט
@@ -36,7 +36,7 @@ job_search/
   tracker_template.html  # תבנית הטראקר (HTML יחיד)
 docs/
   index.html             # נבנה מהתבנית (זה מה ש-GitHub Pages מגיש)
-  manifest.webmanifest, sw.js, icon.svg   # קבצי PWA
+  manifest.webmanifest, sw.js, icon.svg  # קבצי PWA
 .github/workflows/
   job-scan.yml           # סריקה אוטומטית
   deploy-pages.yml       # פריסה ל-Pages
@@ -45,17 +45,17 @@ docs/
 שלב 2 — הפייפליין (run_pipeline.py)
 ==================================================
 זרימה:
-1. search_jobs()  → Anthropic API, model="claude-opus-4-x", כלי web_search (max_uses ~8).
+1. search_jobs()  → Anthropic API, model="claude-opus-4-8", כלי web_search (max_uses ~8).
    מחזיר 8-15 משרות פתוחות אמיתיות עם URL ישיר לכל משרה.
-2. scrape_ats()   → ats_scraper.py (ראה שלב 3) — מושך משרות מ-Greenhouse/Lever/Ashby.
-3. merge + dedupe → איחוד תוצאות web_search ו-ATS, הסרת כפילויות לפי URL ואז לפי (company,title).
-4. score_jobs()   → לכל משרה, model="claude-haiku-4-x", מחזיר JSON:
+2. scrape_ats()   → ats_scraper.py (ראה שלב 3).
+3. merge + dedupe → איחוד, הסרת כפילויות לפי URL ואז לפי (company,title).
+4. score_jobs()   → לכל משרה, model="claude-haiku-4-5", מחזיר JSON:
    {fit_score 1-10, score_reason, ai_opener, location_ok}. אם location_ok=false → fit_score=0.
-5. filter         → שמור משרות עם: location_ok==true AND fit_score>=4 AND עלתה ב-30 הימים האחרונים.
+5. filter         → location_ok==true AND fit_score>=4 AND פורסם ב-30 הימים האחרונים.
 6. save           → scored_jobs.json (ראה כלל מקור האמת למטה).
-7. build_html()   → החלף __JOBS_JSON__ ו-__LAST_UPDATED__ בתבנית → כתוב docs/index.html.
+7. build_html()   → החלף __JOBS_JSON__ ו-__LAST_UPDATED__ בתבנית → docs/index.html.
 8. git add/commit/push.
-9. (אופציונלי) שלח סיכום במייל דרך Gmail SMTP אם יש GMAIL_USER+GMAIL_APP_PASSWORD ב-env.
+9. (אופציונלי) שלח סיכום ב-Gmail SMTP אם יש GMAIL_USER+GMAIL_APP_PASSWORD ב-env.
 
 ### כלל מקור האמת (קריטי — אל תפר)
 scored_jobs.json הוא המקור היחיד. משרות שאני מוסיף ידנית מקבלות שדה initial_status
@@ -63,101 +63,113 @@ scored_jobs.json הוא המקור היחיד. משרות שאני מוסיף י
 - לשמר כל משרה עם initial_status — לעולם לא למחוק אותן בסריקה.
 - combined = pipeline_jobs + manual_jobs, כאשר pipeline_jobs מסוננות לפי (company,title)
   שלא מתנגשות עם manual.
-- אם הסריקה לא מצאה כלום: שמור את משרות הפייפליין הטריות מהריצה הקודמת (לא הידניות שינוקדו מחדש).
-- כש-web_search נכשל: fallback מחזיר רק משרות פייפליין קיימות (לא ידניות) — אסור לנקד מחדש ידניות.
+- אם הסריקה לא מצאה כלום: שמור את משרות הפייפליין הטריות מהריצה הקודמת.
+- כש-web_search נכשל: fallback מחזיר רק משרות פייפליין קיימות — אסור לנקד מחדש ידניות.
 
 ### זיכרון פידבק (feedback.json)
 מבנה: {avoid_companies:[], job_feedback:{}, dismissed:{}, score_history:{}}.
-ב-build_prompts(): הזרק avoid_companies ו-job_feedback לתוך פרומפט הניקוד כך שהסורק
-ילמד לא להציע חברות שסומנו "לא רלוונטי". אל תזהם את הרשימה אוטומטית — רק פידבק מפורש של המשתמש.
+ב-build_prompts(): הזרק avoid_companies לתוך פרומפט הניקוד כך שהסורק לא יציע
+חברות שסומנו "לא רלוונטי". אל תזהם את הרשימה אוטומטית — רק פידבק מפורש.
 
 ==================================================
-שלב 3 — ats_scraper.py (APIs ציבוריים, חוקי, ללא אימות)
+שלב 3 — ats_scraper.py (APIs ציבוריים, ללא אימות)
 ==================================================
 פונקציות scrape_greenhouse/lever/ashby + scrape_ats(config, keywords, locations):
 - Greenhouse: https://boards-api.greenhouse.io/v1/boards/{token}/jobs?content=true
 - Lever:      https://api.lever.co/v0/postings/{token}?mode=json
 - Ashby:      https://api.ashbyhq.com/posting-api/job-board/{token}
 לכל משרה: נקה HTML מהתיאור, סמן source="ats", שמור posted.
-סנן לפני הניקוד (לחיסכון בטוקנים):
+סנן לפני הניקוד (חיסכון בטוקנים):
 - לפי כותרת: רק תפקידים שמכילים מילות מפתח מהתפקידים המבוקשים.
-- לפי מיקום: רק ישראל/רימוט (או לפי ats_locations) — אל תנקד משרות שלא יעברו ממילא.
+- לפי מיקום: רק ישראל/רימוט — אל תנקד משרות שלא יעברו ממילא.
 
 ==================================================
 שלב 4 — GitHub Actions
 ==================================================
 job-scan.yml:
   permissions: contents: write
-  on: workflow_dispatch + schedule (cron 3x ביום, ראשון-חמישי בלבד: '0 5,10,15 * * 0-4')
+  on: workflow_dispatch + schedule (cron 3x ביום, ראשון-חמישי: '0 5,10,15 * * 0-4')
   steps: checkout → setup-python → pip install anthropic python-dotenv →
-         python job_search/run_pipeline.py (env: ANTHROPIC_API_KEY מ-secrets) →
-         git config user + add docs/index.html job_search/scored_jobs.json + commit + push.
+         python job_search/run_pipeline.py (env: ANTHROPIC_API_KEY מ-secrets)
+
 deploy-pages.yml:
   on: push to main בנתיב docs/** + workflow_dispatch
   permissions: pages: write, id-token: write
-  upload-pages-artifact (path: docs) → deploy-pages.
+  upload-pages-artifact (path: docs) → deploy-pages
 
 ==================================================
 שלב 5 — הטראקר (tracker_template.html) — זה הלב
 ==================================================
 HTML/CSS/JS יחיד, RTL עברית, mobile-first, ללא תלות חיצונית חוץ מ-Google Fonts.
-פלייסהולדרים: const JOBS=__JOBS_JSON__;  ו-__LAST_UPDATED__.
-כל מצב המשתמש נשמר ב-localStorage (status, channel, starred, note, score_feedback,
-interviews[], dismissed). פונקציה getJobState קוראת initial_status כ-fallback.
+פלייסהולדרים: const JOBS=__JOBS_JSON__;  ו-__LAST_UPDATED__ (מוחלפים ב-build_html()).
+כל מצב המשתמש נשמר ב-localStorage (status, channel, starred, note, interviews[], dismissed).
 
-עיצוב — Material 3 Expressive (שפת העיצוב של גוגל):
-- פלטה טונלית מ-seed אחד (primary/secondary/tertiary containers + on-* colors).
-- פינות גדולות (כרטיס 28px, hero 32px), כפתורי גלולה, Material Symbols icons, פונט Heebo.
-- תג ציון כריבוע מעוגל טונלי (ירוק=גבוה, צהוב=בינוני).
-- מצב כהה מלא (פלטת M3 dark) עם כפתור החלפה ידני שנשמר ב-localStorage + סקריפט ב-head שמונע הבהוב.
+עיצוב — Material 3 Expressive:
+- פלטה טונלית (primary/secondary/tertiary containers + on-* colors).
+- פינות גדולות (28px כרטיס, 32px hero), כפתורי גלולה, Material Symbols icons, פונט Heebo.
+- תג ציון כריבוע מעוגל (ירוק=גבוה, צהוב=בינוני).
+- מצב כהה מלא + כפתור החלפה ידני שנשמר ב-localStorage.
+- סקריפט inline ב-head שמיישם theme לפני render (מונע הבהוב).
 
 רכיבים:
-- Hero: ברכה, סטטיסטיקה, funnel (שמורות→הוגשו→ראיון→הצעה) עם ברים, momentum chips.
-- Toolbar דביק (sticky): חיפוש, מיון (התאמה/עדכני/A-Z), פילטרים (שלב, ציון, תאריך) כ-chips נגללים.
+- Hero: ברכה, סטטיסטיקה, funnel (שמורות→הוגשו→ראיון→הצעה), momentum chips.
+- Toolbar דביק: חיפוש, מיון (התאמה/עדכני/A-Z), פילטרים כ-chips נגללים.
 - כרטיס משרה: כוכב, ציון, חברה+תפקיד, סטטוס pill, badge "חדש"/"follow-up".
-  גוף נפתח: meta chips, הערת AI, איש קשר, פידבק לסינון, סבבי ראיונות, הערות אישיות,
-  stepper סטטוס, ערוץ הגשה, וכפתורי פעולה.
+  גוף נפתח: meta chips, הערת AI, איש קשר, סבבי ראיונות, הערות, stepper סטטוס, כפתורי פעולה.
 
 סבבי ראיונות (לכל משרה, מערך interviews[]):
-  לכל סבב: תאריך, שם מראיין, שלב, תוצאה (ממתין/עבר/נדחה), הערה.
   שלבים: ["ראיון טלפוני","ראיון HR","ראיון וידאו","ראיון מקצועי","ראיון טכני",
           "עבודת בית / מטלה","ראיון מנהל","ראיון סופי","אחר"].
-  צבע הסבב משתנה לפי התוצאה (ירוק/אדום).
+  לכל סבב: תאריך, שם מראיין, שלב (dropdown), תוצאה (ממתין/עבר/נדחה), הערה.
+  צבע הסבב: ירוק לעבר, אדום לנדחה.
 
-כפתורי פעולה (כל אחד מייצר פרומפט מוכן ל-clipboard, או פותח modal):
-- "מכתב"        → פרומפט לכתיבת מכתב מקדים מותאם (פרטי המשרה + הפרופיל).
-- "הכנה לראיון" → פרומפט: 8 שאלות צפויות + נקודות דיבור + שאלות לשאול + דגל אדום.
-- "דוסייר"      → פרומפט מחקר חברה: גיוס, גודל, חדשות, תרבות, רלוונטיות.
-- "קו״ח"        → קורות חיים מותאמים (התאמה לפי מילות מפתח מהמשרה) + הדפסה ל-PDF.
+כפתורי פעולה — כל אחד מייצר פרומפט מוכן ל-clipboard (modal עם כפתור copy):
+- "מכתב"        → פרומפט לכתיבת מכתב מקדים מותאם (פרטי המשרה + פרופיל המשתמש).
+- "הכנה לראיון" → 8 שאלות צפויות + נקודות דיבור + שאלות לשאול + דגל אדום.
+- "תרגול ראיון" → סימולציה אינטראקטיבית — ראה להלן.
+- "דוסייר"      → מחקר חברה: גיוס, גודל, חדשות, תרבות, רלוונטיות.
+- "קו״ח"        → קורות חיים מותאמים לפי מילות מפתח מהמשרה + הדפסה ל-PDF.
 - "פנייה"       → מעתיק את ה-ai_opener.
 - "וואטסאפ"     → שיתוף המשרה ב-WhatsApp.
 - "פתח משרה"    → לינק ישיר.
-- "לא רלוונטי — למד מזה" → מסמן dismissed=irrelevant, אנימציית הסרה, ושומר ל-feedback.json
-  (דרך GitHub API עם token) כך שהסורק לא יציע שוב.
+- "לא רלוונטי — למד מזה" → אנימציית הסרה + שמירה ל-feedback.json + לא יוצע שוב.
 
-מסך אנליטיקה (modal): גרף משפך המרה (הגשה→ראיון→הצעה באחוזים), המתנה ממוצעת
-אחרי הגשה, מספר סבבי ראיון שעברתי, כמה ממתינים ל-follow-up.
+### תרגול ראיון — מפרט מלא (פיצ'ר מרכזי)
+כפתור "🎙️ תרגול ראיון" נפרד מ"הכנה לראיון".
+הפרומפט שנוצר:
+1. מזהה אוטומטית את שלב הראיון הנוכחי מ-interviews[] של המשרה:
+   - מחפש סבב אחרון עם outcome="pending" → זה השלב לתרגל.
+   - אם אין pending: לוקח את השלב שאחרי האחרון שהושלם.
+   - fallback: "ראיון טלפוני".
+2. לכל שלב יש STAGE_GUIDE שמסביר ל-Claude את הטון, העומק והסוג הצפוי:
+   - ראיון טלפוני: חם, קצר, motivation/fit כללי.
+   - ראיון HR: behavioral STAR, soft skills, התאמה תרבותית.
+   - ראיון מקצועי: עומק RevOps/GTM — מטריקות, פייפליין, כלים.
+   - ראיון טכני: תרחישים, SQL, CRM, פתרון בעיות בזמן אמת.
+   - ראיון מנהל: אסטרטגיה, חשיבה עסקית, 90 ימים ראשונים.
+   - ראיון סופי: חזון, מנהיגות, מה תביא לארגון לטווח ארוך.
+3. Claude שואל שאלה אחת, מחכה לתשובה, ונותן פידבק:
+   💪 מה היה חזק (קודם תמיד) | 🎯 מה לחדד | 📊 ניקוד 1-10 | ➡️ שאלה הבאה.
+4. אחרי 6-8 שאלות: סיכום — ממוצע, מגמה, 3 חוזקות, 2 לתרגל.
+5. טון מפורש: מעצים, לא מרסק. "תצא מהתרגול חזק יותר, לא מותש."
 
-הגדרות (drawer): עריכת קורות חיים, עריכת תפקידים (יצוא config.json),
-GitHub token (לסריקה ידנית + סנכרון פידבק).
+מסך אנליטיקה (modal): גרף משפך המרה, המתנה ממוצעת, כמה ממתינים ל-follow-up.
 
 פריסה רספונסיבית:
-- מובייל: כרטיסים accordion. אופטימיזציות: שדות 16px (מונע zoom ב-iOS), safe-area,
-  פילטרים נגללים אופקית, גריד פעולות 2-בשורה, touch targets גדולים.
-- דסקטופ ≥1024px: Master-Detail — רשימה צרה דביקה מימין + פאנל פרטים רחב משמאל
-  (כמו Gmail/Linear). ללא כפילות IDs (הפרטים רק בפאנל). hover elevation,
-  קיצורי מקלדת ("/" חיפוש, Esc סגירה, t החלפת theme), פסי גלילה עדינים.
+- מובייל: accordion. שדות 16px (iOS zoom prevention), safe-area, פעולות בגריד 2-בשורה.
+- דסקטופ ≥1024px: Master-Detail — רשימה צרה + פאנל פרטים (כמו Gmail).
+  קיצורי מקלדת: "/" חיפוש, Esc סגירה, "t" החלפת theme. hover elevation.
 
-PWA: manifest + service worker (network-first ל-HTML, cache-first לסטטי) → ניתן
-"להוסיף למסך הבית" באנדרואיד ובמק, ועובד offline. theme-color לבהיר/כהה.
+PWA: manifest + service worker (network-first ל-HTML, cache-first לסטטי).
+theme-color נפרד לבהיר/כהה.
 
 ==================================================
 שלב 6 — עלויות והערות
 ==================================================
-- צריך Anthropic API key (לא Claude Pro). ~$5-10 לחודש בשימוש רגיל. הוסף ANTHROPIC_API_KEY ל-GitHub Secrets.
+- צריך Anthropic API key (לא Claude Pro). ~$5-10 לחודש בשימוש רגיל.
+  הוסף ANTHROPIC_API_KEY כ-GitHub Secret.
 - הפרדת מודלים: Opus לחיפוש (איכות), Haiku לניקוד עשרות משרות (זול ומהיר) — חיסכון ~80%.
-- LinkedIn: אין API ציבורי מאז 2023; אל תעשה scraping (מנוגד ל-ToS). השתמש ב-web_search
-  למשרות ציבוריות + ATS APIs. סנכרון הגשות = ייצוא CSV ידני מ-LinkedIn.
+- LinkedIn: אין API ציבורי מאז 2023. אל תעשה scraping. השתמש ב-web_search + ATS APIs.
 
 תתחיל עכשיו בשלב 0 — שאל אותי את שאלות האונבורדינג.
 ```
