@@ -17,10 +17,6 @@
       {
         "date": "2026-06-05",
         "score": 0
-      },
-      {
-        "date": "2026-06-06",
-        "score": 9
       }
     ],
     "Embrace": [
@@ -54,37 +50,25 @@
       },
       {
         "date": "2026-06-06",
-        "score": 6
+        "score": 7
       }
     ],
     "Gradient Labs": [
       {
         "date": "2026-06-05",
         "score": 0
-      },
-      {
-        "date": "2026-06-06",
-        "score": 9
       }
     ],
     "Redwood Software": [
       {
         "date": "2026-06-05",
         "score": 0
-      },
-      {
-        "date": "2026-06-06",
-        "score": 7
       }
     ],
     "Ivo": [
       {
         "date": "2026-06-05",
         "score": 0
-      },
-      {
-        "date": "2026-06-06",
-        "score": 9
       }
     ],
     "Shopmonkey": [
@@ -255,10 +239,6 @@
       {
         "date": "2026-06-05",
         "score": 0
-      },
-      {
-        "date": "2026-06-06",
-        "score": 7
       }
     ],
     "Undisclosed": [
@@ -365,46 +345,74 @@
         "score": 0
       }
     ],
-    "Passage Health": [
+    "Gong": [
       {
         "date": "2026-06-06",
         "score": 8
       }
     ],
-    "Vanta": [
+    "Flex": [
       {
         "date": "2026-06-06",
-        "score": 5
+        "score": 9
       }
     ],
-    "Tebra": [
+    "LumApps": [
+      {
+        "date": "2026-06-06",
+        "score": 8
+      }
+    ],
+    "Noibu Technologies": [
+      {
+        "date": "2026-06-06",
+        "score": 9
+      }
+    ],
+    "Snorkel AI": [
+      {
+        "date": "2026-06-06",
+        "score": 9
+      },
+      {
+        "date": "2026-06-06",
+        "score": 6
+      }
+    ],
+    "FOSSA": [
+      {
+        "date": "2026-06-06",
+        "score": 8
+      }
+    ],
+    "Built Technologies": [
+      {
+        "date": "2026-06-06",
+        "score": 9
+      }
+    ],
+    "OpenAI": [
+      {
+        "date": "2026-06-06",
+        "score": 6
+      }
+    ],
+    "Harvey": [
+      {
+        "date": "2026-06-06",
+        "score": 6
+      }
+    ],
+    "Astronomer": [
       {
         "date": "2026-06-06",
         "score": 7
       }
     ],
-    "Proton": [
-      {
-        "date": "2026-06-06",
-        "score": 4
-      }
-    ],
-    "Iru": [
+    "Render": [
       {
         "date": "2026-06-06",
         "score": 9
-      }
-    ],
-    "Anyscale": [
-      {
-        "date": "2026-06-06",
-        "score": 9
-      }
-    ],
-    "Moss": [
-      {
-        "date": "2026-06-06",
-        "score": 8
       }
     ]
   }
