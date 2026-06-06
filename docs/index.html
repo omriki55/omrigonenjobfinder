@@ -961,11 +961,13 @@ function openCV(i){
   _cvJob=j;_cvText=tailorCV(j);_cvCompany=j.company;_modalMode="cv";
   document.getElementById("m-title").textContent="קו״ח מותאמים — "+j.company;
   document.getElementById("m-sub").textContent=j.title;
-  document.getElementById("m-body").textContent=_cvText;
+  const body=document.getElementById("m-body");body.className="modal-body";body.textContent=_cvText;
+  document.getElementById("m-chatbar").style.display="none";
+  document.getElementById("m-foot").style.display="flex";
   document.getElementById("m-pdf-btn").style.display="";
   document.getElementById("modal").classList.add("show");
 }
-function closeModal(){document.getElementById("modal").classList.remove("show");document.getElementById("m-chatbar").style.display="none";const b=document.getElementById("m-body");b.className="modal-body";}
+function closeModal(){document.getElementById("modal").classList.remove("show");document.getElementById("m-chatbar").style.display="none";document.getElementById("m-foot").style.display="flex";const b=document.getElementById("m-body");b.className="modal-body";}
 function copyModalText(){navigator.clipboard.writeText(_cvText).then(()=>showToast(_modalMode==="cv"?"קורות חיים הועתקו!":"הפרומפט הועתק — הדבק ב-Claude.ai"));}
 
 /* ══════════ LIVE CHAT ENGINE (direct Anthropic API) ══════════ */
@@ -992,7 +994,7 @@ async function callClaude(){
   const res=await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:CHAT_MODEL,max_tokens:1500,system:_chat.system,messages:_chat.messages})
+    body:JSON.stringify({model:CHAT_MODEL,max_tokens:2000,system:_chat.system,messages:_chat.messages})
   });
   if(!res.ok){const t=await res.text();throw new Error(res.status+' '+t.slice(0,200));}
   const data=await res.json();
