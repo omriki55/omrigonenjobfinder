@@ -621,11 +621,18 @@
     </div>
     <div class="d-tab-panel" id="dtab-connect">
       <div class="d-section">
-        <div class="d-lbl">🔑 Anthropic API Key — לצ'אט חי בתוך המערכת</div>
+        <div class="d-lbl">🌐 Proxy URL — צ'אט חי מאובטח (מומלץ)</div>
+        <input class="d-inp" id="proxy-inp" type="text" placeholder="https://anthropic-proxy.xxx.workers.dev" autocomplete="off"/>
+        <button class="d-btn primary" onclick="saveProxy()" style="margin-top:6px">שמור Proxy</button>
+        <div class="d-status" id="proxy-status"></div>
+        <div class="d-hint">Cloudflare Worker ששומר את המפתח כסוד בצד שרת. ראה הוראות הקמה ב-worker/README.md. כך אפשר גם לשתף את הטראקר בלי לחשוף מפתח.</div>
+      </div>
+      <div class="d-section">
+        <div class="d-lbl">🔑 Anthropic API Key — חלופה (מפתח בדפדפן)</div>
         <input class="d-inp" id="api-key-inp" type="password" placeholder="sk-ant-..." autocomplete="off"/>
         <button class="d-btn primary" onclick="saveApiKey()" style="margin-top:6px">שמור מפתח</button>
         <div class="d-status" id="api-key-status"></div>
-        <div class="d-hint">נשמר רק בדפדפן שלך (localStorage), לא נשלח לשום מקום חוץ מ-Anthropic. בלי מפתח — הכפתורים מעתיקים פרומפט במקום לפתוח צ'אט.</div>
+        <div class="d-hint">נשמר רק בדפדפן שלך (localStorage). השתמש בזה לשימוש אישי בלבד — לא לשתף. אם הגדרת Proxy, הוא קודם. בלי שניהם — הכפתורים מעתיקים פרומפט.</div>
       </div>
       <div class="d-section">
         <div class="d-lbl">GitHub Token</div>
@@ -973,10 +980,17 @@ function copyModalText(){navigator.clipboard.writeText(_cvText).then(()=>showToa
 /* ══════════ LIVE CHAT ENGINE (direct Anthropic API) ══════════ */
 const CHAT_MODEL="claude-sonnet-4-6";
 function getApiKey(){return localStorage.getItem('anthropic_key')||'';}
+function getProxy(){return (localStorage.getItem('claude_proxy')||'').trim();}
+function chatReady(){return !!(getProxy()||getApiKey());}
 function saveApiKey(){
   const v=document.getElementById('api-key-inp').value.trim();
   if(v){localStorage.setItem('anthropic_key',v);document.getElementById('api-key-status').textContent='מפתח שמור ✓ — הכפתורים יפתחו צ\'אט חי';showToast('מפתח API נשמר');}
   else{localStorage.removeItem('anthropic_key');document.getElementById('api-key-status').textContent='';showToast('מפתח הוסר');}
+}
+function saveProxy(){
+  const v=document.getElementById('proxy-inp').value.trim().replace(/\/$/,'');
+  if(v){localStorage.setItem('claude_proxy',v);document.getElementById('proxy-status').textContent='Proxy מחובר ✓ — צ\'אט חי בלי מפתח בדפדפן';showToast('Proxy נשמר');}
+  else{localStorage.removeItem('claude_proxy');document.getElementById('proxy-status').textContent='';showToast('Proxy הוסר');}
 }
 let _chat={system:"",messages:[],busy:false};
 function autoGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px';}
@@ -990,12 +1004,19 @@ function appendMsg(role,text,cls){
   return d;
 }
 async function callClaude(){
-  const key=getApiKey();
-  const res=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:CHAT_MODEL,max_tokens:2000,system:_chat.system,messages:_chat.messages})
-  });
+  const proxy=getProxy();
+  const payload={model:CHAT_MODEL,max_tokens:2000,system:_chat.system,messages:_chat.messages};
+  let res;
+  if(proxy){
+    // route through Cloudflare Worker — no key in the browser
+    res=await fetch(proxy,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
+  }else{
+    res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'content-type':'application/json','x-api-key':getApiKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify(payload)
+    });
+  }
   if(!res.ok){const t=await res.text();throw new Error(res.status+' '+t.slice(0,200));}
   const data=await res.json();
   return (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
@@ -1032,7 +1053,7 @@ function launchChat({title,sub,system,kickoff,fallbackText,pdf}){
   const body=document.getElementById('m-body');
   const bar=document.getElementById('m-chatbar');
   const foot=document.getElementById('m-foot');
-  if(getApiKey()){
+  if(chatReady()){
     _modalMode='chat';
     _chat={system:system,messages:[],busy:false};
     body.className='modal-body chat';body.innerHTML='';
@@ -1672,7 +1693,10 @@ function openSettings(tab){
   document.getElementById('gh-token-status').textContent=tk?'Token שמור ✓':'';
   const ak=getApiKey();
   document.getElementById('api-key-inp').value=ak;
-  document.getElementById('api-key-status').textContent=ak?'מפתח שמור ✓ — הכפתורים פותחים צ\'אט חי':'';
+  document.getElementById('api-key-status').textContent=ak?'מפתח שמור ✓':'';
+  const px=getProxy();
+  document.getElementById('proxy-inp').value=px;
+  document.getElementById('proxy-status').textContent=px?'Proxy מחובר ✓ — צ\'אט חי בלי מפתח בדפדפן':'';
   if(tab)switchDrawerTabByKey(tab);
 }
 function closeSettings(){
