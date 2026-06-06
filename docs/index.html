@@ -1453,7 +1453,17 @@ async function callClaude(){
       body:JSON.stringify(payload)
     });
   }
-  if(!res.ok){const t=await res.text();throw new Error(res.status+' '+t.slice(0,200));}
+  if(!res.ok){
+    const t=await res.text();
+    let msg;
+    if(res.status===401)msg='המפתח שגוי או פג תוקף (401) — בדוק/החלף בהגדרות → Connections.';
+    else if(res.status===403)msg='אין הרשאה למפתח הזה (403) — ודא שיש קרדיט פעיל ב-console.anthropic.com.';
+    else if(res.status===404)msg='המודל לא נמצא (404): '+t.slice(0,120);
+    else if(res.status===429)msg='חרגת ממכסת השימוש (429) — בדוק קרדיט/מגבלות ב-console.anthropic.com.';
+    else if(res.status===400)msg='בקשה שגויה (400): '+t.slice(0,140);
+    else msg=res.status+' '+t.slice(0,160);
+    throw new Error(msg);
+  }
   const data=await res.json();
   return (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
 }
@@ -2240,7 +2250,7 @@ function render(){
   const stats=computeStats();
   const gEl=document.getElementById("hero-greeting");
   if(gEl){const h=new Date().getHours();const g=h<5?"לילה טוב":h<12?"בוקר טוב":h<17?"צהריים טובים":h<21?"ערב טוב":"לילה טוב";gEl.textContent=`${g}, עומרי 👋`;}
-  document.getElementById("hero-meta").textContent=`06/06/2026 20:35 · ${stats.total} משרות פעילות`;
+  document.getElementById("hero-meta").textContent=`06/06/2026 20:43 · ${stats.total} משרות פעילות`;
   document.getElementById("hero-coach").textContent=coachLine(stats);
 
   /* ── Desktop top-bar stats chips ── */

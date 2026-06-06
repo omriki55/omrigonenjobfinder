@@ -1,5 +1,5 @@
 /* Job Tracker service worker — offline-first for the app shell */
-const CACHE = 'jobtracker-v1';
+const CACHE = 'jobtracker-v3';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', e => {
