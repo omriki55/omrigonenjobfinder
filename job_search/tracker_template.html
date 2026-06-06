@@ -303,6 +303,44 @@
     .psetup-start{background:var(--primary);color:#fff;border:none;border-radius:999px;padding:14px 28px;font-size:.92rem;font-weight:800;font-family:var(--font-ui);cursor:pointer;align-self:stretch;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px}
     .psetup-start:hover{background:var(--accentDeep);box-shadow:0 4px 16px rgba(79,107,237,.35)}
     .psetup-start .material-symbols-rounded{font-size:20px}
+    .psetup-btns{display:flex;gap:10px}
+    .psetup-start-voice{flex:0 0 auto;background:var(--success-container);color:#0c3a22;border:none;border-radius:999px;padding:14px 22px;font-size:.92rem;font-weight:800;font-family:var(--font-ui);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px}
+    .psetup-start-voice:hover{filter:brightness(.96);box-shadow:0 4px 14px rgba(46,107,70,.3)}
+    .psetup-start-voice .material-symbols-rounded{font-size:20px}
+    html[data-theme=dark] .psetup-start-voice{background:var(--success-container);color:#b3f1c7}
+
+    /* ── Voice call overlay ── */
+    #voice-overlay{position:fixed;inset:0;z-index:2000;background:linear-gradient(160deg,#0f1c3a 0%,#1a2d50 60%,#0e1a2e 100%);display:none;flex-direction:column;align-items:center;justify-content:center;gap:32px}
+    #voice-overlay.show{display:flex}
+    .vo-company{color:rgba(255,255,255,.55);font-size:.82rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+    .vo-stage{color:rgba(255,255,255,.35);font-size:.72rem;margin-top:2px;text-align:center}
+    .vo-avatar-wrap{position:relative;display:flex;align-items:center;justify-content:center;width:140px;height:140px}
+    .vo-ring{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(255,255,255,.15);animation:voRing 2s ease-in-out infinite}
+    .vo-ring:nth-child(2){animation-delay:.4s;inset:-14px;opacity:.5}
+    .vo-ring:nth-child(3){animation-delay:.8s;inset:-28px;opacity:.25}
+    @keyframes voRing{0%,100%{transform:scale(1);opacity:var(--o,.4)}50%{transform:scale(1.05);opacity:calc(var(--o,.4)*1.6)}}
+    .vo-avatar-wrap.speaking .vo-ring{border-color:rgba(100,180,255,.6);animation-name:voRingActive}
+    @keyframes voRingActive{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+    .vo-avatar-wrap.listening .vo-ring{border-color:rgba(100,220,140,.55);animation-name:voRingListen}
+    @keyframes voRingListen{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+    .vo-circle{width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.1);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(255,255,255,.2);transition:background .4s}
+    .vo-avatar-wrap.speaking .vo-circle{background:rgba(79,130,220,.35)}
+    .vo-avatar-wrap.listening .vo-circle{background:rgba(46,160,80,.3)}
+    .vo-circle .material-symbols-rounded{font-size:2.8rem;color:#fff}
+    .vo-who{color:#fff;font-size:1rem;font-weight:700;text-align:center;min-height:1.4em}
+    .vo-interim{color:rgba(255,255,255,.5);font-size:.82rem;text-align:center;max-width:320px;min-height:2.4em;line-height:1.45;padding:0 16px}
+    .vo-last-ai{color:rgba(255,255,255,.7);font-size:.78rem;text-align:center;max-width:340px;min-height:2.4em;line-height:1.45;padding:0 16px;font-style:italic}
+    .vo-controls{display:flex;gap:20px;align-items:center;margin-top:8px}
+    .vo-btn{width:64px;height:64px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;font-size:0}
+    .vo-btn .material-symbols-rounded{font-size:26px;color:#fff}
+    .vo-mute{background:rgba(255,255,255,.15);backdrop-filter:blur(6px)}
+    .vo-mute:hover{background:rgba(255,255,255,.25)}
+    .vo-mute.muted{background:rgba(220,80,80,.6)}
+    .vo-end{background:#e53935;box-shadow:0 4px 18px rgba(229,57,53,.5)}
+    .vo-end:hover{background:#c62828;box-shadow:0 6px 24px rgba(229,57,53,.6)}
+    .vo-skip{background:rgba(255,255,255,.1);backdrop-filter:blur(6px)}
+    .vo-skip:hover{background:rgba(255,255,255,.2)}
+    .vo-no-support{color:rgba(255,255,255,.7);font-size:.84rem;text-align:center;padding:0 24px;line-height:1.6}
 
     /* analytics */
     .an-body{padding:6px 20px 20px;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
@@ -798,6 +836,27 @@
     </div>
     <aside id="detail"></aside>
   </div>
+</div>
+
+<!-- VOICE CALL OVERLAY -->
+<div id="voice-overlay">
+  <div class="vo-company" id="vo-company"></div>
+  <div class="vo-stage" id="vo-stage"></div>
+  <div class="vo-avatar-wrap" id="vo-avatar-wrap">
+    <div class="vo-ring" style="--o:.4"></div>
+    <div class="vo-ring" style="--o:.25"></div>
+    <div class="vo-ring" style="--o:.12"></div>
+    <div class="vo-circle"><span class="material-symbols-rounded" id="vo-icon">smart_toy</span></div>
+  </div>
+  <div class="vo-who" id="vo-who">מתחיל...</div>
+  <div class="vo-last-ai" id="vo-last-ai"></div>
+  <div class="vo-interim" id="vo-interim"></div>
+  <div class="vo-controls">
+    <button class="vo-btn vo-skip" onclick="voiceSkip()" title="דלג / המשך"><span class="material-symbols-rounded">skip_next</span></button>
+    <button class="vo-btn vo-end" onclick="endVoiceCall()" title="סיום שיחה"><span class="material-symbols-rounded">call_end</span></button>
+    <button class="vo-btn vo-mute" id="vo-mute-btn" onclick="toggleVoiceMute()" title="השתק"><span class="material-symbols-rounded" id="vo-mute-ico">mic</span></button>
+  </div>
+  <div class="vo-no-support" id="vo-no-support" style="display:none"></div>
 </div>
 
 <div id="toast"></div>
@@ -1454,9 +1513,14 @@ function openPractice(i){
         <input class="iview-manual" id="iview-manual" type="text" placeholder="שם ותפקיד המראיין/ת (אופציונלי)" value="${knownInterviewers.length?knownInterviewers[knownInterviewers.length-1].name:""}"/>
       </div>
     </div>
-    <button class="psetup-start" onclick="startPractice(${i})">
-      <span class="material-symbols-rounded">play_arrow</span>התחל תרגול
-    </button>
+    <div class="psetup-btns">
+      <button class="psetup-start" style="flex:1" onclick="startPractice(${i})">
+        <span class="material-symbols-rounded">chat</span>צ׳אט
+      </button>
+      <button class="psetup-start-voice" onclick="startVoicePractice(${i})">
+        <span class="material-symbols-rounded">mic</span>ראיון קולי
+      </button>
+    </div>
   </div>`;
   // store context on window for the start function
   window._practiceCtx={i,stage,lang:'he'};
@@ -1553,6 +1617,266 @@ Empowering, not crushing. Even critical feedback should leave me energised and c
     fallbackText:sysPrompt
   });
 }
+
+/* ══════════════════════════════════════════════════════
+   VOICE INTERVIEW ENGINE
+   Web Speech API: SpeechRecognition (STT) + speechSynthesis (TTS)
+   ══════════════════════════════════════════════════════ */
+const _vc={
+  active:false, muted:false, busy:false,
+  messages:[], system:'', lang:'he-IL',
+  rec:null, synth:window.speechSynthesis,
+  jobLabel:'', stageLabel:''
+};
+
+function startVoicePractice(i){
+  const {stage,lang}=window._practiceCtx||{};
+  const j=window._sorted[i],cvData=getCV();
+  const interviewer=(document.getElementById("iview-manual")||{}).value||"";
+  const stageUsed=stage||currentStage(j);
+  const langHe=lang!=="en";
+  const langCode=langHe?"he-IL":"en-US";
+
+  // check browser support
+  const SpeechRec=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const overlay=document.getElementById("voice-overlay");
+  overlay.classList.add("show");
+  // close text modal
+  document.getElementById("modal").classList.remove("show");
+
+  if(!SpeechRec){
+    document.getElementById("vo-no-support").style.display="block";
+    document.getElementById("vo-no-support").textContent=
+      "הדפדפן הזה לא תומך בזיהוי קול. נסה Chrome או Edge.";
+    document.getElementById("vo-who").textContent="";
+    return;
+  }
+  if(!chatReady()){
+    document.getElementById("vo-no-support").style.display="block";
+    document.getElementById("vo-no-support").textContent=
+      langHe?"חסר חיבור ל-API. הגדר מפתח API בהגדרות.":"No API connection. Set your API key in Settings.";
+    return;
+  }
+
+  // build same system prompt as text practice
+  const guideHe=STAGE_GUIDE[stageUsed]||"";
+  const guideEn=STAGE_GUIDE_EN[stageUsed]||"";
+  const interviewerCtx=interviewer
+    ?(langHe?`\n## המראיין/ת\n${interviewer}\nהתאם את השאלות לסגנון המראיין.`
+            :`\n## Interviewer\n${interviewer}\nTailor questions to this interviewer's perspective.`)
+    :"";
+
+  const sysPrompt=langHe
+    ?`אתה מאמן ראיונות בכיר. מנהל סימולציית ראיון קולית בעברית.
+
+## השלב: ${stageUsed}
+${guideHe}${interviewerCtx}
+
+## המשרה
+חברה: ${j.company} | תפקיד: ${j.title}
+${j.description?`תיאור:\n${j.description.slice(0,400)}`:""}
+
+## הפרופיל
+עומרי גונן — ${cvData.tagline}
+${cvData.summary}
+
+## כללי השיחה הקולית (חשוב!)
+- שאל שאלה אחת בכל פעם — קצרה וברורה (מקסימום 2-3 משפטים).
+- אחרי כל תשובה: פידבק קצר (**חזק** / **לשפר** / **ניקוד**) ואז שאלה הבאה.
+- אחרי 5-6 שאלות: סיכום קצר עם ציון ממוצע ו-2 המלצות.
+- דבר בצורה טבעית ושוטפת — לא רשימות מסורבלות, לא כותרות.
+- שמור על טון חם ומעצים.`
+    :`You are a senior interview coach running a voice interview simulation in English.
+
+## Stage: ${stageUsed}
+${guideEn}${interviewerCtx}
+
+## Job
+${j.company} · ${j.title}
+${j.description?`${j.description.slice(0,400)}`:""}
+
+## Profile
+Omri Gonen — ${cvData.tagline}. ${cvData.summary}
+
+## Voice Interview Rules (important!)
+- Ask ONE question at a time — short and clear (max 2-3 sentences).
+- After each answer: brief feedback (strength / improvement / score 1-10) then next question.
+- After 5-6 questions: short summary with average score and top 2 tips.
+- Speak naturally and conversationally — no bullet lists, no headers.
+- Keep the tone warm and empowering.`;
+
+  const kickoff=langHe
+    ?"שלום! אני מוכן לראיון. תתחיל בבקשה בשאלה הראשונה."
+    :"Hi! I'm ready for the interview. Please start with the first question.";
+
+  // init state
+  Object.assign(_vc,{
+    active:true,muted:false,busy:false,
+    messages:[],system:sysPrompt,lang:langCode,
+    jobLabel:j.company,stageLabel:stageUsed+(interviewer?" · "+interviewer:""),
+    rec:null
+  });
+
+  // setup UI
+  document.getElementById("vo-company").textContent=j.company.toUpperCase()+" · "+j.title;
+  document.getElementById("vo-stage").textContent=stageUsed+(interviewer?" · "+interviewer:"");
+  document.getElementById("vo-who").textContent=langHe?"מתחיל...":"Starting...";
+  document.getElementById("vo-last-ai").textContent="";
+  document.getElementById("vo-interim").textContent="";
+  document.getElementById("vo-no-support").style.display="none";
+  setVoiceState("thinking");
+
+  // kick off: send kickoff message to Claude, speak response
+  _vc.messages.push({role:"user",content:kickoff});
+  voiceCallClaude();
+}
+
+function setVoiceState(state){
+  const wrap=document.getElementById("vo-avatar-wrap");
+  const who=document.getElementById("vo-who");
+  const ico=document.getElementById("vo-icon");
+  const langHe=_vc.lang.startsWith("he");
+  wrap.className="vo-avatar-wrap";
+  if(state==="speaking"){
+    wrap.classList.add("speaking");
+    who.textContent=langHe?"Claude מדבר...":"Claude speaking...";
+    ico.textContent="smart_toy";
+  }else if(state==="listening"){
+    wrap.classList.add("listening");
+    who.textContent=langHe?"תורך לדבר":"Your turn";
+    ico.textContent="mic";
+  }else if(state==="thinking"){
+    who.textContent=langHe?"חושב...":"Thinking...";
+    ico.textContent="hourglass_empty";
+  }else if(state==="idle"){
+    who.textContent="";
+    ico.textContent="smart_toy";
+  }
+}
+
+async function voiceCallClaude(){
+  if(!_vc.active)return;
+  _vc.busy=true;
+  setVoiceState("thinking");
+  try{
+    const proxy=getProxy();
+    const payload={model:CHAT_MODEL,max_tokens:600,system:_vc.system,messages:_vc.messages};
+    let res;
+    if(proxy){
+      res=await fetch(proxy,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});
+    }else{
+      res=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"content-type":"application/json","x-api-key":getApiKey(),
+          "anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+        body:JSON.stringify(payload)
+      });
+    }
+    if(!res.ok)throw new Error("API "+res.status);
+    const data=await res.json();
+    const text=data.content?.[0]?.text||"";
+    _vc.messages.push({role:"assistant",content:text});
+    document.getElementById("vo-last-ai").textContent=text.slice(0,160)+(text.length>160?"…":"");
+    voiceSpeak(text);
+  }catch(e){
+    console.error(e);
+    const msg=_vc.lang.startsWith("he")?"שגיאה בחיבור ל-API":"API connection error";
+    document.getElementById("vo-who").textContent=msg;
+    _vc.busy=false;
+  }
+}
+
+function voiceSpeak(text){
+  if(!_vc.active)return;
+  _vc.synth.cancel();
+  setVoiceState("speaking");
+  // strip markdown symbols for cleaner TTS
+  const clean=text.replace(/[*_#`►•]/g,"").replace(/\n+/g," ").trim();
+  const utt=new SpeechSynthesisUtterance(clean);
+  utt.lang=_vc.lang;
+  utt.rate=_vc.lang.startsWith("he")?0.92:0.95;
+  utt.pitch=1.0;
+  // pick best available voice
+  const voices=_vc.synth.getVoices().filter(v=>v.lang.startsWith(_vc.lang.slice(0,2)));
+  if(voices.length)utt.voice=voices[0];
+  utt.onend=()=>{if(_vc.active&&!_vc.muted)voiceListen();else _vc.busy=false;};
+  utt.onerror=()=>{if(_vc.active)voiceListen();};
+  _vc.synth.speak(utt);
+}
+
+function voiceListen(){
+  if(!_vc.active||_vc.muted)return;
+  const SpeechRec=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const rec=new SpeechRec();
+  rec.lang=_vc.lang;
+  rec.interimResults=true;
+  rec.maxAlternatives=1;
+  rec.continuous=false;
+  _vc.rec=rec;
+  _vc.busy=false;
+  setVoiceState("listening");
+  document.getElementById("vo-interim").textContent="";
+
+  rec.onresult=(e)=>{
+    let interim="",final="";
+    for(const r of e.results){
+      if(r.isFinal)final+=r[0].transcript;
+      else interim+=r[0].transcript;
+    }
+    document.getElementById("vo-interim").textContent=interim||final;
+    if(final){
+      rec.stop();
+      _vc.rec=null;
+      document.getElementById("vo-interim").textContent=final;
+      _vc.messages.push({role:"user",content:final});
+      _vc.busy=true;
+      setTimeout(()=>{document.getElementById("vo-interim").textContent="";voiceCallClaude();},400);
+    }
+  };
+  rec.onerror=(e)=>{
+    if(e.error==="no-speech"&&_vc.active)voiceListen();
+  };
+  rec.onend=()=>{
+    if(_vc.active&&!_vc.busy&&!_vc.muted)voiceListen();
+  };
+  rec.start();
+}
+
+function toggleVoiceMute(){
+  _vc.muted=!_vc.muted;
+  const btn=document.getElementById("vo-mute-btn");
+  const ico=document.getElementById("vo-mute-ico");
+  btn.classList.toggle("muted",_vc.muted);
+  ico.textContent=_vc.muted?"mic_off":"mic";
+  if(_vc.muted){
+    _vc.synth.cancel();
+    if(_vc.rec)try{_vc.rec.stop();}catch(e){}
+    setVoiceState("idle");
+  }else{
+    voiceListen();
+  }
+}
+
+function voiceSkip(){
+  // stop current speech/listening and start listening immediately
+  _vc.synth.cancel();
+  if(_vc.rec)try{_vc.rec.stop();}catch(e){}
+  _vc.rec=null;
+  _vc.busy=false;
+  if(!_vc.muted)voiceListen();
+}
+
+function endVoiceCall(){
+  _vc.active=false;
+  _vc.synth.cancel();
+  if(_vc.rec)try{_vc.rec.stop();}catch(e){}
+  _vc.rec=null;
+  document.getElementById("voice-overlay").classList.remove("show");
+  setVoiceState("idle");
+}
+
+// load voices when available (needed for some browsers)
+if(window.speechSynthesis)window.speechSynthesis.onvoiceschanged=()=>{};
 
 /* ── FEATURE: company dossier prompt ── */
 function openDossier(i){
