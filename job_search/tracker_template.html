@@ -252,9 +252,15 @@
     #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 
     /* ===== EXTENDED FAB ===== */
-    .fab{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;border:none;border-radius:20px;padding:16px 26px;font-size:.9rem;font-weight:700;font-family:var(--font-ui);box-shadow:0 6px 20px rgba(79,107,237,.45);display:flex;align-items:center;gap:9px;cursor:pointer;z-index:50;transition:transform .12s}
+    .fab{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;border:none;border-radius:20px;padding:16px 26px;font-size:.9rem;font-weight:700;font-family:var(--font-ui);box-shadow:0 6px 18px rgba(20,20,40,.18);display:flex;align-items:center;justify-content:center;gap:9px;cursor:pointer;z-index:60;transition:transform .12s,box-shadow .18s cubic-bezier(.2,.7,.3,1)}
     .fab:active{transform:translateX(-50%) scale(.96)}
     .fab .material-symbols-rounded{font-size:22px}
+    /* scan busy / done states — drive icon by class, never by raw text */
+    @keyframes fabSpin{to{transform:rotate(360deg)}}
+    .fab.is-busy .fab-ico,.dtb-scan.is-busy .material-symbols-rounded{animation:fabSpin .9s linear infinite;transform-origin:50% 50%}
+    .fab.is-done .fab-ico,.dtb-scan.is-done .material-symbols-rounded{color:#fff}
+    .fab[aria-busy="true"],.dtb-scan[aria-busy="true"]{cursor:progress}
+    @media(prefers-reduced-motion:reduce){.fab.is-busy .fab-ico,.dtb-scan.is-busy .material-symbols-rounded{animation:none}}
 
     /* ===== MODAL (CV + Analytics + Prep) ===== */
     #modal,#sheet{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)}
@@ -446,10 +452,6 @@
       .act-open{grid-column:span 2}
       .act-dismiss{grid-column:span 2}
       .step-btn{padding:11px 3px;font-size:.72rem}
-      /* FAB: circular icon-only, bottom-left corner (RTL), above bottom nav */
-      .fab{width:56px;height:56px;padding:0;border-radius:18px;left:18px;right:auto;transform:none;bottom:calc(72px + max(14px,env(safe-area-inset-bottom)))}
-      .fab-label{display:none}
-      .fab:active{transform:scale(.96)}
       .modal-card{max-height:92vh}
       /* touch targets */
       .star-btn{padding:8px;margin:-8px}
@@ -468,6 +470,13 @@
       .stepper{flex-wrap:wrap}
       .step-btn{flex:1 1 28%}
     }
+    /* FAB: circular icon-only, bottom-left corner (RTL), above bottom nav — all phone/tablet widths */
+    @media(max-width:1023px){
+      .fab{width:56px;height:56px;padding:0;border-radius:18px;left:18px;right:auto;transform:none;bottom:calc(72px + max(14px,env(safe-area-inset-bottom)))}
+      .fab-label{display:none}
+      .fab:active{transform:scale(.96)}
+      .fab:hover{transform:translateY(-1px)}
+    }
 
     /* ===== STICKY TOOLBAR ===== */
     .toolbar{position:sticky;top:8px;z-index:30;box-shadow:0 2px 14px rgba(20,20,40,.06)}
@@ -480,7 +489,7 @@
       .job-card.open:hover{transform:none}
       .act-btn:hover,.d-btn:hover,.step-btn:hover,.chan-btn:hover,.sf-chip:hover,.fit-chip:hover,.sort-btn:hover,.exp-btn:hover,.round-add:hover,.clink:hover{filter:brightness(.97)}
       .sheet-btn:hover,.scan-btn:hover,.settings-btn:hover{background:#fff}
-      .fab:hover{box-shadow:0 8px 26px rgba(79,107,237,.55);transform:translateX(-50%) translateY(-1px)}
+      .fab:hover{box-shadow:0 10px 28px rgba(20,20,40,.22);transform:translateY(-1px)}
       .modal-close:hover,.drawer-close:hover{filter:brightness(.94)}
       /* scrollbars — subtle, Apple-like */
       *::-webkit-scrollbar{width:10px;height:10px}
@@ -496,9 +505,6 @@
       .f-count{font-size:2.2rem}
       #container{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px;align-items:start}
       .job-card{align-self:start;transition:background .2s,transform .18s cubic-bezier(.2,.7,.3,1),box-shadow .2s}
-      /* desktop FAB → bottom-right corner (Material) */
-      .fab{left:auto;right:32px;transform:none;border-radius:18px}
-      .fab:active{transform:scale(.96)}
       .toolbar{top:14px}
       /* roomier cards */
       .card-head{padding:20px 22px}
@@ -845,9 +851,9 @@
     <div class="dtb-title">Job Tracker</div>
     <div class="dtb-stats" id="dtb-stats"></div>
     <div class="dtb-actions">
-      <button class="dtb-scan" id="dtb-scan-btn" onclick="triggerScan()">
-        <span class="material-symbols-rounded">refresh</span>
-        סרוק עכשיו
+      <button class="dtb-scan" id="dtb-scan-btn" type="button" onclick="triggerScan()">
+        <span class="material-symbols-rounded" aria-hidden="true">manage_search</span>
+        <span class="dtb-scan-label">סרוק עכשיו</span>
       </button>
     </div>
   </div>
@@ -945,7 +951,7 @@
 
 <div id="toast"></div>
 
-<button class="fab" onclick="triggerScan()" id="scan-btn"><span class="material-symbols-rounded">refresh</span><span class="fab-label">סרוק עכשיו</span></button>
+<button class="fab" type="button" onclick="triggerScan()" id="scan-btn" aria-label="סרוק משרות חדשות עכשיו"><span class="material-symbols-rounded fab-ico" id="scan-ico" aria-hidden="true">manage_search</span><span class="fab-label">סרוק עכשיו</span></button>
 
 <!-- MOBILE BOTTOM NAV (hidden on desktop ≥1024px) -->
 <nav id="mobile-bottom-nav">
@@ -1053,7 +1059,7 @@
         <div class="d-status" id="gh-token-status"></div>
       </div>
       <div class="d-section" style="display:flex;flex-direction:column;gap:8px">
-        <button class="d-btn" onclick="triggerScan();closeSettings()">🔄 סרוק עכשיו</button>
+        <button class="d-btn" onclick="triggerScan();closeSettings()"><span class="material-symbols-rounded" aria-hidden="true">manage_search</span> סרוק עכשיו</button>
         <button class="d-btn" onclick="syncFeedback()">📤 סנכרן פידבק</button>
         <div class="d-status" id="sync-status"></div>
       </div>
@@ -2580,25 +2586,54 @@ async function syncFeedback(){
 }
 
 /* ── Scan button ── */
+let _scanning=false;
+function _scanBtns(){return [document.getElementById('scan-btn'),document.getElementById('dtb-scan-btn')].filter(Boolean);}
+function setScanBusy(on){
+  _scanBtns().forEach(b=>{
+    b.classList.toggle('is-busy',on);b.classList.remove('is-done');
+    b.disabled=on;b.setAttribute('aria-busy',on?'true':'false');
+    const ico=b.querySelector('.material-symbols-rounded');if(ico)ico.textContent=on?'progress_activity':'manage_search';
+  });
+}
+function setScanDone(){
+  _scanBtns().forEach(b=>{
+    b.classList.remove('is-busy');b.classList.add('is-done');b.setAttribute('aria-busy','false');
+    const ico=b.querySelector('.material-symbols-rounded');if(ico)ico.textContent='check';
+  });
+  setTimeout(()=>{
+    _scanBtns().forEach(b=>{
+      b.classList.remove('is-done');b.disabled=false;
+      const ico=b.querySelector('.material-symbols-rounded');if(ico)ico.textContent='manage_search';
+    });
+    _scanning=false;
+  },1400);
+}
 async function triggerScan(){
+  if(_scanning)return;
   const token=localStorage.getItem('gh_token');
   if(!token){
     showToast('הוסף GitHub token בהגדרות כדי לסרוק');
     openSettings('connect');
     return;
   }
-  const btn=document.getElementById('scan-btn');
-  const orig=btn.innerHTML;btn.innerHTML='<span class="material-symbols-rounded">hourglass_top</span>סורק…';btn.disabled=true;
+  _scanning=true;setScanBusy(true);
   try{
     const r=await fetch('https://api.github.com/repos/omriki55/family-chores-admin/actions/workflows/job-scan.yml/dispatches',{
       method:'POST',
       headers:{Authorization:`Bearer ${token}`,Accept:'application/vnd.github.v3+json','Content-Type':'application/json'},
       body:JSON.stringify({ref:'main'})
     });
-    if(r.status===204)showToast('✅ סריקה הופעלה! תוצאות יגיעו בעוד ~2 דקות');
-    else showToast('❌ שגיאה בהפעלת סריקה');
-  }catch(e){showToast('❌ '+e.message);}
-  setTimeout(()=>{btn.innerHTML=orig;btn.disabled=false;},5000);
+    if(r.status===204){
+      showToast('✅ סריקה הופעלה! תוצאות יגיעו בעוד ~2 דקות');
+      setScanDone();
+    }else{
+      showToast('❌ שגיאה בהפעלת סריקה ('+r.status+')');
+      setScanBusy(false);_scanning=false;
+    }
+  }catch(e){
+    showToast('❌ '+e.message);
+    setScanBusy(false);_scanning=false;
+  }
 }
 
 /* ── Settings drawer ── */
