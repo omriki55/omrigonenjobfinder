@@ -143,7 +143,8 @@
     .card-text{flex:1;min-width:0;padding-left:6px}
     .card-company{font-weight:800;font-size:1.2rem;letter-spacing:-.3px;color:var(--ink);direction:ltr;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .card-role{font-size:.82rem;color:var(--inkSoft);font-weight:500;direction:ltr;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
-    .card-posted{font-size:.7rem;color:var(--inkFaint);margin-top:3px;direction:rtl;text-align:right}
+    .card-posted{font-size:.68rem;color:var(--inkFaint);direction:rtl;text-align:right}
+    .card-meta-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
     .card-head-right{display:flex;flex-direction:column;align-items:flex-start;gap:5px;flex-shrink:0}
     .next-pill{background:var(--secondary-container);color:var(--on-secondary-container);border-radius:999px;padding:4px 10px;font-size:.65rem;font-weight:600;display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
     .s-pill{border-radius:999px;padding:5px 11px;font-size:.68rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;background:var(--s-bg);color:var(--s-fg)}
@@ -1344,7 +1345,18 @@ function onSearchDesktop(inp){fQ=inp.value.trim().toLowerCase();const icd=docume
 function clearSearchDesktop(){fQ="";const id=document.getElementById("search-inp-d");if(id)id.value="";const icd=document.getElementById("search-clear-d");if(icd)icd.classList.remove("show");render();}
 
 /* ── collapse / expand ── */
-function toggleCard(el){el.classList.toggle("open");}
+function toggleCard(el){
+  const opening=!el.classList.contains("open");
+  if(opening){
+    document.querySelectorAll(".job-card.open").forEach(c=>{if(c!==el)c.classList.remove("open");});
+    el.classList.add("open");
+    const tb=document.querySelector(".toolbar");
+    const off=(tb?tb.getBoundingClientRect().height:0)+18;
+    setTimeout(()=>{const y=el.getBoundingClientRect().top+window.scrollY-off;window.scrollTo({top:Math.max(0,y),behavior:"smooth"});},70);
+  }else{
+    el.classList.remove("open");
+  }
+}
 function expandAll(){document.querySelectorAll(".job-card").forEach(c=>{if(c.offsetParent!==null)c.classList.add("open");});}
 function collapseAll(){document.querySelectorAll(".job-card").forEach(c=>c.classList.remove("open"));}
 
@@ -2341,14 +2353,14 @@ function render(){
         <div class="card-text">
           <div class="card-company">${j.company}</div>
           <div class="card-role">${j.title}</div>
-          ${j.posted?`<div class="card-posted">🕐 ${postedLabel(j.posted)}</div>`:""}
-        </div>
-        <div class="card-head-right">
-          <div class="s-pill" style="--s-bg:${sc.bg};--s-fg:${sc.fg};--s-solid:${sc.solid}">
-            <span class="s-dot"></span>${sm.he}${st.statusDate?" · "+fmtDate(st.statusDate):""}
+          <div class="card-meta-row">
+            <span class="s-pill" style="--s-bg:${sc.bg};--s-fg:${sc.fg};--s-solid:${sc.solid}">
+              <span class="s-dot"></span>${sm.he}${st.statusDate?" · "+fmtDate(st.statusDate):""}
+            </span>
+            ${follow?`<span class="follow-badge">💬 Follow up?</span>`:""}
+            ${novel?`<span class="new-badge">חדש ✨</span>`:""}
+            ${j.posted?`<span class="card-posted">🕐 ${postedLabel(j.posted)}</span>`:""}
           </div>
-          ${follow?`<span class="follow-badge">💬 Follow up?</span>`:""}
-          ${novel?`<span class="new-badge">חדש ✨</span>`:""}
         </div>
         <span class="chevron material-symbols-rounded">expand_more</span>
       </div>
