@@ -17,6 +17,10 @@
       {
         "date": "2026-06-05",
         "score": 0
+      },
+      {
+        "date": "2026-06-06",
+        "score": 8
       }
     ],
     "Embrace": [
@@ -35,6 +39,10 @@
       {
         "date": "2026-06-05",
         "score": 0
+      },
+      {
+        "date": "2026-06-06",
+        "score": 9
       }
     ],
     "RevOpsforce": [
@@ -63,6 +71,10 @@
       {
         "date": "2026-06-05",
         "score": 0
+      },
+      {
+        "date": "2026-06-06",
+        "score": 6
       }
     ],
     "Ivo": [
@@ -87,10 +99,6 @@
       {
         "date": "2026-06-05",
         "score": 0
-      },
-      {
-        "date": "2026-06-06",
-        "score": 8
       }
     ],
     "Remote": [
@@ -239,6 +247,10 @@
       {
         "date": "2026-06-05",
         "score": 0
+      },
+      {
+        "date": "2026-06-06",
+        "score": 7
       }
     ],
     "Undisclosed": [
@@ -345,74 +357,52 @@
         "score": 0
       }
     ],
-    "Gong": [
-      {
-        "date": "2026-06-06",
-        "score": 8
-      }
-    ],
-    "Flex": [
-      {
-        "date": "2026-06-06",
-        "score": 9
-      }
-    ],
     "LumApps": [
       {
         "date": "2026-06-06",
         "score": 8
       }
     ],
-    "Noibu Technologies": [
-      {
-        "date": "2026-06-06",
-        "score": 9
-      }
-    ],
-    "Snorkel AI": [
-      {
-        "date": "2026-06-06",
-        "score": 9
-      },
-      {
-        "date": "2026-06-06",
-        "score": 6
-      }
-    ],
-    "FOSSA": [
+    "Ashby": [
       {
         "date": "2026-06-06",
         "score": 8
       }
     ],
-    "Built Technologies": [
-      {
-        "date": "2026-06-06",
-        "score": 9
-      }
-    ],
-    "OpenAI": [
+    "Cresta": [
       {
         "date": "2026-06-06",
         "score": 6
       }
     ],
-    "Harvey": [
-      {
-        "date": "2026-06-06",
-        "score": 6
-      }
-    ],
-    "Astronomer": [
+    "efficiently": [
       {
         "date": "2026-06-06",
         "score": 7
       }
     ],
-    "Render": [
+    "Tebra": [
       {
         "date": "2026-06-06",
-        "score": 9
+        "score": 8
+      }
+    ],
+    "saas.group": [
+      {
+        "date": "2026-06-06",
+        "score": 8
+      }
+    ],
+    "Cloudinary": [
+      {
+        "date": "2026-06-06",
+        "score": 4
+      }
+    ],
+    "Mixpanel": [
+      {
+        "date": "2026-06-06",
+        "score": 3
       }
     ]
   }
