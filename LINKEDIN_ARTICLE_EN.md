@@ -46,9 +46,90 @@ git push        → GitHub Pages (live URL, always current)
 GitHub Actions runs the pipeline 3× daily (Sun–Thu). A second workflow deploys `docs/` to GitHub Pages. Total cost: $0 for compute.
 
 **3. The Tracker**
-A single HTML file, Material 3 design, mobile-first, works offline as a PWA. Every job gets a card with: fit score, status (saved / applied / interview / offer / rejected), interview rounds with dates and interviewers, notes, and one-click prompt generation for cover letters, interview prep, and company research.
+A single HTML file, Material 3 design, mobile-first, works offline as a PWA. Every job card has: fit score, status (saved / applied / interview / offer / rejected), interview rounds with dates and interviewers, notes — and a full set of AI-powered tools built directly into each card.
 
 **Model split:** Opus for search (quality matters — you need real URLs, not hallucinations), Haiku for scoring (fast, cheap, runs on 14 jobs per cycle). This alone cuts API cost by ~80%.
+
+---
+
+## The Features That Actually Matter
+
+This is where most "I built an AI job tracker" articles stop. They show you a spreadsheet with a score column. Here's what I actually built.
+
+### 🏢 Company Dossier — One Click, Full Intelligence
+
+Every job card has a "Dossier" button. Press it and Claude searches the web in real time and returns a structured company brief:
+
+- **What they do** (one sharp sentence)
+- **Funding & stage** (last round, amount, lead investors, valuation if public)
+- **Size & offices** (headcount, locations, target market)
+- **Recent news** (last 2–3 announcements with dates)
+- **Culture & employer reputation** (Glassdoor / LinkedIn signals)
+- **Why this role is interesting for me specifically** (RevOps / GTM angle)
+- **3 smart questions to ask in the interview** (that prove you did your homework)
+- **One red flag** if any exists
+- **Sources** for everything
+
+This used to take me 30–45 minutes of research before every interview. Now it takes 15 seconds and comes back more thorough than I could do manually.
+
+The system prompt: *"You are a business intelligence analyst preparing company dossiers for job interviews. Use web search to find current, accurate information. Never fabricate. If a detail isn't found, say so. Always cite sources."*
+
+### 🎯 Interview Prep — Personalized, Not Generic
+
+The "Prep" button opens a live chat with Claude that knows three things simultaneously: the job description, my resume, and the specific company. It generates:
+
+- 8 expected interview questions (behavioral + technical, specific to RevOps)
+- Talking points for each question based on my actual experience
+- 5 smart questions to ask the interviewer
+- One thing to avoid saying
+
+The difference between this and "ask ChatGPT to prep me for an interview" is specificity. It's not generic interview advice — it's prep for this exact role, this exact company, on this exact day.
+
+### 🎙️ Voice Interview Simulation — The Feature That Changes Everything
+
+This one surprised me. I didn't expect it to work as well as it does.
+
+The tracker knows which interview stage I'm at for each company (phone screen, HR, technical, manager, final). The "Practice Interview" button launches a full **voice call simulation** — I speak out loud, the AI responds in a synthetic voice, and the conversation follows the format of the specific stage.
+
+A phone screen feels different from a technical interview. The system uses different prompting for each:
+
+- **Phone screen:** warm, focused on motivation and availability
+- **HR interview:** behavioral questions, STAR format, culture fit
+- **Technical interview:** deep RevOps — metrics, pipeline, lead scoring, CRM workflows
+- **Manager interview:** strategy, 90-day plan, business impact
+- **Final round:** vision, leadership, long-term fit
+
+For voice synthesis I use ElevenLabs (10,000 characters/month free — enough for dozens of practice sessions). Without the API key, the browser's built-in speech engine works as a fallback — less natural but functional.
+
+I practiced a Neon Security phone screen twice before the real call. I passed.
+
+### 💙 Emotional Support — The Feature I Didn't Plan to Build
+
+Job searching is emotionally brutal. Three rejections in ten days hits differently when you've customized each application.
+
+I added an emotional support chat to the tracker. Not because it was on my product roadmap — because I needed it.
+
+It's powered by a specific system prompt that turns Claude into a job search mental coach:
+
+1. **Validate first** — acknowledge the feeling before offering advice
+2. **Challenge limiting beliefs** — "I'm not good enough" becomes "what evidence actually supports that?"
+3. **Shift perspective** — reframe rejection as pipeline data, not personal failure
+4. **Practical coping** — breathing, physical breaks, "good enough for today" framing
+5. **Energy management** — identify burnout early, end every session with one small concrete action
+
+The job-specific version is even more useful. When I'm spiraling about a specific rejection, I open that company's card and click "Emotional Support" — and it knows the context. It knows I was at the manager stage at Cyolo when the process went quiet. It doesn't ask me to explain.
+
+One thing I realized: a lot of "productivity" advice for job seekers ignores the emotional load entirely. The emotional support feature is the one I open most.
+
+### 🔗 Add Any Job by URL — The Newest Feature
+
+The automated pipeline finds 13 jobs per scan. But I also find jobs manually — on LinkedIn, through referrals, on company career pages. 
+
+The "Add by URL" button (just added this week) takes any job posting link, sends it to Claude with web search enabled, and automatically extracts: company name, title, location, and job description. The job appears in the tracker immediately with the same card format as pipeline-found jobs.
+
+If Claude can't access the page (some ATS systems block scrapers), it falls back to a clean manual entry form.
+
+This closes the last gap between "jobs I found manually" and "jobs tracked systematically." Everything lives in one place now.
 
 ---
 
@@ -64,41 +145,39 @@ The pipeline treated every run as a fresh slate. Jobs I'd manually added — wit
 
 ### Failure 2: The Tracker That Never Updated
 
-I was using `raw.githack.com` to serve the HTML. Githack has aggressive caching — sometimes 24+ hours. I'd push a fix and check the site and see the old version. Every time.
+I was using `raw.githack.com` to serve the HTML. Githack has aggressive caching — sometimes 24+ hours. I'd push a fix and see the old version. Every time.
 
-**The fix:** Moved everything to GitHub Pages. Committed, pushed, live within 60 seconds. This should have been the setup from day one.
+**The fix:** Moved everything to GitHub Pages. Committed, pushed, live within 60 seconds.
 
 ### Failure 3: The Service Worker That Served Stale Code
 
 Even after switching to GitHub Pages, the browser kept showing an old version. The PWA service worker had cached everything.
 
-**The fix:** Bump the cache version string (`jobtracker-v5`). The service worker detects a new cache name, purges the old one, fetches fresh. One line change.
+**The fix:** Bump the cache version string (`jobtracker-v5`). The service worker detects the new cache name, purges the old one, fetches fresh. One line change.
 
-**The lesson:** PWA offline-first is powerful but you have to version your cache intentionally, not accidentally.
+**The lesson:** PWA offline-first is powerful but version your cache intentionally.
 
 ### Failure 4: The AI Chat That Wasn't Live
 
-I built a chat interface powered by Claude. Users would ask questions about companies, get interview prep, generate tailored cover letters. Except — it wasn't actually calling the API. It was injecting a copy-paste prompt into the input field and waiting for the user to manually run it.
+I built a chat interface. Except it wasn't actually calling the API — it was injecting a copy-paste prompt into the input field and waiting for me to manually run it.
 
-**The fix:** Real API integration with a saved key, a "Test connection" button, and a clear onboarding banner when no key is set. Now it's genuinely live — type a question, get an answer.
+**The fix:** Real API integration with a saved key, a "Test connection" button, and an onboarding banner when no key is set.
 
 ### Failure 5: The Scan Button That Injected Text Into a Circle
 
-The floating action button (FAB) for triggering a manual scan was 56px wide. When it was "scanning," I was setting its inner text to "Scanning…" — which obviously broke the layout. A 56px circle cannot fit 9 characters.
+The floating action button for manual scan was 56px wide. When scanning, I set its inner text to "Scanning…" — obviously breaking the layout.
 
-**The fix:** Toggle a CSS class (`scanning`) and swap the icon only. The button stays a button. The icon rotates to indicate activity.
+**The fix:** Toggle a CSS class and swap the icon only. The button stays a button.
 
 These are small bugs. But they compound. Five small bugs in a system you're relying on daily turns a useful tool into a frustrating one.
 
 ---
 
-## The One Feature That Changed Everything
+## The One Feature That Surprised Me Most: Interview Rounds
 
-**Interview Rounds tracking.**
+Not just "interview" as a status — a structured log: date, interviewer name, stage, outcome, color-coded by result. Expandable card. Fits on mobile.
 
-Not just "interview" as a status, but a structured log: date, interviewer name, stage (HR / Technical / Final), outcome, color-coded by result. Expandable card. Fits in a mobile viewport.
-
-I have 5 interviews in the tracker. I know exactly who I spoke to, when, and what happened. If a recruiter follows up two weeks later, I don't have to dig through email — I open the card.
+I have 5 interviews tracked. I know who I spoke to, when, what happened, and what's next. If a recruiter follows up two weeks later, I open the card — not my email.
 
 This took two hours to build. It should have been in version one.
 
@@ -116,7 +195,7 @@ This took two hours to build. It should have been in version one.
 | Jobs found automatically by pipeline | 13 |
 | Estimated API cost so far | ~$5–8 |
 
-13 out of 52 jobs came from the automated scanner. The other 39 I added manually — from LinkedIn, referrals, direct outreach. The system augments the search; it doesn't replace the human part.
+13 out of 52 jobs came from the automated scanner. The other 39 I added manually — LinkedIn, referrals, direct outreach. The system augments the search; it doesn't replace the human part.
 
 ---
 
@@ -166,10 +245,23 @@ Single HTML file, all state in localStorage. Each job card:
 - Fit score, status (saved/applied/interview/offer/rejected)
 - Interview rounds: date, interviewer, stage, outcome, color by result
 - Notes field
-- Buttons: generate cover letter prompt, interview prep, company research dossier
-- "Not relevant — learn from this" → saves to feedback.json for next scan
+- Add by URL: button that takes any job link, extracts details with Claude + web_search,
+  adds to tracker immediately, falls back to manual entry form
 
-Analytics screen: funnel chart (applied → interview → offer). Dark mode toggle.
+Per-job AI buttons (each opens a live chat or report with full context):
+1. Cover letter — personalized to the JD and my resume
+2. Interview prep — 8 questions + talking points + smart questions to ask
+3. Voice practice — live voice simulation of the specific interview stage
+   (phone screen / HR / technical / manager / final), with ElevenLabs voice
+4. Company dossier — AI web research: funding, team size, culture, news,
+   3 smart questions, 1 red flag, sources
+5. CV tailoring — adjusted resume for this specific role
+6. Emotional support — mental coach chat, context-aware per job/stage
+
+Global emotional support (bottom nav) — same mental coach but open-ended.
+Analytics screen: funnel chart (applied → interview → offer), conversion rates,
+average days waiting, interview rounds won/lost.
+Dark mode toggle.
 
 ## Cost
 Use Haiku for scoring (cheap). Use Opus only for search (quality).
@@ -179,28 +271,33 @@ Ask me before any significant architectural decision. Start with onboarding.
 
 ### The 4 Setup Steps
 
-1. **Get an Anthropic API key** — `console.anthropic.com` → add $10 credit → create key. (This is the API, pay-as-you-go. Not Claude Pro.)
+1. **Get an Anthropic API key** — `console.anthropic.com` → add $10 credit → create key. (Pay-as-you-go. Not Claude Pro.)
 
 2. **Paste the prompt above into Claude Code** — answer the onboarding questions about your roles and experience.
 
 3. **Add your API key to GitHub Secrets** — Settings → Secrets → Actions → `ANTHROPIC_API_KEY`.
 
-4. **Enable GitHub Pages** — Settings → Pages → Branch: main → Folder: /docs. Done.
+4. **Enable GitHub Pages** — Settings → Pages → Branch: main → Folder: /docs.
+
+**Optional:** Add an ElevenLabs API key (free tier) for human-quality voice in interview practice. Without it, the browser's speech engine works as fallback.
 
 **Note on LinkedIn:** LinkedIn has no public jobs API since 2023, and scraping violates their ToS. The working legal solution: Claude finds direct links via web search + Greenhouse/Lever/Ashby public APIs, which is where most tech companies post anyway.
 
 ---
 
-## Three Things I Actually Learned
+## Four Things I Actually Learned
 
 **1. Single source of truth is not a philosophy — it's a constraint you enforce in code.**
 The moment my pipeline and my manual data lived in two places, I lost data. One JSON file. One read path. One write path. Anything else is a bug waiting to happen.
 
 **2. Split your models by task, not by budget.**
-I use Opus for search because URL quality matters — hallucinated links waste your time. I use Haiku for scoring because scoring 14 jobs 3× daily is 42 Haiku calls, not 42 Opus calls. The cost difference is ~10×. The quality difference for scoring is negligible.
+Opus for search (URL quality matters — hallucinated links waste your time). Haiku for scoring (42 calls per day at a fraction of the cost, negligible quality difference for this task). The split saves ~80% on API costs.
 
-**3. AI systems are built in the second version.**
-The first version of this tracker worked. The second version is the one I actually use. The bugs I hit weren't edge cases — they were the predictable failures of a system that had never been stressed. Build v1 fast, stress it immediately, build v2 right.
+**3. The emotional features matter as much as the analytical ones.**
+I built the emotional support chat because I needed it, not because it was on my roadmap. Job searching is genuinely hard emotionally. A system that helps you track conversion rates but ignores the human experience of rejection is only half a product.
+
+**4. AI systems are built in the second version.**
+The first version worked. The second version is the one I actually use. The bugs I hit weren't edge cases — they were the predictable failures of a system that had never been stressed. Build v1 fast, stress it immediately, build v2 right.
 
 ---
 
@@ -210,10 +307,10 @@ The system works. I'm still searching. Three interviews passed, pipeline still r
 
 If you want to build your own: the prompt above is exactly what built mine. The architecture is public. The data is yours — it lives in your GitHub, runs on your API key, costs ~$5–10/month.
 
-If you build it and hit a wall, or if you want to see how I structured the interview rounds feature — reach out. The tracker is open source. I'm happy to share.
+If you build it and hit a wall — reach out. Happy to share.
 
 ---
 
 *Written during an active job search. The prompt above built the system I'm using right now.*
 
-*#JobSearch #AI #Claude #BuildInPublic #RevOps #Automation*
+*#JobSearch #AI #Claude #BuildInPublic #RevOps #Automation #PWA*
