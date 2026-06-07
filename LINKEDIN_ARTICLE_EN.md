@@ -1,3 +1,10 @@
+> **לפני פרסום — 3 דברים:**
+> 1. 📸 **Screenshot** — צלם את הטראקר פתוח עם כמה כרטיסי משרות (פתח `omriki55.github.io/family-chores-admin` → Screenshot → העלה כ-Cover Image בלינקדאין)
+> 2. 💰 **עלות API** — מלא את `$[FILL...]` בטבלת המספרים מ-`console.anthropic.com → Usage → Last 7 days`
+> 3. 🔒 **Repo ציבורי?** — אם עדיין פרטי, הפוך ציבורי לפני פרסום (Settings → Danger Zone → Make public). נקה `scored_jobs.json` + `config.json` מהיסטוריית git קודם.
+
+---
+
 # I Built an AI Job Search Engine — Then It Crashed, and I Built It Better
 
 *The real story: failures, fixes, and the exact prompts to replicate it yourself*
@@ -193,7 +200,7 @@ This took two hours to build. It should have been in version one.
 | Passed interviews | 3 (Neon Security, Sauce, Gambit Security) |
 | Rejections | 3 (Cyolo, Agora, NEEMA) |
 | Jobs found automatically by pipeline | 13 |
-| Estimated API cost so far | ~$5–8 |
+| API cost (10 days) | **$[FILL FROM console.anthropic.com → Usage]** |
 
 13 out of 52 jobs came from the automated scanner. The other 39 I added manually — LinkedIn, referrals, direct outreach. The system augments the search; it doesn't replace the human part.
 
@@ -305,7 +312,12 @@ The first version worked. The second version is the one I actually use. The bugs
 
 The system works. I'm still searching. Three interviews passed, pipeline still running, tracker still updating.
 
-If you want to build your own: the prompt above is exactly what built mine. The architecture is public. The data is yours — it lives in your GitHub, runs on your API key, costs ~$5–10/month.
+If you want to build your own: the prompt above is exactly what built mine.
+
+👉 **Repo (open source):** github.com/omriki55/family-chores-admin
+👉 **Live tracker:** omriki55.github.io/family-chores-admin
+
+The architecture is public. The data is yours — your GitHub, your API key, ~$5–10/month.
 
 If you build it and hit a wall — reach out. Happy to share.
 
