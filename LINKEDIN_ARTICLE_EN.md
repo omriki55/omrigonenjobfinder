@@ -1,7 +1,5 @@
-> **לפני פרסום — 3 דברים:**
-> 1. 📸 **Screenshot** — צלם את הטראקר פתוח עם כמה כרטיסי משרות (פתח `omriki55.github.io/family-chores-admin` → Screenshot → העלה כ-Cover Image בלינקדאין)
-> 2. 💰 **עלות API** — מלא את `$[FILL...]` בטבלת המספרים מ-`console.anthropic.com → Usage → Last 7 days`
-> 3. 🔒 **Repo ציבורי?** — אם עדיין פרטי, הפוך ציבורי לפני פרסום (Settings → Danger Zone → Make public). נקה `scored_jobs.json` + `config.json` מהיסטוריית git קודם.
+> **לפני פרסום:**
+> 📸 **Screenshot** — צלם את הטראקר פתוח עם כמה כרטיסי משרות → העלה כ-Cover Image בלינקדאין
 
 ---
 
@@ -200,7 +198,7 @@ This took two hours to build. It should have been in version one.
 | Passed interviews | 3 (Neon Security, Sauce, Gambit Security) |
 | Rejections | 3 (Cyolo, Agora, NEEMA) |
 | Jobs found automatically by pipeline | 13 |
-| API cost (10 days) | **$[FILL FROM console.anthropic.com → Usage]** |
+| API cost (10 days) | **$25** |
 
 13 out of 52 jobs came from the automated scanner. The other 39 I added manually — LinkedIn, referrals, direct outreach. The system augments the search; it doesn't replace the human part.
 
@@ -278,7 +276,7 @@ Ask me before any significant architectural decision. Start with onboarding.
 
 ### The 4 Setup Steps
 
-1. **Get an Anthropic API key** — `console.anthropic.com` → add $10 credit → create key. (Pay-as-you-go. Not Claude Pro.)
+1. **Get an Anthropic API key** — `console.anthropic.com` → add $20–50 credit → create key. (Pay-as-you-go. Not Claude Pro. I spent $25 in 10 days of heavy use.)
 
 2. **Paste the prompt above into Claude Code** — answer the onboarding questions about your roles and experience.
 
@@ -317,7 +315,9 @@ If you want to build your own: the prompt above is exactly what built mine.
 👉 **Repo (open source):** github.com/omriki55/family-chores-admin
 👉 **Live tracker:** omriki55.github.io/family-chores-admin
 
-The architecture is public. The data is yours — your GitHub, your API key, ~$5–10/month.
+The architecture is public. The data is yours — your GitHub, your API key.
+
+**A note on cost:** I spent $25 over 10 days of active use — automated scans 3× daily, plus every dossier, prep session, voice practice, and chat adds to the bill. If you use the AI features heavily (like I do), budget ~$50–75/month. If you only run the pipeline and skip the chat features, it's closer to $5–10/month. The cost scales exactly with how much you use it — no subscription, no minimum.
 
 If you build it and hit a wall — reach out. Happy to share.
 
