@@ -5,46 +5,18 @@
   "score_history": {
     "Finout": [
       {
-        "date": "2026-06-06",
-        "score": 9
+        "date": "2026-06-05",
+        "score": 0
       },
       {
-        "date": "2026-06-06",
-        "score": 9
-      },
-      {
-        "date": "2026-06-06",
-        "score": 9
-      },
-      {
-        "date": "2026-06-06",
-        "score": 9
-      },
-      {
-        "date": "2026-06-06",
-        "score": 9
+        "date": "2026-06-07",
+        "score": 0
       }
     ],
     "Gong.io": [
       {
         "date": "2026-06-05",
         "score": 0
-      },
-      {
-        "date": "2026-06-06",
-        "score": 8
-      },
-      {
-        "date": "2026-06-06",
-        "score": 9
-      },
-      {
-        "date": "2026-06-06",
-        "score": 9
-      },
-      {
-        "date": "2026-06-06",
-        "score": 9
       }
     ],
     "Embrace": [
@@ -63,14 +35,6 @@
       {
         "date": "2026-06-05",
         "score": 0
-      },
-      {
-        "date": "2026-06-06",
-        "score": 9
-      },
-      {
-        "date": "2026-06-06",
-        "score": 9
       }
     ],
     "RevOpsforce": [
@@ -83,22 +47,6 @@
       {
         "date": "2026-06-05",
         "score": 0
-      },
-      {
-        "date": "2026-06-06",
-        "score": 7
-      },
-      {
-        "date": "2026-06-06",
-        "score": 8
-      },
-      {
-        "date": "2026-06-06",
-        "score": 6
-      },
-      {
-        "date": "2026-06-06",
-        "score": 6
       }
     ],
     "Gradient Labs": [
@@ -111,10 +59,6 @@
       {
         "date": "2026-06-05",
         "score": 0
-      },
-      {
-        "date": "2026-06-06",
-        "score": 6
       }
     ],
     "Ivo": [
@@ -133,10 +77,6 @@
       {
         "date": "2026-06-05",
         "score": 0
-      },
-      {
-        "date": "2026-06-06",
-        "score": 8
       }
     ],
     "Samsara": [
@@ -291,14 +231,6 @@
       {
         "date": "2026-06-05",
         "score": 0
-      },
-      {
-        "date": "2026-06-06",
-        "score": 7
-      },
-      {
-        "date": "2026-06-06",
-        "score": 7
       }
     ],
     "Undisclosed": [
@@ -369,10 +301,6 @@
       {
         "date": "2026-06-05",
         "score": 0
-      },
-      {
-        "date": "2026-06-06",
-        "score": 7
       }
     ],
     "Convoso": [
@@ -401,25 +329,21 @@
       {
         "date": "2026-06-05",
         "score": 0
-      },
-      {
-        "date": "2026-06-07",
-        "score": 0
-      },
-      {
-        "date": "2026-06-07",
-        "score": 0
-      },
-      {
-        "date": "2026-06-07",
-        "score": 0
       }
     ],
     "Taboola": [
       {
         "date": "2026-06-05",
         "score": 0
-      },
+      }
+    ],
+    "Gong": [
+      {
+        "date": "2026-06-07",
+        "score": 0
+      }
+    ],
+    "Eve": [
       {
         "date": "2026-06-07",
         "score": 0
@@ -427,235 +351,45 @@
       {
         "date": "2026-06-07",
         "score": 0
-      }
-    ],
-    "LumApps": [
-      {
-        "date": "2026-06-06",
-        "score": 8
-      }
-    ],
-    "Ashby": [
-      {
-        "date": "2026-06-06",
-        "score": 8
-      }
-    ],
-    "Cresta": [
-      {
-        "date": "2026-06-06",
-        "score": 6
-      }
-    ],
-    "efficiently": [
-      {
-        "date": "2026-06-06",
-        "score": 7
-      }
-    ],
-    "Tebra": [
-      {
-        "date": "2026-06-06",
-        "score": 8
-      },
-      {
-        "date": "2026-06-06",
-        "score": 6
-      }
-    ],
-    "saas.group": [
-      {
-        "date": "2026-06-06",
-        "score": 8
-      }
-    ],
-    "Cloudinary": [
-      {
-        "date": "2026-06-06",
-        "score": 4
-      }
-    ],
-    "Mixpanel": [
-      {
-        "date": "2026-06-06",
-        "score": 3
-      }
-    ],
-    "Instrumentl": [
-      {
-        "date": "2026-06-06",
-        "score": 8
-      },
-      {
-        "date": "2026-06-06",
-        "score": 8
-      },
-      {
-        "date": "2026-06-06",
-        "score": 9
-      }
-    ],
-    "Cyngn": [
-      {
-        "date": "2026-06-06",
-        "score": 9
-      }
-    ],
-    "Render": [
-      {
-        "date": "2026-06-06",
-        "score": 9
-      }
-    ],
-    "Orbital": [
-      {
-        "date": "2026-06-06",
-        "score": 8
-      },
-      {
-        "date": "2026-06-06",
-        "score": 8
-      }
-    ],
-    "Passage Health": [
-      {
-        "date": "2026-06-06",
-        "score": 3
-      }
-    ],
-    "GTM Base": [
-      {
-        "date": "2026-06-06",
-        "score": 7
-      }
-    ],
-    "SymphonyAI": [
-      {
-        "date": "2026-06-06",
-        "score": 8
-      }
-    ],
-    "Redox": [
-      {
-        "date": "2026-06-06",
-        "score": 4
-      }
-    ],
-    "Similarweb": [
-      {
-        "date": "2026-06-06",
-        "score": 7
-      }
-    ],
-    "WorkWave": [
-      {
-        "date": "2026-06-06",
-        "score": 9
-      },
-      {
-        "date": "2026-06-06",
-        "score": 9
       }
     ],
     "Flex": [
       {
-        "date": "2026-06-06",
-        "score": 9
-      },
-      {
-        "date": "2026-06-06",
-        "score": 7
+        "date": "2026-06-07",
+        "score": 0
       }
     ],
-    "Snorkel AI": [
+    "Instrumentl": [
       {
-        "date": "2026-06-06",
-        "score": 9
+        "date": "2026-06-07",
+        "score": 0
       }
     ],
-    "Hebbia": [
+    "Conveo": [
       {
-        "date": "2026-06-06",
+        "date": "2026-06-07",
         "score": 0
       }
     ],
     "Roboflow": [
       {
-        "date": "2026-06-06",
-        "score": 9
+        "date": "2026-06-07",
+        "score": 0
       }
     ],
     "Postscript": [
       {
-        "date": "2026-06-06",
-        "score": 8
-      }
-    ],
-    "Re:Build Manufacturing (Cadonix)": [
-      {
-        "date": "2026-06-06",
-        "score": 8
-      }
-    ],
-    "Planet": [
-      {
-        "date": "2026-06-06",
+        "date": "2026-06-07",
         "score": 0
       }
     ],
-    "Candid Health": [
+    "Cresta": [
       {
-        "date": "2026-06-06",
-        "score": 9
+        "date": "2026-06-07",
+        "score": 0
       }
     ],
-    "Adaptive ML": [
-      {
-        "date": "2026-06-06",
-        "score": 9
-      }
-    ],
-    "Paragon": [
-      {
-        "date": "2026-06-06",
-        "score": 3
-      }
-    ],
-    "Doss": [
-      {
-        "date": "2026-06-06",
-        "score": 8
-      }
-    ],
-    "FacilityOS": [
-      {
-        "date": "2026-06-06",
-        "score": 8
-      },
-      {
-        "date": "2026-06-06",
-        "score": 8
-      }
-    ],
-    "Pylon": [
-      {
-        "date": "2026-06-06",
-        "score": 8
-      },
-      {
-        "date": "2026-06-06",
-        "score": 8
-      }
-    ],
-    "Nooks": [
-      {
-        "date": "2026-06-06",
-        "score": 9
-      },
-      {
-        "date": "2026-06-06",
-        "score": 7
-      },
+    "saas.group": [
       {
         "date": "2026-06-07",
         "score": 0
@@ -665,97 +399,13 @@
         "score": 0
       }
     ],
-    "Together AI": [
-      {
-        "date": "2026-06-06",
-        "score": 8
-      }
-    ],
-    "Anyscale": [
-      {
-        "date": "2026-06-06",
-        "score": 9
-      }
-    ],
-    "re:cap": [
-      {
-        "date": "2026-06-06",
-        "score": 9
-      }
-    ],
-    "Jupus": [
-      {
-        "date": "2026-06-06",
-        "score": 8
-      }
-    ],
-    "Platomics GmbH": [
-      {
-        "date": "2026-06-06",
-        "score": 3
-      }
-    ],
-    "Engine": [
-      {
-        "date": "2026-06-06",
-        "score": 8
-      }
-    ],
-    "Belkins": [
-      {
-        "date": "2026-06-06",
-        "score": 4
-      },
-      {
-        "date": "2026-06-07",
-        "score": 0
-      },
+    "Iru": [
       {
         "date": "2026-06-07",
         "score": 0
       }
     ],
-    "Jobgether (partner company)": [
-      {
-        "date": "2026-06-06",
-        "score": 8
-      },
-      {
-        "date": "2026-06-07",
-        "score": 0
-      },
-      {
-        "date": "2026-06-07",
-        "score": 0
-      }
-    ],
-    "Bloomerang": [
-      {
-        "date": "2026-06-06",
-        "score": 7
-      }
-    ],
-    "PerfectServe": [
-      {
-        "date": "2026-06-06",
-        "score": 6
-      }
-    ],
-    "Customer.io": [
-      {
-        "date": "2026-06-06",
-        "score": 7
-      }
-    ],
-    "Coconut Software": [
-      {
-        "date": "2026-06-06",
-        "score": 6
-      },
-      {
-        "date": "2026-06-07",
-        "score": 0
-      },
+    "Madison Logic": [
       {
         "date": "2026-06-07",
         "score": 0
