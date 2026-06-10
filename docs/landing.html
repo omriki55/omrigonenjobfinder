@@ -39,6 +39,27 @@
     }
 
     html { scroll-behavior: smooth; }
+    section, .wizard-wrap { scroll-margin-top: 72px; }
+
+    /* ===== RTL SUPPORT ===== */
+    [dir="rtl"] .flip-rtl { transform: scaleX(-1); }
+    .lang-toggle {
+      background: transparent;
+      border: 1.5px solid var(--line);
+      color: var(--ink-soft);
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-family: 'Heebo', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background .15s, border-color .15s;
+    }
+    .lang-toggle:hover { background: var(--surface-container); border-color: var(--primary); }
+    .lang-toggle .material-symbols-rounded { font-size: 16px; }
 
     body {
       font-family: 'Heebo', sans-serif;
@@ -530,7 +551,7 @@
       align-items: center;
       gap: 8px;
       transition: background .15s, transform .12s;
-      margin-left: auto;
+      margin-inline-start: auto;
     }
     .btn-wz-next:hover { background: var(--primary-dark); transform: translateY(-1px); }
     .btn-wz-back {
@@ -575,6 +596,9 @@
       overflow-x: auto;
       margin-bottom: 20px;
       white-space: pre;
+      max-width: 100%;
+      direction: ltr;
+      text-align: left;
     }
     .done-buttons {
       display: flex;
@@ -652,7 +676,7 @@
       flex-shrink: 0;
       margin-top: 2px;
     }
-    .inst-content { flex: 1; }
+    .inst-content { flex: 1; min-width: 0; }
     .inst-content strong { font-weight: 700; color: var(--ink); }
     .inst-content p { font-size: 0.88rem; color: var(--ink-soft); margin-top: 4px; line-height: 1.5; }
     .code-inline {
@@ -712,10 +736,14 @@
     JobSearch AI
   </a>
   <div class="topbar-actions">
-    <a href="./index.html" class="topbar-link">Open Tracker</a>
+    <button class="lang-toggle" id="lang-toggle" onclick="toggleLang()" aria-label="Switch language">
+      <span class="material-symbols-rounded">language</span>
+      <span id="lang-toggle-label">עברית</span>
+    </button>
+    <a href="./index.html" class="topbar-link" data-i18n="nav.tracker">Open Tracker</a>
     <a href="#setup" class="btn-primary-sm">
       <span class="material-symbols-rounded" style="font-size:16px">rocket_launch</span>
-      Get Started
+      <span data-i18n="nav.start">Get Started</span>
     </a>
   </div>
 </header>
@@ -724,18 +752,18 @@
 <section class="hero">
   <div class="hero-badge">
     <span class="material-symbols-rounded">auto_awesome</span>
-    Open source · Powered by Claude AI
+    <span data-i18n="hero.badge">Open source · Powered by Claude AI</span>
   </div>
-  <h1>Your <span class="accent">AI Job Search Engine</span> —<br/>Built in Minutes</h1>
-  <p class="hero-sub">Set up once, and your personal AI tracks jobs, scores fit, preps interviews, and keeps you motivated — automatically, every day.</p>
+  <h1 data-i18n-html="hero.title">Your <span class="accent">AI Job Search Engine</span> —<br/>Built in Minutes</h1>
+  <p class="hero-sub" data-i18n="hero.sub">Set up once, and your personal AI tracks jobs, scores fit, preps interviews, and keeps you motivated — automatically, every day.</p>
   <div class="hero-cta-group">
     <a href="#setup" class="btn-hero">
-      Get Started Free
-      <span class="material-symbols-rounded" style="font-size:20px">arrow_forward</span>
+      <span data-i18n="hero.cta">Get Started Free</span>
+      <span class="material-symbols-rounded flip-rtl" style="font-size:20px">arrow_forward</span>
     </a>
     <a href="https://github.com/omriki55/omrigonenjobfinder" target="_blank" rel="noopener" class="btn-ghost">
       <span class="material-symbols-rounded" style="font-size:18px">code</span>
-      View on GitHub
+      <span data-i18n="hero.github">View on GitHub</span>
     </a>
   </div>
 </section>
@@ -744,58 +772,58 @@
 <div class="stats-strip">
   <div class="stat-item">
     <div class="stat-num">25</div>
-    <div class="stat-label">Applications tracked</div>
+    <div class="stat-label" data-i18n="stats.apps">Applications tracked</div>
   </div>
   <div class="stat-item">
     <div class="stat-num">5</div>
-    <div class="stat-label">Interviews scheduled</div>
+    <div class="stat-label" data-i18n="stats.interviews">Interviews scheduled</div>
   </div>
   <div class="stat-item">
     <div class="stat-num">3</div>
-    <div class="stat-label">Stages passed</div>
+    <div class="stat-label" data-i18n="stats.stages">Stages passed</div>
   </div>
   <div class="stat-item">
     <div class="stat-num">10</div>
-    <div class="stat-label">Days running</div>
+    <div class="stat-label" data-i18n="stats.days">Days running</div>
   </div>
 </div>
 
 <!-- FEATURES -->
 <section id="features">
   <div class="section-inner">
-    <div class="section-label">Features</div>
-    <h2 class="section-title">Everything you need,<br/>nothing you don't</h2>
-    <p class="section-sub">One GitHub repo does the work of five tools — scanning, scoring, coaching, and supporting you throughout your search.</p>
+    <div class="section-label" data-i18n="features.label">Features</div>
+    <h2 class="section-title" data-i18n-html="features.title">Everything you need,<br/>nothing you don't</h2>
+    <p class="section-sub" data-i18n="features.sub">One GitHub repo does the work of five tools — scanning, scoring, coaching, and supporting you throughout your search.</p>
     <div class="features-grid">
       <div class="feature-card">
         <span class="feature-icon">🔍</span>
-        <div class="feature-title">Auto-scans 3× daily</div>
-        <p class="feature-desc">GitHub Actions scrapes your target companies' ATS boards every 8 hours and adds fresh openings to your tracker automatically.</p>
+        <div class="feature-title" data-i18n="f1.title">Auto-scans 3× daily</div>
+        <p class="feature-desc" data-i18n="f1.desc">GitHub Actions scrapes your target companies' ATS boards every 8 hours and adds fresh openings to your tracker automatically.</p>
       </div>
       <div class="feature-card">
         <span class="feature-icon">🎯</span>
-        <div class="feature-title">AI fit scoring 1–10</div>
-        <p class="feature-desc">Claude reads each job description against your profile and scores the match, so you focus energy where it counts most.</p>
+        <div class="feature-title" data-i18n="f2.title">AI fit scoring 1–10</div>
+        <p class="feature-desc" data-i18n="f2.desc">Claude reads each job description against your profile and scores the match, so you focus energy where it counts most.</p>
       </div>
       <div class="feature-card">
         <span class="feature-icon">🏢</span>
-        <div class="feature-title">Company dossier — one click</div>
-        <p class="feature-desc">Walk into every interview knowing the company's product, culture, funding, and growth story — generated on demand.</p>
+        <div class="feature-title" data-i18n="f3.title">Company dossier — one click</div>
+        <p class="feature-desc" data-i18n="f3.desc">Walk into every interview knowing the company's product, culture, funding, and growth story — generated on demand.</p>
       </div>
       <div class="feature-card">
         <span class="feature-icon">🎙️</span>
-        <div class="feature-title">Voice interview practice</div>
-        <p class="feature-desc">Realistic AI-powered mock interviews tailored to each role. Get sharp answers ready before the real call.</p>
+        <div class="feature-title" data-i18n="f4.title">Voice interview practice</div>
+        <p class="feature-desc" data-i18n="f4.desc">Realistic AI-powered mock interviews tailored to each role. Get sharp answers ready before the real call.</p>
       </div>
       <div class="feature-card">
         <span class="feature-icon">💙</span>
-        <div class="feature-title">Emotional support chat</div>
-        <p class="feature-desc">Job searching is hard. A built-in empathetic chat helps you process rejections and stay motivated through the journey.</p>
+        <div class="feature-title" data-i18n="f5.title">Emotional support chat</div>
+        <p class="feature-desc" data-i18n="f5.desc">Job searching is hard. A built-in empathetic chat helps you process rejections and stay motivated through the journey.</p>
       </div>
       <div class="feature-card">
         <span class="feature-icon">🔗</span>
-        <div class="feature-title">Add any job by URL</div>
-        <p class="feature-desc">Paste a LinkedIn or company careers link and the AI pulls out the details, scores the fit, and adds it to your pipeline.</p>
+        <div class="feature-title" data-i18n="f6.title">Add any job by URL</div>
+        <p class="feature-desc" data-i18n="f6.desc">Paste a LinkedIn or company careers link and the AI pulls out the details, scores the fit, and adds it to your pipeline.</p>
       </div>
     </div>
   </div>
@@ -804,24 +832,24 @@
 <!-- HOW IT WORKS -->
 <section id="how">
   <div class="section-inner">
-    <div class="section-label">How it works</div>
-    <h2 class="section-title">Three steps to your<br/>personal job engine</h2>
-    <p class="section-sub">No subscriptions, no vendor lock-in. Your data lives in your GitHub repo. You own everything.</p>
+    <div class="section-label" data-i18n="how.label">How it works</div>
+    <h2 class="section-title" data-i18n-html="how.title">Three steps to your<br/>personal job engine</h2>
+    <p class="section-sub" data-i18n="how.sub">No subscriptions, no vendor lock-in. Your data lives in your GitHub repo. You own everything.</p>
     <div class="steps-row">
       <div class="step-card">
         <div class="step-num"><span class="step-icon">🍴</span></div>
-        <div class="step-title">Fork this repo on GitHub</div>
-        <p class="step-desc">One click to copy the entire system into your own GitHub account — free forever on the free tier.</p>
+        <div class="step-title" data-i18n="s1.title">Fork this repo on GitHub</div>
+        <p class="step-desc" data-i18n="s1.desc">One click to copy the entire system into your own GitHub account — free forever on the free tier.</p>
       </div>
       <div class="step-card">
         <div class="step-num"><span class="step-icon">⚙️</span></div>
-        <div class="step-title">Run the onboarding wizard</div>
-        <p class="step-desc">Fill in your roles, location, and API key below. Download the generated config and drop it in your repo.</p>
+        <div class="step-title" data-i18n="s2.title">Run the onboarding wizard</div>
+        <p class="step-desc" data-i18n="s2.desc">Fill in your roles, location, and API key below. Download the generated config and drop it in your repo.</p>
       </div>
       <div class="step-card">
         <div class="step-num"><span class="step-icon">🚀</span></div>
-        <div class="step-title">Your tracker is live — automatically</div>
-        <p class="step-desc">GitHub Actions start scanning. Your personal dashboard is published to GitHub Pages — no server needed.</p>
+        <div class="step-title" data-i18n="s3.title">Your tracker is live — automatically</div>
+        <p class="step-desc" data-i18n="s3.desc">GitHub Actions start scanning. Your personal dashboard is published to GitHub Pages — no server needed.</p>
       </div>
     </div>
   </div>
@@ -830,9 +858,9 @@
 <!-- SETUP / ONBOARDING WIZARD -->
 <section id="setup">
   <div class="section-inner" style="text-align:center; margin-bottom:40px">
-    <div class="section-label">Setup</div>
-    <h2 class="section-title">Set up your tracker<br/>in under 2 minutes</h2>
-    <p class="section-sub" style="margin:0 auto">Complete the wizard below to generate your personal <code style="background:var(--primary-container);color:var(--primary);padding:2px 6px;border-radius:6px;font-size:.9em">config.json</code></p>
+    <div class="section-label" data-i18n="setup.label">Setup</div>
+    <h2 class="section-title" data-i18n-html="setup.title">Set up your tracker<br/>in under 2 minutes</h2>
+    <p class="section-sub" style="margin:0 auto" data-i18n-html="setup.sub">Complete the wizard below to generate your personal <code style="background:var(--primary-container);color:var(--primary);padding:2px 6px;border-radius:6px;font-size:.9em">config.json</code></p>
   </div>
 
   <div class="wizard-wrap">
@@ -849,63 +877,63 @@
 
     <!-- STEP 1: Roles -->
     <div class="wz-step active" id="wz-1">
-      <div class="wz-title">What roles are you looking for?</div>
-      <p class="wz-sub">List one role per line. Be specific — these are used to scan and score jobs.</p>
-      <textarea id="field-roles" placeholder="Revenue Operations Manager&#10;Head of Growth&#10;GTM Engineer" rows="5"></textarea>
+      <div class="wz-title" data-i18n="wz1.title">What roles are you looking for?</div>
+      <p class="wz-sub" data-i18n="wz1.sub">List one role per line. Be specific — these are used to scan and score jobs.</p>
+      <textarea id="field-roles" data-i18n-ph="wz1.ph" placeholder="Revenue Operations Manager&#10;Head of Growth&#10;GTM Engineer" rows="5"></textarea>
       <div class="wz-nav">
         <button class="btn-wz-next" onclick="wzNext(1)">
-          Continue
-          <span class="material-symbols-rounded" style="font-size:18px">arrow_forward</span>
+          <span data-i18n="btn.continue">Continue</span>
+          <span class="material-symbols-rounded flip-rtl" style="font-size:18px">arrow_forward</span>
         </button>
       </div>
     </div>
 
     <!-- STEP 2: Location -->
     <div class="wz-step" id="wz-2">
-      <div class="wz-title">Where are you willing to work?</div>
-      <p class="wz-sub">Select all that apply. You can mix locations.</p>
+      <div class="wz-title" data-i18n="wz2.title">Where are you willing to work?</div>
+      <p class="wz-sub" data-i18n="wz2.sub">Select all that apply. You can mix locations.</p>
       <div class="chips-row" id="location-chips">
-        <button class="chip" onclick="toggleChip(this)" data-val="Tel Aviv">📍 Tel Aviv</button>
-        <button class="chip" onclick="toggleChip(this)" data-val="Remote">🌍 Remote</button>
-        <button class="chip" onclick="toggleChip(this)" data-val="Hybrid">🏠 Hybrid</button>
-        <button class="chip" onclick="toggleChip(this, true)" data-val="other" id="chip-other">✏️ Other</button>
+        <button class="chip" onclick="toggleChip(this)" data-val="Tel Aviv" data-i18n="chip.telaviv">📍 Tel Aviv</button>
+        <button class="chip" onclick="toggleChip(this)" data-val="Remote" data-i18n="chip.remote">🌍 Remote</button>
+        <button class="chip" onclick="toggleChip(this)" data-val="Hybrid" data-i18n="chip.hybrid">🏠 Hybrid</button>
+        <button class="chip" onclick="toggleChip(this, true)" data-val="other" id="chip-other" data-i18n="chip.other">✏️ Other</button>
       </div>
-      <input type="text" id="other-location" class="other-input" placeholder="e.g. Berlin, New York, London"/>
+      <input type="text" id="other-location" class="other-input" data-i18n-ph="wz2.otherPh" placeholder="e.g. Berlin, New York, London"/>
       <div class="wz-nav">
         <button class="btn-wz-back" onclick="wzBack(2)">
-          <span class="material-symbols-rounded" style="font-size:16px">arrow_back</span>
-          Back
+          <span class="material-symbols-rounded flip-rtl" style="font-size:16px">arrow_back</span>
+          <span data-i18n="btn.back">Back</span>
         </button>
         <button class="btn-wz-next" onclick="wzNext(2)">
-          Continue
-          <span class="material-symbols-rounded" style="font-size:18px">arrow_forward</span>
+          <span data-i18n="btn.continue">Continue</span>
+          <span class="material-symbols-rounded flip-rtl" style="font-size:18px">arrow_forward</span>
         </button>
       </div>
     </div>
 
     <!-- STEP 3: Profile -->
     <div class="wz-step" id="wz-3">
-      <div class="wz-title">Tell us about yourself</div>
-      <p class="wz-sub">This shapes the AI's understanding of your fit for each role.</p>
-      <label class="field-label" for="field-name">Your name</label>
-      <input type="text" id="field-name" placeholder="e.g. Omri Cohen"/>
-      <label class="field-label" for="field-profile">Your experience in one line</label>
-      <input type="text" id="field-profile" placeholder="10 years RevOps, B2B SaaS, Salesforce expert"/>
-      <label class="field-label" for="field-github">Your GitHub username</label>
+      <div class="wz-title" data-i18n="wz3.title">Tell us about yourself</div>
+      <p class="wz-sub" data-i18n="wz3.sub">This shapes the AI's understanding of your fit for each role.</p>
+      <label class="field-label" for="field-name" data-i18n="wz3.name">Your name</label>
+      <input type="text" id="field-name" data-i18n-ph="wz3.namePh" placeholder="e.g. Dana Cohen"/>
+      <label class="field-label" for="field-profile" data-i18n="wz3.exp">Your experience in one line</label>
+      <input type="text" id="field-profile" data-i18n-ph="wz3.expPh" placeholder="10 years RevOps, B2B SaaS, Salesforce expert"/>
+      <label class="field-label" for="field-github" data-i18n="wz3.github">Your GitHub username</label>
       <input type="text" id="field-github" placeholder="e.g. johndoe" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <label class="field-label" for="field-apikey">Anthropic API key <span style="font-weight:400;color:var(--ink-faint)">(optional — add later)</span></label>
+      <label class="field-label" for="field-apikey" data-i18n-html="wz3.apikey">Anthropic API key <span style="font-weight:400;color:var(--ink-faint)">(optional — add later)</span></label>
       <input type="password" id="field-apikey" placeholder="sk-ant-..."/>
       <div class="field-note">
         <span class="material-symbols-rounded">lock</span>
-        Stored only in your GitHub Secrets — never transmitted to our servers.
+        <span data-i18n="wz3.note">Stored only in your GitHub Secrets — never transmitted to our servers.</span>
       </div>
       <div class="wz-nav">
         <button class="btn-wz-back" onclick="wzBack(3)">
-          <span class="material-symbols-rounded" style="font-size:16px">arrow_back</span>
-          Back
+          <span class="material-symbols-rounded flip-rtl" style="font-size:16px">arrow_back</span>
+          <span data-i18n="btn.back">Back</span>
         </button>
         <button class="btn-wz-next" onclick="wzNext(3)">
-          Generate Config
+          <span data-i18n="btn.generate">Generate Config</span>
           <span class="material-symbols-rounded" style="font-size:18px">auto_awesome</span>
         </button>
       </div>
@@ -915,19 +943,19 @@
     <div class="wz-step" id="wz-4">
       <div class="done-header">
         <span class="done-icon material-symbols-rounded">task_alt</span>
-        <div class="wz-title">Your config is ready — 3 steps to go live</div>
-        <p class="wz-sub" style="margin:0 auto">Everything is set up. Follow the steps below — takes about 3 minutes.</p>
+        <div class="wz-title" data-i18n="wz4.title">Your config is ready — 3 steps to go live</div>
+        <p class="wz-sub" style="margin:0 auto" data-i18n="wz4.sub">Everything is set up. Follow the steps below — takes about 3 minutes.</p>
       </div>
 
       <!-- STEP 1 -->
       <div class="inst-step" style="margin-top:28px">
         <div class="inst-num">1</div>
         <div class="inst-content">
-          <strong>Fork the repo into your GitHub account</strong>
-          <p>Click the button below — it copies the entire system into your account for free.</p>
+          <strong data-i18n="inst1.title">Fork the repo into your GitHub account</strong>
+          <p data-i18n="inst1.p">Click the button below — it copies the entire system into your account for free.</p>
           <a id="fork-link" href="https://github.com/omriki55/omrigonenjobfinder/fork" target="_blank" rel="noopener" class="inst-link">
             <span class="material-symbols-rounded">fork_right</span>
-            Use this template on GitHub
+            <span data-i18n="inst1.btn">Use this template on GitHub</span>
           </a>
         </div>
       </div>
@@ -936,20 +964,20 @@
       <div class="inst-step">
         <div class="inst-num">2</div>
         <div class="inst-content">
-          <strong>Paste your config into the repo</strong>
-          <p>Click the button below — it copies your config <em>and</em> opens the file editor directly in your repo. Just paste (<kbd>Ctrl+V</kbd> / <kbd>⌘V</kbd>) and click <strong>Commit changes</strong>.</p>
+          <strong data-i18n="inst2.title">Paste your config into the repo</strong>
+          <p data-i18n-html="inst2.p">Click the button below — it copies your config <em>and</em> opens the file editor directly in your repo. Just paste (<kbd>Ctrl+V</kbd> / <kbd>⌘V</kbd>) and click <strong>Commit changes</strong>.</p>
           <pre class="config-block" id="config-output" style="margin:12px 0;font-size:.75rem;max-height:160px;overflow-y:auto"></pre>
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
             <button class="inst-link" onclick="copyAndOpen()" id="copy-open-btn" style="background:var(--primary);color:#fff;border:none;cursor:pointer">
               <span class="material-symbols-rounded">edit_note</span>
-              Copy config &amp; Open editor
+              <span data-i18n="inst2.btn1">Copy config &amp; Open editor</span>
             </button>
             <button class="inst-link" onclick="copyConfig()" style="background:var(--surface-container);color:var(--ink);border:none;cursor:pointer">
               <span class="material-symbols-rounded">content_copy</span>
-              Copy only
+              <span data-i18n="inst2.btn2">Copy only</span>
             </button>
           </div>
-          <p id="copy-ack" style="display:none;font-size:.8rem;color:var(--success);margin-top:6px;font-weight:600">✅ Copied! Now paste in the editor and click "Commit changes"</p>
+          <p id="copy-ack" data-i18n="inst2.ack" style="display:none;font-size:.8rem;color:var(--success);margin-top:6px;font-weight:600">✅ Copied! Now paste in the editor and click "Commit changes"</p>
         </div>
       </div>
 
@@ -957,18 +985,18 @@
       <div class="inst-step">
         <div class="inst-num">3</div>
         <div class="inst-content">
-          <strong>Add your Anthropic API key</strong>
-          <p>In your forked repo: <strong>Settings → Secrets and variables → Actions → New repository secret</strong></p>
+          <strong data-i18n="inst3.title">Add your Anthropic API key</strong>
+          <p data-i18n-html="inst3.p">In your forked repo: <strong>Settings → Secrets and variables → Actions → New repository secret</strong></p>
           <div class="secret-row">
-            <span class="code-inline">Name:</span> <span class="code-inline" style="background:#001257;color:#dde1ff">ANTHROPIC_API_KEY</span>
+            <span class="code-inline">Name:</span> <span class="code-inline" style="background:#001257;color:#dde1ff;direction:ltr">ANTHROPIC_API_KEY</span>
           </div>
           <div class="secret-row" style="margin-top:6px">
-            <span class="code-inline">Value:</span> <span style="font-size:.82rem;color:var(--ink-soft)">your key from console.anthropic.com → API Keys</span>
+            <span class="code-inline">Value:</span> <span style="font-size:.82rem;color:var(--ink-soft)" data-i18n="inst3.value">your key from console.anthropic.com → API Keys</span>
           </div>
-          <p style="margin-top:10px;font-size:.82rem;color:var(--ink-soft)">No Anthropic key yet? <a href="https://console.anthropic.com" target="_blank" style="color:var(--primary)">Get one free →</a> (takes 2 minutes)</p>
+          <p style="margin-top:10px;font-size:.82rem;color:var(--ink-soft)" data-i18n-html="inst3.nokey">No Anthropic key yet? <a href="https://console.anthropic.com" target="_blank" style="color:var(--primary)">Get one free →</a> (takes 2 minutes)</p>
           <a id="secrets-link" href="https://github.com/omriki55/omrigonenjobfinder/settings/secrets/actions/new" target="_blank" rel="noopener" class="inst-link" style="margin-top:10px">
             <span class="material-symbols-rounded">key</span>
-            Open Secrets settings
+            <span data-i18n="inst3.btn">Open Secrets settings</span>
           </a>
         </div>
       </div>
@@ -977,10 +1005,10 @@
       <div class="inst-step" style="background:var(--success-bg);border-radius:16px;padding:16px 20px">
         <div class="inst-num" style="background:var(--success)">✓</div>
         <div class="inst-content">
-          <strong>Your tracker is live!</strong>
-          <p>GitHub Actions will run the first scan automatically. Your tracker will be at:</p>
-          <p id="tracker-url-display" style="margin-top:6px;font-weight:700;color:var(--primary);word-break:break-all;font-size:.9rem">yourusername.github.io/omrigonenjobfinder</p>
-          <p style="font-size:.8rem;color:var(--ink-soft);margin-top:4px">Enable GitHub Pages: Settings → Pages → Branch: main → Folder: /docs</p>
+          <strong data-i18n="done.title">Your tracker is live!</strong>
+          <p data-i18n="done.p">GitHub Actions will run the first scan automatically. Your tracker will be at:</p>
+          <p id="tracker-url-display" style="margin-top:6px;font-weight:700;color:var(--primary);word-break:break-all;font-size:.9rem;direction:ltr">yourusername.github.io/omrigonenjobfinder</p>
+          <p style="font-size:.8rem;color:var(--ink-soft);margin-top:4px" data-i18n="done.pages">Enable GitHub Pages: Settings → Pages → Branch: main → Folder: /docs</p>
         </div>
       </div>
     </div>
@@ -993,9 +1021,9 @@
     <strong style="color:#fff">JobSearch AI</strong>
   </div>
   <div class="footer-row">
-    Open source
+    <span data-i18n="footer.os">Open source</span>
     <span class="footer-sep">·</span>
-    Built with Claude Code
+    <span data-i18n="footer.built">Built with Claude Code</span>
     <span class="footer-sep">·</span>
     <a href="https://github.com/omriki55/omrigonenjobfinder" target="_blank" rel="noopener">github.com/omriki55/omrigonenjobfinder</a>
   </div>
@@ -1036,7 +1064,7 @@
     }
     if (from === 2) {
       const selected = [...document.querySelectorAll('#location-chips .chip.selected')];
-      if (!selected.length) { alert('Please select at least one location.'); return; }
+      if (!selected.length) { alert(t('alert.location')); return; }
     }
     if (from === 3) {
       const name = document.getElementById('field-name').value.trim();
@@ -1097,11 +1125,12 @@
       name,
       profile_summary: profile,
       ats: {
-        greenhouse: ["monday", "wiz", "fireblocks", "melio", "gong", "riskified", "similarweb", "lemonade", "jfrog", "snyk", "taboola", "verbit"],
-        lever: ["yotpo", "bigpanda", "deel"],
-        ashby: ["island"]
+        greenhouse: ["examplecompany1", "examplecompany2"],
+        lever: ["examplecompany3"],
+        ashby: ["examplecompany4"]
       },
-      updated: "2026-06-10"
+      ats_note: "Replace the example slugs with the ATS board names of companies you want to track (e.g. greenhouse.io/yourcompany).",
+      updated: new Date().toISOString().slice(0, 10)
     };
 
     document.getElementById('config-output').textContent = JSON.stringify(config, null, 2);
@@ -1137,6 +1166,140 @@
     const editorUrl = `https://github.com/${ghUser}/${ghRepo}/edit/main/job_search/config.json`;
     window.open(editorUrl, '_blank');
   }
+
+  // ===== I18N =====
+  const I18N = {
+    he: {
+      'nav.tracker': 'פתיחת הטרקר',
+      'nav.start': 'להתחלה',
+      'hero.badge': 'קוד פתוח · מופעל על ידי Claude AI',
+      'hero.title': 'מנוע חיפוש העבודה <span class="accent">מבוסס ה-AI</span> שלכם —<br/>מוכן תוך דקות',
+      'hero.sub': 'מגדירים פעם אחת, וה-AI האישי שלכם עוקב אחרי משרות, מדרג התאמה, מכין לראיונות ושומר על המוטיבציה — אוטומטית, כל יום.',
+      'hero.cta': 'להתחיל בחינם',
+      'hero.github': 'לצפייה ב-GitHub',
+      'stats.apps': 'מועמדויות במעקב',
+      'stats.interviews': 'ראיונות שנקבעו',
+      'stats.stages': 'שלבים שעברו',
+      'stats.days': 'ימי פעילות',
+      'features.label': 'יכולות',
+      'features.title': 'כל מה שצריך,<br/>בלי מה שלא',
+      'features.sub': 'ריפו אחד ב-GitHub עושה את העבודה של חמישה כלים — סריקה, דירוג, אימון ותמיכה לאורך כל החיפוש.',
+      'f1.title': 'סריקה אוטומטית 3 פעמים ביום',
+      'f1.desc': 'GitHub Actions סורק את לוחות המשרות של חברות היעד שלכם כל 8 שעות ומוסיף משרות חדשות לטרקר אוטומטית.',
+      'f2.title': 'דירוג התאמה 1–10 עם AI',
+      'f2.desc': 'Claude קורא כל תיאור משרה מול הפרופיל שלכם ומדרג את ההתאמה, כדי שתשקיעו אנרגיה איפה שזה משתלם.',
+      'f3.title': 'תיק חברה — בקליק אחד',
+      'f3.desc': 'נכנסים לכל ראיון כשאתם מכירים את המוצר, התרבות, הגיוסים וסיפור הצמיחה של החברה — נוצר לפי דרישה.',
+      'f4.title': 'תרגול ראיונות בקול',
+      'f4.desc': 'ראיונות דמה ריאליסטיים מבוססי AI, מותאמים לכל תפקיד. תשובות חדות מוכנות עוד לפני השיחה האמיתית.',
+      'f5.title': "צ'אט תמיכה רגשית",
+      'f5.desc': "חיפוש עבודה זה קשה. צ'אט אמפתי מובנה עוזר לעבד דחיות ולשמור על מוטיבציה לאורך הדרך.",
+      'f6.title': 'הוספת משרה מכל קישור',
+      'f6.desc': 'מדביקים קישור מלינקדאין או מאתר החברה — ה-AI שולף את הפרטים, מדרג התאמה ומוסיף לפייפליין.',
+      'how.label': 'איך זה עובד',
+      'how.title': 'שלושה שלבים למנוע<br/>המשרות האישי שלכם',
+      'how.sub': 'בלי מנויים ובלי נעילה לספק. המידע שלכם חי בריפו שלכם ב-GitHub. הכול בבעלותכם.',
+      's1.title': 'עושים Fork לריפו ב-GitHub',
+      's1.desc': 'קליק אחד מעתיק את כל המערכת לחשבון ה-GitHub שלכם — בחינם, לתמיד.',
+      's2.title': 'מריצים את אשף ההגדרה',
+      's2.desc': 'ממלאים תפקידים, מיקום ומפתח API למטה. מעתיקים את הקונפיג שנוצר ומדביקים בריפו.',
+      's3.title': 'הטרקר שלכם באוויר — אוטומטית',
+      's3.desc': 'GitHub Actions מתחיל לסרוק. הדשבורד האישי מתפרסם ב-GitHub Pages — בלי שרת.',
+      'setup.label': 'הגדרה',
+      'setup.title': 'מגדירים את הטרקר<br/>בפחות מ-2 דקות',
+      'setup.sub': 'השלימו את האשף כדי ליצור <code style="background:var(--primary-container);color:var(--primary);padding:2px 6px;border-radius:6px;font-size:.9em">config.json</code> אישי',
+      'wz1.title': 'אילו תפקידים אתם מחפשים?',
+      'wz1.sub': 'תפקיד אחד בכל שורה. כמה שיותר ספציפי — לפי זה נסרקות ומדורגות משרות.',
+      'wz1.ph': 'Revenue Operations Manager\nHead of Growth\nGTM Engineer',
+      'btn.continue': 'המשך',
+      'btn.back': 'חזרה',
+      'btn.generate': 'יצירת קונפיג',
+      'wz2.title': 'איפה מתאים לכם לעבוד?',
+      'wz2.sub': 'בחרו את כל מה שרלוונטי. אפשר לשלב.',
+      'chip.telaviv': '📍 תל אביב',
+      'chip.remote': '🌍 מרחוק',
+      'chip.hybrid': '🏠 היברידי',
+      'chip.other': '✏️ אחר',
+      'wz2.otherPh': 'למשל ברלין, ניו יורק, לונדון',
+      'alert.location': 'בחרו לפחות מיקום אחד.',
+      'wz3.title': 'ספרו לנו עליכם',
+      'wz3.sub': 'זה מה שמלמד את ה-AI להעריך את ההתאמה שלכם לכל תפקיד.',
+      'wz3.name': 'השם שלכם',
+      'wz3.namePh': 'למשל דנה כהן',
+      'wz3.exp': 'הניסיון שלכם בשורה אחת',
+      'wz3.expPh': '10 שנות RevOps, B2B SaaS, מומחיות ב-Salesforce',
+      'wz3.github': 'שם המשתמש שלכם ב-GitHub',
+      'wz3.apikey': 'מפתח Anthropic API <span style="font-weight:400;color:var(--ink-faint)">(אופציונלי — אפשר להוסיף אחר כך)</span>',
+      'wz3.note': 'נשמר רק ב-GitHub Secrets שלכם — לא נשלח לשום שרת.',
+      'wz4.title': 'הקונפיג מוכן — 3 צעדים לעלייה לאוויר',
+      'wz4.sub': 'הכול מוכן. עקבו אחרי השלבים למטה — לוקח בערך 3 דקות.',
+      'inst1.title': 'עשו Fork לריפו לחשבון ה-GitHub שלכם',
+      'inst1.p': 'לחצו על הכפתור למטה — הוא מעתיק את כל המערכת לחשבון שלכם בחינם.',
+      'inst1.btn': 'שימוש בתבנית ב-GitHub',
+      'inst2.title': 'הדביקו את הקונפיג בריפו',
+      'inst2.p': 'לחצו על הכפתור למטה — הוא מעתיק את הקונפיג <em>וגם</em> פותח את עורך הקבצים ישירות בריפו שלכם. פשוט הדביקו (<kbd>Ctrl+V</kbd> / <kbd>⌘V</kbd>) ולחצו <strong>Commit changes</strong>.',
+      'inst2.btn1': 'העתקה ופתיחת העורך',
+      'inst2.btn2': 'העתקה בלבד',
+      'inst2.ack': '✅ הועתק! עכשיו הדביקו בעורך ולחצו "Commit changes"',
+      'inst3.title': 'הוסיפו את מפתח ה-Anthropic API שלכם',
+      'inst3.p': 'בריפו שעשיתם לו Fork: ‏<strong>Settings ← Secrets and variables ← Actions ← New repository secret</strong>',
+      'inst3.value': 'המפתח שלכם מ-console.anthropic.com ← API Keys',
+      'inst3.nokey': 'אין עדיין מפתח Anthropic? <a href="https://console.anthropic.com" target="_blank" style="color:var(--primary)">קבלו אחד בחינם ←</a> (לוקח 2 דקות)',
+      'inst3.btn': 'פתיחת הגדרות Secrets',
+      'done.title': 'הטרקר שלכם באוויר!',
+      'done.p': 'GitHub Actions יריץ את הסריקה הראשונה אוטומטית. הטרקר שלכם יהיה בכתובת:',
+      'done.pages': 'הפעילו GitHub Pages: ‏Settings ← Pages ← Branch: main ← Folder: ‎/docs',
+      'footer.os': 'קוד פתוח',
+      'footer.built': 'נבנה עם Claude Code'
+    }
+  };
+  const EN_DEFAULTS = {};
+  let currentLang = 'en';
+
+  function t(key) {
+    if (currentLang === 'he' && I18N.he[key]) return I18N.he[key];
+    return EN_DEFAULTS[key] !== undefined ? EN_DEFAULTS[key] : key;
+  }
+
+  function captureEnglishDefaults() {
+    document.querySelectorAll('[data-i18n]').forEach(el => { EN_DEFAULTS[el.dataset.i18n] = el.textContent; });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => { EN_DEFAULTS[el.dataset.i18nHtml] = el.innerHTML; });
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => { EN_DEFAULTS[el.dataset.i18nPh] = el.placeholder; });
+    EN_DEFAULTS['alert.location'] = 'Please select at least one location.';
+  }
+
+  function applyLang(lang) {
+    currentLang = lang;
+    const he = lang === 'he';
+    document.documentElement.lang = he ? 'he' : 'en';
+    document.documentElement.dir = he ? 'rtl' : 'ltr';
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const v = he ? I18N.he[el.dataset.i18n] : EN_DEFAULTS[el.dataset.i18n];
+      if (v !== undefined) el.textContent = v;
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+      const v = he ? I18N.he[el.dataset.i18nHtml] : EN_DEFAULTS[el.dataset.i18nHtml];
+      if (v !== undefined) el.innerHTML = v;
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+      const v = he ? I18N.he[el.dataset.i18nPh] : EN_DEFAULTS[el.dataset.i18nPh];
+      if (v !== undefined) el.placeholder = v;
+    });
+    document.getElementById('lang-toggle-label').textContent = he ? 'English' : 'עברית';
+    try { localStorage.setItem('lang', lang); } catch (e) {}
+  }
+
+  function toggleLang() {
+    applyLang(currentLang === 'he' ? 'en' : 'he');
+  }
+
+  captureEnglishDefaults();
+  (function initLang() {
+    let saved = null;
+    try { saved = localStorage.getItem('lang'); } catch (e) {}
+    if (!saved) saved = (navigator.language || '').startsWith('he') ? 'he' : 'en';
+    if (saved === 'he') applyLang('he');
+  })();
 </script>
 </body>
 </html>
