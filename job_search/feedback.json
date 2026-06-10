@@ -11,12 +11,20 @@
       {
         "date": "2026-06-10",
         "score": 0
+      },
+      {
+        "date": "2026-06-10",
+        "score": 9
       }
     ],
     "Gong.io": [
       {
         "date": "2026-06-05",
         "score": 0
+      },
+      {
+        "date": "2026-06-10",
+        "score": 9
       }
     ],
     "Embrace": [
@@ -47,6 +55,10 @@
       {
         "date": "2026-06-05",
         "score": 0
+      },
+      {
+        "date": "2026-06-10",
+        "score": 7
       }
     ],
     "Gradient Labs": [
@@ -89,6 +101,10 @@
       {
         "date": "2026-06-05",
         "score": 0
+      },
+      {
+        "date": "2026-06-10",
+        "score": 7
       }
     ],
     "Plus500": [
@@ -231,6 +247,10 @@
       {
         "date": "2026-06-05",
         "score": 0
+      },
+      {
+        "date": "2026-06-10",
+        "score": 7
       }
     ],
     "Undisclosed": [
@@ -375,6 +395,10 @@
       {
         "date": "2026-06-10",
         "score": 0
+      },
+      {
+        "date": "2026-06-10",
+        "score": 8
       }
     ],
     "Conveo": [
@@ -399,6 +423,10 @@
       {
         "date": "2026-06-10",
         "score": 0
+      },
+      {
+        "date": "2026-06-10",
+        "score": 6
       }
     ],
     "saas.group": [
@@ -421,6 +449,54 @@
       {
         "date": "2026-06-10",
         "score": 0
+      }
+    ],
+    "Teleport": [
+      {
+        "date": "2026-06-10",
+        "score": 8
+      }
+    ],
+    "Noibu Technologies": [
+      {
+        "date": "2026-06-10",
+        "score": 9
+      }
+    ],
+    "efficiently": [
+      {
+        "date": "2026-06-10",
+        "score": 6
+      }
+    ],
+    "Bloomerang": [
+      {
+        "date": "2026-06-10",
+        "score": 7
+      }
+    ],
+    "Follett Software": [
+      {
+        "date": "2026-06-10",
+        "score": 6
+      }
+    ],
+    "Engine": [
+      {
+        "date": "2026-06-10",
+        "score": 8
+      }
+    ],
+    "Apollo.io": [
+      {
+        "date": "2026-06-10",
+        "score": 6
+      }
+    ],
+    "Customer.io": [
+      {
+        "date": "2026-06-10",
+        "score": 7
       }
     ]
   }

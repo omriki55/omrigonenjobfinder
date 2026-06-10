@@ -1,18 +1,5 @@
 [
   {
-    "company": "Incredibuild",
-    "title": "GTM Engineer",
-    "location": "Tel Aviv",
-    "url": "https://www.comeet.com/jobs/incredibuild/66.00F/gtm-engineer/DE.868",
-    "description": "GTM infrastructure architect. Own data pipelines across SFDC, HubSpot, Posthog, Gong. Replace manual processes with AI-driven automation. Own and develop the technical revenue engine.",
-    "fit_score": 9,
-    "score_reason": "RevOps + GTM Engineering — בדיוק הפרופיל. טכני, AI-driven, stack מוכר.",
-    "posted": "2026-06-10",
-    "scan_date": "2026-06-10",
-    "initial_status": "saved",
-    "_manualAdd": true
-  },
-  {
     "company": "Flex",
     "title": "Revenue Operations Manager - Systems",
     "location": "Remote",
@@ -25,6 +12,19 @@
     "ai_opener": "I saw Flex is building out RevOps for New Verticals from the ground up—that's exactly the kind of greenfield GTM architecture I've scaled multiple times across B2B SaaS and fintech. With 15+ years architecting Salesforce-driven revenue engines and pipeline forecasting systems, I'm interested in how you're thinking about routing strategy and reporting infrastructure as you expand beyond rent into split-pay verticals.",
     "location_ok": true,
     "scan_date": "2026-06-06"
+  },
+  {
+    "company": "Incredibuild",
+    "title": "GTM Engineer",
+    "location": "Tel Aviv",
+    "url": "https://www.comeet.com/jobs/incredibuild/66.00F/gtm-engineer/DE.868",
+    "description": "GTM infrastructure architect. Own data pipelines across SFDC, HubSpot, Posthog, Gong. Replace manual processes with AI-driven automation. Own and develop the technical revenue engine.",
+    "fit_score": 9,
+    "score_reason": "RevOps + GTM Engineering — בדיוק הפרופיל. טכני, AI-driven, stack מוכר.",
+    "posted": "2026-06-10",
+    "scan_date": "2026-06-10",
+    "initial_status": "saved",
+    "_manualAdd": true
   },
   {
     "company": "Plus500",
