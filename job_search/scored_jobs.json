@@ -1,5 +1,18 @@
 [
   {
+    "company": "Incredibuild",
+    "title": "GTM Engineer",
+    "location": "Tel Aviv",
+    "url": "https://www.comeet.com/jobs/incredibuild/66.00F/gtm-engineer/DE.868",
+    "description": "GTM infrastructure architect. Own data pipelines across SFDC, HubSpot, Posthog, Gong. Replace manual processes with AI-driven automation. Own and develop the technical revenue engine.",
+    "fit_score": 9,
+    "score_reason": "RevOps + GTM Engineering — בדיוק הפרופיל. טכני, AI-driven, stack מוכר.",
+    "posted": "2026-06-10",
+    "scan_date": "2026-06-10",
+    "initial_status": "saved",
+    "_manualAdd": true
+  },
+  {
     "company": "Flex",
     "title": "Revenue Operations Manager - Systems",
     "location": "Remote",
