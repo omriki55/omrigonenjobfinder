@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JobSearch AI — המשרות שלי</title>
+  <meta name="robots" content="noindex"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet"/>
+  <script src="./supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #4F6BED; --primary-dark: #3a52c9;
+      --primary-container: #dde1ff; --canvas: #fbf8ff; --surface: #ffffff;
+      --surface-container: #f0edf5; --ink: #1b1b21; --ink-soft: #46464f;
+      --ink-faint: #74747e; --line: #c7c5d0; --line-soft: #e2e0ea;
+      --success: #1a7a45; --success-bg: #d4f0e2; --danger: #ba1a1a;
+      --warn-bg: #fff3e0; --warn-line: #ffb74d; --warn-ink: #7a4f00;
+      --e2: 0 2px 6px rgba(17,20,45,.06), 0 4px 12px rgba(17,20,45,.07);
+    }
+    body { font-family: 'Heebo', sans-serif; background: var(--canvas); color: var(--ink); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    .topbar {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(251,248,255,.92); backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line-soft);
+      height: 60px; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo { font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .topbar-actions { display: flex; align-items: center; gap: 10px; }
+    .btn {
+      border: 1.5px solid var(--line); background: transparent; color: var(--ink-soft);
+      padding: 7px 16px; border-radius: 100px; font-family: 'Heebo', sans-serif;
+      font-size: .9rem; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+      transition: background .15s, border-color .15s;
+    }
+    .btn:hover { background: var(--surface-container); border-color: var(--primary); }
+    .btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    main { max-width: 900px; margin: 0 auto; padding: 32px 20px 80px; }
+    h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 4px; }
+    .sub { color: var(--ink-faint); font-size: .92rem; margin-bottom: 24px; }
+
+    .notice {
+      border-radius: 16px; padding: 14px 18px; font-size: .92rem; margin-bottom: 20px;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .notice.warn { background: var(--warn-bg); border: 1px solid var(--warn-line); color: var(--warn-ink); }
+    .notice.info { background: var(--primary-container); border: 1px solid var(--primary); color: var(--primary-dark); }
+    .notice .material-symbols-rounded { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .notice input {
+      width: 100%; padding: 9px 12px; border: 1.5px solid var(--warn-line); border-radius: 10px;
+      font-family: monospace; font-size: .85rem; background: #fff; outline: none; direction: ltr;
+    }
+    .notice .btn { margin-top: 8px; }
+
+    .job {
+      background: var(--surface); border: 1px solid var(--line-soft); border-radius: 18px;
+      box-shadow: var(--e2); padding: 18px 20px; margin-bottom: 14px;
+    }
+    .job-head { display: flex; align-items: flex-start; gap: 14px; }
+    .score {
+      width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem; font-weight: 900; color: #fff;
+    }
+    .job-titles { flex: 1; min-width: 0; }
+    .job-title { font-weight: 700; font-size: 1.02rem; }
+    .job-title a { color: var(--ink); text-decoration: none; }
+    .job-title a:hover { color: var(--primary); }
+    .job-meta { font-size: .85rem; color: var(--ink-faint); }
+    .job-reason { font-size: .88rem; color: var(--ink-soft); margin-top: 8px; }
+    .job-actions { display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+    select.status {
+      padding: 6px 12px; border-radius: 100px; border: 1.5px solid var(--line);
+      font-family: 'Heebo', sans-serif; font-size: .85rem; font-weight: 600;
+      color: var(--ink-soft); background: var(--canvas); cursor: pointer; outline: none;
+    }
+    details.opener { margin-top: 10px; font-size: .85rem; }
+    details.opener summary { cursor: pointer; color: var(--primary); font-weight: 600; }
+    details.opener p { background: var(--surface-container); border-radius: 10px; padding: 10px 14px; margin-top: 6px; color: var(--ink-soft); }
+
+    .empty { text-align: center; padding: 60px 20px; color: var(--ink-faint); }
+    .empty .material-symbols-rounded { font-size: 52px; color: var(--primary); display: block; margin-bottom: 10px; }
+
+    .gate { max-width: 380px; margin: 12vh auto; background: var(--surface); border: 1px solid var(--line-soft); border-radius: 22px; box-shadow: var(--e2); padding: 32px 28px; }
+    .gate h1 { font-size: 1.3rem; margin-bottom: 16px; }
+    .gate label { display: block; font-size: .85rem; font-weight: 600; color: var(--ink-soft); margin: 14px 0 6px; }
+    .gate input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--line); border-radius: 12px; font-family: 'Heebo', sans-serif; font-size: .95rem; background: var(--canvas); outline: none; }
+    .gate input:focus { border-color: var(--primary); }
+    .gate .err { color: var(--danger); font-size: .85rem; font-weight: 600; margin-top: 10px; display: none; }
+    .gate .alt { font-size: .85rem; color: var(--ink-faint); margin-top: 14px; text-align: center; }
+    .gate .alt a { color: var(--primary); }
+    .hidden { display: none !important; }
+    .loading { text-align: center; color: var(--ink-faint); padding: 60px 0; }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="logo" href="./landing.html">
+    <span class="material-symbols-rounded">work</span>
+    JobSearch AI
+  </a>
+  <div class="topbar-actions">
+    <span id="app-user" style="font-size:.9rem;font-weight:600;color:var(--ink-soft)"></span>
+    <button class="btn" id="logout-btn" onclick="logout()" style="display:none">
+      <span class="material-symbols-rounded" style="font-size:16px">logout</span> יציאה
+    </button>
+  </div>
+</header>
+
+<div class="gate hidden" id="no-config">
+  <h1>המערכת לא מחוברת</h1>
+  <p style="font-size:.9rem;color:var(--ink-soft)">חסר קונפיג Supabase. פנו למנהל האתר.</p>
+</div>
+
+<div class="gate hidden" id="gate">
+  <h1>כניסה</h1>
+  <label for="g-user">שם משתמש</label>
+  <input id="g-user" type="text" autocapitalize="off" spellcheck="false"/>
+  <label for="g-pass">סיסמה</label>
+  <input id="g-pass" type="password"/>
+  <p class="err" id="g-err"></p>
+  <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:20px;padding:12px" onclick="gateLogin()">התחברות</button>
+  <p class="alt">עוד לא נרשמתם? <a href="./landing.html#setup">להרשמה דרך האשף</a></p>
+</div>
+
+<main class="hidden" id="app">
+  <h1>המשרות שלי</h1>
+  <p class="sub" id="scan-info">משרות חדשות נסרקות אוטומטית 3 פעמים ביום</p>
+
+  <div class="notice warn hidden" id="key-notice">
+    <span class="material-symbols-rounded">key_off</span>
+    <div style="flex:1">
+      <strong>חסר מפתח Anthropic API</strong> — בלעדיו הסריקות לא רצות עבורכם.
+      מפתח חינמי ב-<a href="https://console.anthropic.com" target="_blank" style="color:inherit">console.anthropic.com</a>:
+      <input id="key-input" type="password" placeholder="sk-ant-..." style="margin-top:8px"/>
+      <button class="btn btn-primary" onclick="saveKey()">שמירת מפתח</button>
+      <span id="key-saved" style="display:none;font-weight:700;color:var(--success)"> ✅ נשמר</span>
+    </div>
+  </div>
+
+  <div id="jobs-list"><div class="loading">טוען משרות…</div></div>
+</main>
+
+<script>
+  const AUTH_EMAIL_DOMAIN = 'users.jobfinder.local';
+  const sb = (window.SUPABASE_URL && window.SUPABASE_ANON_KEY && window.supabase)
+    ? window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY)
+    : null;
+  let me = null;
+
+  const STATUSES = [
+    ['new', '🆕 חדש'], ['interested', '⭐ מעניין'], ['applied', '📨 הגשתי'],
+    ['interview', '🎯 בראיונות'], ['offer', '🏆 הצעה'], ['rejected', '❌ נדחה'], ['hidden', '🙈 הסתר']
+  ];
+
+  function show(id) {
+    for (const x of ['no-config','gate','app'])
+      document.getElementById(x).classList.toggle('hidden', x !== id);
+  }
+
+  async function init() {
+    if (!sb) return show('no-config');
+    const { data } = await sb.auth.getUser();
+    if (!data || !data.user) return show('gate');
+    me = data.user;
+    await enter();
+  }
+
+  async function gateLogin() {
+    const u = document.getElementById('g-user').value.trim().toLowerCase();
+    const p = document.getElementById('g-pass').value;
+    const err = document.getElementById('g-err');
+    err.style.display = 'none';
+    const { data, error } = await sb.auth.signInWithPassword({ email: u + '@' + AUTH_EMAIL_DOMAIN, password: p });
+    if (error) { err.textContent = 'שם המשתמש או הסיסמה שגויים.'; err.style.display = 'block'; return; }
+    me = data.user;
+    await enter();
+  }
+
+  async function logout() { await sb.auth.signOut(); location.reload(); }
+
+  async function enter() {
+    const username = (me.user_metadata && me.user_metadata.username) || '';
+    document.getElementById('app-user').textContent = username;
+    document.getElementById('logout-btn').style.display = 'inline-flex';
+    show('app');
+    const [{ data: secret }, { data: prof }] = await Promise.all([
+      sb.from('user_secrets').select('user_id').eq('user_id', me.id).maybeSingle(),
+      sb.from('profiles').select('last_scanned').eq('user_id', me.id).maybeSingle()
+    ]);
+    document.getElementById('key-notice').classList.toggle('hidden', !!secret);
+    if (prof && prof.last_scanned) {
+      const d = new Date(prof.last_scanned);
+      document.getElementById('scan-info').textContent =
+        'סריקה אחרונה: ' + d.toLocaleString('he-IL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + ' · רץ אוטומטית 3 פעמים ביום';
+    }
+    await loadJobs();
+  }
+
+  async function saveKey() {
+    const key = document.getElementById('key-input').value.trim();
+    if (!key || key.length < 10) return;
+    const { error } = await sb.from('user_secrets').upsert({ user_id: me.id, anthropic_key: key, updated_at: new Date().toISOString() });
+    if (!error) {
+      document.getElementById('key-saved').style.display = 'inline';
+      setTimeout(() => document.getElementById('key-notice').classList.add('hidden'), 1800);
+    }
+  }
+
+  function scoreColor(s) {
+    if (s >= 8) return '#1a7a45';
+    if (s >= 6) return '#4F6BED';
+    if (s >= 4) return '#b26a00';
+    return '#9aa0a6';
+  }
+
+  async function loadJobs() {
+    const { data: jobs, error } = await sb.from('jobs')
+      .select('id,company,title,location,url,fit_score,score_reason,ai_opener,status,posted')
+      .neq('status', 'hidden')
+      .order('fit_score', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(200);
+    const list = document.getElementById('jobs-list');
+    if (error) { list.innerHTML = '<div class="empty">שגיאה בטעינה — נסו לרענן</div>'; return; }
+    if (!jobs || !jobs.length) {
+      list.innerHTML = '<div class="empty"><span class="material-symbols-rounded">hourglass_top</span>' +
+        'עוד אין משרות.<br/>הסריקה הבאה תרוץ אוטומטית — המשרות יופיעו כאן מעצמן.</div>';
+      return;
+    }
+    list.innerHTML = jobs.map(j => {
+      const opts = STATUSES.map(s => '<option value="' + s[0] + '"' + (j.status === s[0] ? ' selected' : '') + '>' + s[1] + '</option>').join('');
+      return '<div class="job">' +
+        '<div class="job-head">' +
+        '<div class="score" style="background:' + scoreColor(j.fit_score) + '">' + (j.fit_score || '—') + '</div>' +
+        '<div class="job-titles">' +
+        '<div class="job-title"><a href="' + esc(j.url) + '" target="_blank" rel="noopener">' + esc(j.title) + '</a></div>' +
+        '<div class="job-meta">' + esc(j.company) + ' · ' + esc(j.location || '') + (j.posted ? ' · פורסם ' + esc(j.posted) : '') + '</div>' +
+        '</div></div>' +
+        (j.score_reason ? '<div class="job-reason">' + esc(j.score_reason) + '</div>' : '') +
+        (j.ai_opener ? '<details class="opener"><summary>✉️ פתיח לפנייה אישית</summary><p>' + esc(j.ai_opener) + '</p></details>' : '') +
+        '<div class="job-actions">' +
+        '<select class="status" onchange="setStatus(' + j.id + ', this.value)">' + opts + '</select>' +
+        '<a class="btn" href="' + esc(j.url) + '" target="_blank" rel="noopener"><span class="material-symbols-rounded" style="font-size:16px">open_in_new</span> למשרה</a>' +
+        '</div></div>';
+    }).join('');
+  }
+
+  async function setStatus(id, status) {
+    await sb.from('jobs').update({ status }).eq('id', id);
+    if (status === 'hidden') loadJobs();
+  }
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+  document.getElementById('g-pass').addEventListener('keydown', e => { if (e.key === 'Enter') gateLogin(); });
+  init();
+</script>
+</body>
+</html>

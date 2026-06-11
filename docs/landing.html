@@ -837,7 +837,7 @@
       <span class="material-symbols-rounded">logout</span>
       <span data-i18n="auth.logout">Log out</span>
     </button>
-    <a href="./index.html" class="topbar-link" data-i18n="nav.tracker">Open Tracker</a>
+    <a href="./app.html" class="topbar-link" data-i18n="nav.tracker">My Jobs</a>
     <a href="#setup" class="btn-primary-sm">
       <span class="material-symbols-rounded" style="font-size:16px">rocket_launch</span>
       <span data-i18n="nav.start">Get Started</span>
@@ -935,18 +935,18 @@
     <div class="steps-row">
       <div class="step-card">
         <div class="step-num"><span class="step-icon">🍴</span></div>
-        <div class="step-title" data-i18n="s1.title">Fork this repo on GitHub</div>
-        <p class="step-desc" data-i18n="s1.desc">One click to copy the entire system into your own GitHub account — free forever on the free tier.</p>
+        <div class="step-title" data-i18n="s1.title">Create a free account</div>
+        <p class="step-desc" data-i18n="s1.desc">Username and password — no GitHub, nothing to install.</p>
       </div>
       <div class="step-card">
         <div class="step-num"><span class="step-icon">⚙️</span></div>
-        <div class="step-title" data-i18n="s2.title">Run the onboarding wizard</div>
-        <p class="step-desc" data-i18n="s2.desc">Fill in your roles, location, and API key below. Download the generated config and drop it in your repo.</p>
+        <div class="step-title" data-i18n="s2.title">Fill the wizard (or upload a CV)</div>
+        <p class="step-desc" data-i18n="s2.desc">Your roles, location and Anthropic API key — saved securely to your profile.</p>
       </div>
       <div class="step-card">
         <div class="step-num"><span class="step-icon">🚀</span></div>
-        <div class="step-title" data-i18n="s3.title">Your tracker is live — automatically</div>
-        <p class="step-desc" data-i18n="s3.desc">GitHub Actions start scanning. Your personal dashboard is published to GitHub Pages — no server needed.</p>
+        <div class="step-title" data-i18n="s3.title">Jobs come to you</div>
+        <p class="step-desc" data-i18n="s3.desc">Automatic scans 3 times a day; every job is scored 1-10 against your profile.</p>
       </div>
     </div>
   </div>
@@ -957,7 +957,7 @@
   <div class="section-inner" style="text-align:center; margin-bottom:40px">
     <div class="section-label" data-i18n="setup.label">Setup</div>
     <h2 class="section-title" data-i18n-html="setup.title">Set up your tracker<br/>in under 2 minutes</h2>
-    <p class="section-sub" style="margin:0 auto" data-i18n-html="setup.sub">Complete the wizard below to generate your personal <code style="background:var(--primary-container);color:var(--primary);padding:2px 6px;border-radius:6px;font-size:.9em">config.json</code></p>
+    <p class="section-sub" style="margin:0 auto" data-i18n-html="setup.sub">Two minutes of setup — and your personal job feed starts running automatically</p>
   </div>
 
   <div class="wizard-wrap">
@@ -1026,9 +1026,7 @@
       <input type="text" id="field-name" data-i18n-ph="wz3.namePh" placeholder="e.g. Dana Cohen"/>
       <label class="field-label" for="field-profile" data-i18n="wz3.exp">Your experience in one line</label>
       <input type="text" id="field-profile" data-i18n-ph="wz3.expPh" placeholder="10 years RevOps, B2B SaaS, Salesforce expert"/>
-      <label class="field-label" for="field-github" data-i18n="wz3.github">Your GitHub username</label>
-      <input type="text" id="field-github" placeholder="e.g. johndoe" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <label class="field-label" for="field-apikey" data-i18n-html="wz3.apikey">Anthropic API key <span style="font-weight:400;color:var(--ink-faint)">(optional — add later)</span></label>
+      <label class="field-label" for="field-apikey" data-i18n-html="wz3.apikey">Anthropic API key <span style="font-weight:400;color:var(--ink-faint)">(powers your scans — free at console.anthropic.com)</span></label>
       <input type="password" id="field-apikey" placeholder="sk-ant-..."/>
       <div class="field-note">
         <span class="material-symbols-rounded">lock</span>
@@ -1040,7 +1038,7 @@
           <span data-i18n="btn.back">Back</span>
         </button>
         <button class="btn-wz-next" onclick="wzNext(3)">
-          <span data-i18n="btn.generate">Generate Config</span>
+          <span data-i18n="btn.generate">Finish &amp; Save</span>
           <span class="material-symbols-rounded" style="font-size:18px">auto_awesome</span>
         </button>
       </div>
@@ -1050,73 +1048,15 @@
     <div class="wz-step" id="wz-4">
       <div class="done-header">
         <span class="done-icon material-symbols-rounded">task_alt</span>
-        <div class="wz-title" data-i18n="wz4.title">Your config is ready — 3 steps to go live</div>
-        <p class="wz-sub" style="margin:0 auto" data-i18n="wz4.sub">Everything is set up. Follow the steps below — takes about 3 minutes.</p>
+        <div class="wz-title" data-i18n="wz4.title">You're all set!</div>
+        <p class="wz-sub" style="margin:0 auto" data-i18n="wz4.sub">Your profile is saved. We scan for matching jobs 3 times a day — results appear in "My Jobs".</p>
       </div>
-
-      <!-- STEP 1 -->
-      <div class="inst-step" style="margin-top:28px">
-        <div class="inst-num">1</div>
-        <div class="inst-content">
-          <strong data-i18n="inst1.title">Fork the repo into your GitHub account</strong>
-          <p data-i18n="inst1.p">Click the button below — it copies the entire system into your account for free.</p>
-          <a id="fork-link" href="https://github.com/omriki55/omrigonenjobfinder/fork" target="_blank" rel="noopener" class="inst-link">
-            <span class="material-symbols-rounded">fork_right</span>
-            <span data-i18n="inst1.btn">Use this template on GitHub</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- STEP 2 -->
-      <div class="inst-step">
-        <div class="inst-num">2</div>
-        <div class="inst-content">
-          <strong data-i18n="inst2.title">Paste your config into the repo</strong>
-          <p data-i18n-html="inst2.p">Click the button below — it copies your config <em>and</em> opens the file editor directly in your repo. Just paste (<kbd>Ctrl+V</kbd> / <kbd>⌘V</kbd>) and click <strong>Commit changes</strong>.</p>
-          <pre class="config-block" id="config-output" style="margin:12px 0;font-size:.75rem;max-height:160px;overflow-y:auto"></pre>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
-            <button class="inst-link" onclick="copyAndOpen()" id="copy-open-btn" style="background:var(--primary);color:#fff;border:none;cursor:pointer">
-              <span class="material-symbols-rounded">edit_note</span>
-              <span data-i18n="inst2.btn1">Copy config &amp; Open editor</span>
-            </button>
-            <button class="inst-link" onclick="copyConfig()" style="background:var(--surface-container);color:var(--ink);border:none;cursor:pointer">
-              <span class="material-symbols-rounded">content_copy</span>
-              <span data-i18n="inst2.btn2">Copy only</span>
-            </button>
-          </div>
-          <p id="copy-ack" data-i18n="inst2.ack" style="display:none;font-size:.8rem;color:var(--success);margin-top:6px;font-weight:600">✅ Copied! Now paste in the editor and click "Commit changes"</p>
-        </div>
-      </div>
-
-      <!-- STEP 3 -->
-      <div class="inst-step">
-        <div class="inst-num">3</div>
-        <div class="inst-content">
-          <strong data-i18n="inst3.title">Add your Anthropic API key</strong>
-          <p data-i18n-html="inst3.p">In your forked repo: <strong>Settings → Secrets and variables → Actions → New repository secret</strong></p>
-          <div class="secret-row">
-            <span class="code-inline">Name:</span> <span class="code-inline" style="background:#001257;color:#dde1ff;direction:ltr">ANTHROPIC_API_KEY</span>
-          </div>
-          <div class="secret-row" style="margin-top:6px">
-            <span class="code-inline">Value:</span> <span style="font-size:.82rem;color:var(--ink-soft)" data-i18n="inst3.value">your key from console.anthropic.com → API Keys</span>
-          </div>
-          <p style="margin-top:10px;font-size:.82rem;color:var(--ink-soft)" data-i18n-html="inst3.nokey">No Anthropic key yet? <a href="https://console.anthropic.com" target="_blank" style="color:var(--primary)">Get one free →</a> (takes 2 minutes)</p>
-          <a id="secrets-link" href="https://github.com/omriki55/omrigonenjobfinder/settings/secrets/actions/new" target="_blank" rel="noopener" class="inst-link" style="margin-top:10px">
-            <span class="material-symbols-rounded">key</span>
-            <span data-i18n="inst3.btn">Open Secrets settings</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- DONE -->
-      <div class="inst-step" style="background:var(--success-bg);border-radius:16px;padding:16px 20px">
-        <div class="inst-num" style="background:var(--success)">✓</div>
-        <div class="inst-content">
-          <strong data-i18n="done.title">Your tracker is live!</strong>
-          <p data-i18n="done.p">GitHub Actions will run the first scan automatically. Your tracker will be at:</p>
-          <p id="tracker-url-display" style="margin-top:6px;font-weight:700;color:var(--primary);word-break:break-all;font-size:.9rem;direction:ltr">yourusername.github.io/omrigonenjobfinder</p>
-          <p style="font-size:.8rem;color:var(--ink-soft);margin-top:4px" data-i18n="done.pages">Enable GitHub Pages: Settings → Pages → Branch: main → Folder: /docs</p>
-        </div>
+      <div id="key-warn" style="display:none;background:#fff3e0;border:1px solid #ffb74d;border-radius:14px;padding:14px 18px;font-size:.9rem;color:#7a4f00;margin-bottom:20px" data-i18n="wz4.keywarn">No API key saved — scans can't run for you yet. You can add one any time in "My Jobs".</div>
+      <div class="done-buttons">
+        <a href="./app.html" class="btn-next-step">
+          <span class="material-symbols-rounded">work</span>
+          <span data-i18n="wz4.cta">Go to My Jobs</span>
+        </a>
       </div>
     </div>
   </div>
@@ -1197,12 +1137,10 @@
     if (from === 3) {
       const name = document.getElementById('field-name').value.trim();
       const profile = document.getElementById('field-profile').value.trim();
-      const ghUser = document.getElementById('field-github').value.trim();
       if (!name) { shakeField('field-name'); return; }
       if (!profile) { shakeField('field-profile'); return; }
-      if (!ghUser) { shakeField('field-github'); return; }
-      generateConfig();
-      updateGithubLinks(ghUser);
+      finishWizard();
+      return;
     }
     showStep(from + 1);
     document.querySelector('.wizard-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1229,72 +1167,45 @@
     }
   }
 
-  // ===== CONFIG GENERATION =====
-  function generateConfig() {
-    const roles = document.getElementById('field-roles').value
-      .split('\n')
-      .map(r => r.trim())
-      .filter(Boolean);
-
+  // ===== FINISH (SaaS) =====
+  function collectProfile() {
+    const roles = document.getElementById('field-roles').value.split('\n').map(r => r.trim()).filter(Boolean);
     const selectedChips = [...document.querySelectorAll('#location-chips .chip.selected')];
     const locationParts = selectedChips
       .map(c => c.dataset.val === 'other'
         ? document.getElementById('other-location').value.trim()
         : c.dataset.val)
       .filter(Boolean);
-    const location = locationParts.join(', ');
-
-    const name = document.getElementById('field-name').value.trim();
-    const profile = document.getElementById('field-profile').value.trim();
-
-    const config = {
+    return {
       roles,
-      location,
-      name,
-      profile_summary: profile,
-      ats: {
-        greenhouse: ["examplecompany1", "examplecompany2"],
-        lever: ["examplecompany3"],
-        ashby: ["examplecompany4"]
-      },
-      ats_note: "Replace the example slugs with the ATS board names of companies you want to track (e.g. greenhouse.io/yourcompany).",
-      updated: new Date().toISOString().slice(0, 10)
+      location: locationParts.join(', '),
+      name: document.getElementById('field-name').value.trim(),
+      profile_summary: document.getElementById('field-profile').value.trim(),
+      apikey: document.getElementById('field-apikey').value.trim()
     };
-
-    document.getElementById('config-output').textContent = JSON.stringify(config, null, 2);
-    saveProfileFromWizard(config);
-    logEvent('config_generated', { roles: roles.length });
   }
 
-  function updateGithubLinks(ghUser) {
-    const repo = 'omrigonenjobfinder';
-    document.getElementById('fork-link').href = `https://github.com/omriki55/${repo}/fork`;
-    document.getElementById('secrets-link').href = `https://github.com/${ghUser}/${repo}/settings/secrets/actions/new`;
-    document.getElementById('tracker-url-display').textContent = `${ghUser}.github.io/${repo}`;
-    // store for copyAndOpen
-    window._ghUser = ghUser;
-    window._ghRepo = repo;
-  }
-
-  function copyConfig() {
-    const text = document.getElementById('config-output').textContent;
-    navigator.clipboard.writeText(text).then(() => {
-      document.getElementById('copy-ack').style.display = 'block';
-      setTimeout(() => { document.getElementById('copy-ack').style.display = 'none'; }, 4000);
-    });
-  }
-
-  function copyAndOpen() {
-    const text = document.getElementById('config-output').textContent;
-    const ghUser = window._ghUser || '';
-    const ghRepo = window._ghRepo || 'omrigonenjobfinder';
-    navigator.clipboard.writeText(text).then(() => {
-      document.getElementById('copy-ack').style.display = 'block';
-      setTimeout(() => { document.getElementById('copy-ack').style.display = 'none'; }, 4000);
-    });
-    // Open the file editor in their forked repo
-    const editorUrl = `https://github.com/${ghUser}/${ghRepo}/edit/main/job_search/config.json`;
-    window.open(editorUrl, '_blank');
+  async function finishWizard() {
+    if (sb && !currentUser) { window._pendingFinish = true; openAuth('signup'); return; }
+    const p = collectProfile();
+    if (sb && currentUser) {
+      try {
+        await sb.from('profiles').update({
+          full_name: p.name || null,
+          roles: p.roles,
+          location: p.location || null,
+          profile_summary: p.profile_summary || null,
+          updated_at: new Date().toISOString()
+        }).eq('user_id', currentUser.id);
+        if (p.apikey) {
+          await sb.from('user_secrets').upsert({ user_id: currentUser.id, anthropic_key: p.apikey, updated_at: new Date().toISOString() });
+        }
+      } catch (e) {}
+      logEvent('config_generated', { roles: p.roles.length, has_key: !!p.apikey });
+    }
+    document.getElementById('key-warn').style.display = p.apikey ? 'none' : 'block';
+    showStep(4);
+    document.querySelector('.wizard-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   // ===== SUPABASE: AUTH / ANALYTICS / CONTENT =====
@@ -1346,7 +1257,8 @@
         logEvent('login', { username });
       }
       closeAuth();
-      refreshAuthUi();
+      await refreshAuthUi();
+      if (window._pendingFinish) { window._pendingFinish = false; finishWizard(); }
     } catch (e) { authError(String(e.message || e)); }
   }
 
@@ -1494,7 +1406,6 @@
       let filled = 0;
       if (d.roles) { document.getElementById('field-roles').value = d.roles.join('\n'); filled++; }
       if (d.name) { document.getElementById('field-name').value = d.name; filled++; }
-      if (d.github) { document.getElementById('field-github').value = d.github; filled++; }
       const bits = [];
       if (d.years) bits.push(currentLang === 'he' ? (d.years + ' שנות ניסיון') : (d.years + ' years of experience'));
       if (d.roles && d.roles[0]) bits.push(d.roles[0]);
@@ -1530,7 +1441,7 @@
   // ===== I18N =====
   const I18N = {
     he: {
-      'nav.tracker': 'פתיחת הטרקר',
+      'nav.tracker': 'המשרות שלי',
       'nav.start': 'להתחלה',
       'nav.admin': 'ניהול',
       'auth.login': 'התחברות',
@@ -1569,15 +1480,15 @@
       'how.label': 'איך זה עובד',
       'how.title': 'שלושה שלבים למנוע<br/>המשרות האישי שלכם',
       'how.sub': 'בלי מנויים ובלי נעילה לספק. המידע שלכם חי בריפו שלכם ב-GitHub. הכול בבעלותכם.',
-      's1.title': 'עושים Fork לריפו ב-GitHub',
-      's1.desc': 'קליק אחד מעתיק את כל המערכת לחשבון ה-GitHub שלכם — בחינם, לתמיד.',
-      's2.title': 'מריצים את אשף ההגדרה',
-      's2.desc': 'ממלאים תפקידים, מיקום ומפתח API למטה. מעתיקים את הקונפיג שנוצר ומדביקים בריפו.',
-      's3.title': 'הטרקר שלכם באוויר — אוטומטית',
-      's3.desc': 'GitHub Actions מתחיל לסרוק. הדשבורד האישי מתפרסם ב-GitHub Pages — בלי שרת.',
+      's1.title': 'נרשמים בחינם',
+      's1.desc': 'שם משתמש וסיסמה — בלי GitHub, בלי שום התקנה.',
+      's2.title': 'ממלאים את האשף (או מעלים קו"ח)',
+      's2.desc': 'תפקידים, מיקום ומפתח Anthropic — הכול נשמר בפרופיל שלכם.',
+      's3.title': 'המשרות מגיעות אליכם',
+      's3.desc': 'סריקה אוטומטית 3 פעמים ביום; כל משרה מדורגת 1–10 מול הפרופיל שלכם.',
       'setup.label': 'הגדרה',
       'setup.title': 'מגדירים את הטרקר<br/>בפחות מ-2 דקות',
-      'setup.sub': 'השלימו את האשף כדי ליצור <code style="background:var(--primary-container);color:var(--primary);padding:2px 6px;border-radius:6px;font-size:.9em">config.json</code> אישי',
+      'setup.sub': 'שתי דקות של הגדרה — וסריקת המשרות האישית שלכם מתחילה לרוץ אוטומטית',
       'wz1.title': 'אילו תפקידים אתם מחפשים?',
       'wz1.sub': 'תפקיד אחד בכל שורה. כמה שיותר ספציפי — לפי זה נסרקות ומדורגות משרות.',
       'cv.title': 'העלו קורות חיים — נמלא את הפרטים בשבילכם',
@@ -1589,7 +1500,7 @@
       'wz1.ph': 'Revenue Operations Manager\nHead of Growth\nGTM Engineer',
       'btn.continue': 'המשך',
       'btn.back': 'חזרה',
-      'btn.generate': 'יצירת קונפיג',
+      'btn.generate': 'סיום ושמירה',
       'wz2.title': 'איפה מתאים לכם לעבוד?',
       'wz2.sub': 'בחרו את כל מה שרלוונטי. אפשר לשלב.',
       'chip.telaviv': '📍 תל אביב',
@@ -1604,11 +1515,12 @@
       'wz3.namePh': 'למשל דנה כהן',
       'wz3.exp': 'הניסיון שלכם בשורה אחת',
       'wz3.expPh': '10 שנות RevOps, B2B SaaS, מומחיות ב-Salesforce',
-      'wz3.github': 'שם המשתמש שלכם ב-GitHub',
-      'wz3.apikey': 'מפתח Anthropic API <span style="font-weight:400;color:var(--ink-faint)">(אופציונלי — אפשר להוסיף אחר כך)</span>',
+      'wz3.apikey': 'מפתח Anthropic API <span style="font-weight:400;color:var(--ink-faint)">(מפעיל את הסריקות שלכם — חינמי ב-console.anthropic.com)</span>',
       'wz3.note': 'נשמר רק ב-GitHub Secrets שלכם — לא נשלח לשום שרת.',
-      'wz4.title': 'הקונפיג מוכן — 3 צעדים לעלייה לאוויר',
-      'wz4.sub': 'הכול מוכן. עקבו אחרי השלבים למטה — לוקח בערך 3 דקות.',
+      'wz4.title': 'הכול מוכן! 🎉',
+      'wz4.sub': 'הפרופיל נשמר. אנחנו סורקים משרות מתאימות 3 פעמים ביום — התוצאות מחכות ב"המשרות שלי".',
+      'wz4.keywarn': 'לא נשמר מפתח API — הסריקות עדיין לא רצות עבורכם. אפשר להוסיף בכל רגע ב"המשרות שלי".',
+      'wz4.cta': 'למשרות שלי',
       'inst1.title': 'עשו Fork לריפו לחשבון ה-GitHub שלכם',
       'inst1.p': 'לחצו על הכפתור למטה — הוא מעתיק את כל המערכת לחשבון שלכם בחינם.',
       'inst1.btn': 'שימוש בתבנית ב-GitHub',
