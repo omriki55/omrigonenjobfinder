@@ -2621,18 +2621,18 @@ function renderTodayPanel(){
 function openFollowupEmail(i){
   const j=JOBS[i];const st=getJobState(j);
   const name=(st.contact?.name)||"שלום";
-  const body=encodeURIComponent(\`\${name},\n\nרציתי לבדוק מה קורה עם הגשתי לתפקיד \${j.title}.\n\nתודה,\n\${USER_NAME}\`);
-  const sub=encodeURIComponent(\`Follow-up — \${j.title} @ \${j.company}\`);
+  const body=encodeURIComponent(`${name},\n\nרציתי לבדוק מה קורה עם הגשתי לתפקיד ${j.title}.\n\nתודה,\n${USER_NAME}`);
+  const sub=encodeURIComponent(`Follow-up — ${j.title} @ ${j.company}`);
   const email=st.contact?.email||"";
-  window.open(\`mailto:\${email}?subject=\${sub}&body=\${body}\`,"_blank");
+  window.open(`mailto:${email}?subject=${sub}&body=${body}`,"_blank");
 }
 function openThankYouEmail(i){
   const j=JOBS[i];const st=getJobState(j);
   const name=(st.contact?.name)||"שלום";
-  const body=encodeURIComponent(\`\${name},\n\nתודה על זמנכם בראיון ל-\${j.title}. שמחתי לשמוע על \${j.company}. \n\nתודה,\n\${USER_NAME}\`);
-  const sub=encodeURIComponent(\`תודה על הראיון — \${j.title} @ \${j.company}\`);
+  const body=encodeURIComponent(`${name},\n\nתודה על זמנכם בראיון ל-${j.title}. שמחתי לשמוע על ${j.company}. \n\nתודה,\n${USER_NAME}`);
+  const sub=encodeURIComponent(`תודה על הראיון — ${j.title} @ ${j.company}`);
   const email=st.contact?.email||"";
-  window.open(\`mailto:\${email}?subject=\${sub}&body=\${body}\`,"_blank");
+  window.open(`mailto:${email}?subject=${sub}&body=${body}`,"_blank");
 }
 
 function render(){
