@@ -158,6 +158,19 @@
     .chevron{font-size:22px;color:var(--inkFaint);transition:transform .25s var(--ease);flex-shrink:0;line-height:1}
     .job-card.open .chevron{transform:rotate(180deg)}
     .follow-badge{font-size:.64rem;background:#fef0d8;color:#7a5900;border-radius:999px;padding:3px 9px;font-weight:700;white-space:nowrap}
+    /* ── Today Actions panel ── */
+    #today-panel{background:linear-gradient(135deg,#fff8ed 0%,#fff3e0 100%);border:1.5px solid #f5c464;border-radius:18px;padding:14px 18px 12px;margin-bottom:14px;display:none}
+    #today-panel.has-actions{display:block}
+    .tp-title{font-size:.8rem;font-weight:800;color:#7a5900;letter-spacing:.03em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+    .tp-list{display:flex;flex-direction:column;gap:8px}
+    .tp-item{background:#fff;border:1px solid #f5d78a;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:.82rem}
+    .tp-item-text{flex:1;color:var(--ink);line-height:1.4}
+    .tp-item-text b{font-weight:700}
+    .tp-item-text .tp-age{color:#a07000;font-size:.74rem;margin-left:4px}
+    .tp-action-btn{background:#f5c464;color:#5a3a00;border:none;border-radius:8px;padding:5px 12px;font-size:.76rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit}
+    .tp-action-btn:hover{background:#f0b830}
+    .tp-dismiss-btn{background:none;border:none;color:#b0a080;cursor:pointer;font-size:14px;padding:2px 4px;line-height:1}
+    .tp-dismiss-btn:hover{color:#7a5900}
     .new-badge{background:var(--primary);color:#fff;border-radius:999px;padding:3px 9px;font-size:.64rem;font-weight:700;white-space:nowrap}
 
     .card-body-wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.2,.7,.3,1)}
@@ -1018,6 +1031,7 @@
         </div>
         </div>
       </div>
+      <div id="today-panel"><div class="tp-title">📋 מה לעשות היום</div><div class="tp-list" id="tp-list"></div></div>
       <div id="container" style="display:flex;flex-direction:column;gap:14px"></div>
     </div>
     <aside id="detail"></aside>
@@ -2549,9 +2563,82 @@ function abuSave(){
 }
 
 /* ── RENDER ── */
+/* ── Today Actions Panel ── */
+const _tpDismissed=new Set();
+function renderTodayPanel(){
+  const NOW2=new Date();
+  const actions=[];
+  JOBS.forEach((j,i)=>{
+    const st=getJobState(j);
+    if(st.dismissed)return;
+    const key=j.company+"|"+j.title;
+    if(_tpDismissed.has(key))return;
+    // Applied 5+ days ago → follow-up nudge
+    if(st.status==="applied"&&st.statusDate){
+      const days=Math.round((NOW2-new Date(st.statusDate))/86400000);
+      if(days>=5){
+        actions.push({
+          icon:"💬",
+          text:`<b>${j.company}</b> — הוגשת לפני <span class="tp-age">${days} ימים</span>. שלח follow-up?`,
+          btn:"שלח follow-up",
+          key,
+          onclick:`openFollowupEmail(${i})`
+        });
+      }
+    }
+    // Interview round with pending outcome 2+ days ago → send thank-you
+    const rounds=getRounds(j);
+    rounds.forEach((r,ri)=>{
+      if(r.outcome==="pending"&&r.date){
+        const days=Math.round((NOW2-new Date(r.date))/86400000);
+        if(days>=2){
+          const rkey=key+"|r"+ri;
+          if(!_tpDismissed.has(rkey))
+            actions.push({
+              icon:"🙏",
+              text:`<b>${j.company}</b> — ראיון לפני <span class="tp-age">${days} ימים</span>. שלח תודה?`,
+              btn:"שלח תודה",
+              key:rkey,
+              onclick:`openThankYouEmail(${i})`
+            });
+        }
+      }
+    });
+  });
+  const panel=document.getElementById("today-panel");
+  const list=document.getElementById("tp-list");
+  if(!panel||!list)return;
+  if(actions.length===0){panel.classList.remove("has-actions");return;}
+  panel.classList.add("has-actions");
+  list.innerHTML=actions.map((a,ai)=>`
+    <div class="tp-item" id="tpi-${ai}">
+      <span style="font-size:18px">${a.icon}</span>
+      <div class="tp-item-text">${a.text}</div>
+      <button class="tp-action-btn" onclick="${a.onclick}">${a.btn}</button>
+      <button class="tp-dismiss-btn" onclick="_tpDismissed.add('${a.key}');renderTodayPanel()" title="הסתר">✕</button>
+    </div>`).join("");
+}
+function openFollowupEmail(i){
+  const j=JOBS[i];const st=getJobState(j);
+  const name=(st.contact?.name)||"שלום";
+  const body=encodeURIComponent(\`\${name},\n\nרציתי לבדוק מה קורה עם הגשתי לתפקיד \${j.title}.\n\nתודה,\n\${USER_NAME}\`);
+  const sub=encodeURIComponent(\`Follow-up — \${j.title} @ \${j.company}\`);
+  const email=st.contact?.email||"";
+  window.open(\`mailto:\${email}?subject=\${sub}&body=\${body}\`,"_blank");
+}
+function openThankYouEmail(i){
+  const j=JOBS[i];const st=getJobState(j);
+  const name=(st.contact?.name)||"שלום";
+  const body=encodeURIComponent(\`\${name},\n\nתודה על זמנכם בראיון ל-\${j.title}. שמחתי לשמוע על \${j.company}. \n\nתודה,\n\${USER_NAME}\`);
+  const sub=encodeURIComponent(\`תודה על הראיון — \${j.title} @ \${j.company}\`);
+  const email=st.contact?.email||"";
+  window.open(\`mailto:\${email}?subject=\${sub}&body=\${body}\`,"_blank");
+}
+
 function render(){
   const stats=computeStats();
-  const gEl=document.getElementById("hero-greeting");
+  const gEl=document.getElementById("hero-greeting");  renderTodayPanel();
+
   if(gEl){const h=new Date().getHours();const g=h<5?"לילה טוב":h<12?"בוקר טוב":h<17?"צהריים טובים":h<21?"ערב טוב":"לילה טוב";gEl.textContent=`${g}, ${USER_NAME} 👋`;}
   document.getElementById("hero-meta").textContent=`10/06/2026 15:33 · ${stats.total} משרות פעילות`;
   document.getElementById("hero-coach").textContent=coachLine(stats);
