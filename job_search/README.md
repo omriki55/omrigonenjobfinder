@@ -1,81 +1,64 @@
-# Job Search Automation Pipeline
+# job_search — SaaS Pipeline
 
-Automated daily pipeline that scrapes job listings, scores them against a candidate profile using Claude AI, writes results to Google Sheets, and sends a daily summary email.
+Central GitHub Actions worker that powers JobSearch AI.
 
-## Setup
+Runs 3× a day (Sun–Thu, Israeli work week). For each registered user who has saved an Anthropic API key, it scrapes ATS boards, scores new openings against their profile using **their own key**, and writes results to Supabase.
 
-### 1. Install dependencies
-```bash
-pip install -r requirements.txt
+## How it works
+
+```
+GitHub Action (cron 3×/day)
+  └─ saas_pipeline.py
+       ├─ load user list from Supabase (profiles + user_secrets)
+       ├─ scrape ATS boards once (Greenhouse / Lever / Ashby)
+       ├─ for each user:
+       │    ├─ filter jobs by target role titles
+       │    ├─ score with Claude Haiku (user's API key)
+       │    └─ upsert into jobs table (RLS: owner-only)
+       └─ done — users see results in app.html
 ```
 
-### 2. Google Service Account
-1. Go to [console.cloud.google.com](https://console.cloud.google.com)
-2. Create a project → Enable **Google Sheets API** + **Google Drive API**
-3. Create a Service Account → Download JSON → save as `credentials/google_service_account.json`
-4. Share the Google Sheet with the service account email (Editor access)
-
-### 3. Gmail App Password
-1. Enable 2FA on your Google Account
-2. Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
-3. Generate a password for "Mail" → paste into `.env`
-
-### 4. Anthropic API Key
-Get from [console.anthropic.com](https://console.anthropic.com) → paste into `.env`
-
-### 5. Configure environment
-```bash
-cp .env.example .env
-# Edit .env with your actual values
-```
-
-### 6. Run manually
-```bash
-python main.py
-```
-
-### 7. Dry run (no writes, no email)
-```bash
-python main.py --dry-run
-```
-
-### 8. Schedule daily run (cron)
-```
-0 7 * * * cd /path/to/job_search && python main.py >> logs/pipeline.log 2>&1
-```
-
-## Project Structure
+## Files
 
 | File | Purpose |
-|------|---------|
-| `main.py` | Orchestrator — runs full pipeline |
-| `config.py` | Constants, search queries, prompt template |
-| `scrapers/` | One scraper per job source |
-| `scorer.py` | Claude API scoring (Haiku model) |
-| `sheets.py` | Google Sheets read/write via gspread |
-| `email_summary.py` | Daily HTML email via Gmail SMTP |
-| `deduplication.py` | URL + fuzzy-match deduplication |
+|---|---|
+| `saas_pipeline.py` | Main worker — runs in GitHub Actions |
+| `ats_scraper.py` | Scrapes Greenhouse / Lever / Ashby board APIs |
+| `scrapers/` | Per-source scrapers (LinkedIn, AllJobs, Comeet, RemoteOK, …) |
+| `deduplication.py` | URL + fuzzy-match dedup |
+| `scorer.py` | Claude Haiku scoring (legacy local use) |
+| `config.py` | Constants and prompt templates |
+| `requirements.txt` | `anthropic` is the only runtime dependency for the SaaS pipeline |
 
-## Google Sheet Columns
+## Required secrets (GitHub → Settings → Secrets)
 
-| Column | Description |
-|--------|-------------|
-| Company | Company name |
-| Location | Job location |
-| Role Title | Exact job title |
-| Job URL | Direct link |
-| Job Type | Full-time / Part-time / Contract |
-| Contact Name | Filled manually |
-| Contact LinkedIn | Filled manually |
-| Fit Score | 1–10 from Claude |
-| Score Reason | Brief explanation |
-| Status | Default: "לפנות" |
-| AI Opener | Cold outreach opener from Claude |
-| Date Added | ISO date YYYY-MM-DD |
+| Secret | Description |
+|---|---|
+| `SUPABASE_URL` | `https://YOUR_REF.supabase.co` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service role key — bypasses RLS server-side |
 
-## Fit Score Thresholds
+## Running manually
 
-- **8–10**: Strong match → highlighted green in email
-- **5–7**: Partial match → highlighted yellow
-- **< 4**: Filtered out, not written to sheet
-- **0**: Location constraint violated → filtered out
+```bash
+export SUPABASE_URL=...
+export SUPABASE_SERVICE_ROLE_KEY=...
+pip install anthropic
+python saas_pipeline.py
+```
+
+## Customising the ATS board list
+
+The default board list is in `saas_pipeline.py` (`DEFAULT_ATS`). Override via Supabase:
+
+```sql
+INSERT INTO site_content (key, value)
+VALUES ('platform:ats', '{"greenhouse":["co1","co2"],"lever":["co3"],"ashby":[]}');
+```
+
+## Scoring model
+
+Each job is evaluated across five dimensions (skills fit, seniority, location, growth, comp) using Claude Haiku. Only jobs with a weighted score ≥ 6/10 are written to the user's tracker.
+
+## Local / legacy mode
+
+The files `main.py`, `run_pipeline.py`, `sheets.py`, and `email_summary.py` are kept for reference — they implement the original local CLI pipeline (Google Sheets + Gmail). They are **not used by the SaaS platform**.
