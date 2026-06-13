@@ -2654,22 +2654,31 @@ function openThankYouEmail(i){
 function metaPanel(j){
   let m={};
   try{m=typeof j.meta==='string'?JSON.parse(j.meta):(j.meta||{});}catch(e){}
-  const dims=m.dimensions;
-  if(!dims&&!m.verdict&&!m.comp_estimate)return '';
+  const hasDims=m.dimensions&&Object.keys(m.dimensions).length>0;
+  const verdict=m.verdict||j.score_reason||'';
+  const hasContent=hasDims||verdict||m.comp_estimate||j.fit_score;
+  if(!hasContent)return '';
   const DL={skills:'כישורים',seniority:'בכירות',location:'מיקום',growth:'צמיחה',comp:'שכר'};
   const dc=v=>v>=8?'#22c55e':v>=6?'#84cc16':v>=4?'#f59e0b':'#ef4444';
-  const dimsH=dims?Object.entries(DL).map(([k,lbl])=>{
-    const v=dims[k]||0;
-    return `<div class="dim-row"><div class="dim-label">${lbl}</div><div class="dim-bar-track"><div class="dim-bar-fill" style="width:${v*10}%;background:${dc(v)}"></div></div><div class="dim-val">${v}</div></div>`;
-  }).join(''):'';
+  let dimsH='';
+  if(hasDims){
+    dimsH=Object.entries(DL).map(([k,lbl])=>{
+      const v=m.dimensions[k]||0;
+      return `<div class="dim-row"><div class="dim-label">${lbl}</div><div class="dim-bar-track"><div class="dim-bar-fill" style="width:${v*10}%;background:${dc(v)}"></div></div><div class="dim-val">${v}</div></div>`;
+    }).join('');
+  } else if(j.fit_score){
+    const v=j.fit_score;
+    dimsH=`<div class="dim-row"><div class="dim-label">כללי</div><div class="dim-bar-track"><div class="dim-bar-fill" style="width:${v*10}%;background:${dc(v)}"></div></div><div class="dim-val">${v}</div></div>`;
+  }
   const gapsH=(m.gaps||[]).length?`<div class="meta-gaps">${(m.gaps||[]).map(g=>`<span class="meta-gap-chip">⚡ ${g}</span>`).join('')}</div>`:'';
-  const applyB=m.apply!=null?`<span class="meta-apply-badge ${m.apply?'meta-apply-yes':'meta-apply-no'}">${m.apply?'✅ מומלץ':'⚠️ דלג'}</span>`:'';
+  const apply=m.apply!=null?m.apply:(j.fit_score>=6);
+  const applyB=`<span class="meta-apply-badge ${apply?'meta-apply-yes':'meta-apply-no'}">${apply?'✅ מומלץ':'⚠️ דלג'}</span>`;
   const compH=m.comp_estimate&&m.comp_estimate!=='unknown'?`<div class="meta-comp">💰 שכר משוער: ${m.comp_estimate}</div>`:'';
   return `<div class="meta-dims">
     <div class="meta-dims-head">
       <span style="font-size:.74rem;font-weight:700;color:var(--ink)">🎯 ניתוח AI</span>${applyB}
     </div>
-    ${m.verdict?`<div class="meta-verdict">"${m.verdict}"</div>`:''}
+    ${verdict?`<div class="meta-verdict">"${verdict}"</div>`:''}
     ${dimsH}${compH}${gapsH}
   </div>`;
 }
