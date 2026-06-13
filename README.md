@@ -4,9 +4,10 @@
 
 > AI-powered job search that comes to you. Sign up, fill a 2-minute wizard, and your personal AI scans job boards 3× a day, scores every opening against *your* profile, and hands you a tracker with outreach openers, interview prep, and emotional support.
 
-![Demo](docs/demo.gif)
 
 **Live:** [omriki55.github.io/omrigonenjobfinder](https://omriki55.github.io/omrigonenjobfinder/landing.html)
+
+[![landing page](https://omriki55.github.io/omrigonenjobfinder/screenshot.png)](https://omriki55.github.io/omrigonenjobfinder/landing.html)
 
 ---
 
@@ -38,7 +39,7 @@ Unlike CLI-based tools, this is a **zero-install web app**: no terminal, no npm,
 
 1. Open the [landing page](https://omriki55.github.io/omrigonenjobfinder/landing.html)
 2. Click **Get Started** → pick a username & password
-3. Fill the wizard (or upload your CV) and paste your [Anthropic API key](https://console.anthropic.com)
+3. Fill the wizard (or upload your CV) and paste your [free Anthropic API key](https://console.anthropic.com) — takes 2 min to create
 4. Done. Jobs appear in **My Jobs** after the next scan — automatically.
 
 That's the whole setup. Nothing to install.

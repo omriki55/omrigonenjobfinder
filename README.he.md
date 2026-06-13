@@ -8,6 +8,8 @@
 
 **האתר החי:** [omriki55.github.io/omrigonenjobfinder](https://omriki55.github.io/omrigonenjobfinder/landing.html)
 
+[![טרקר משרות](https://omriki55.github.io/omrigonenjobfinder/screenshot.png)](https://omriki55.github.io/omrigonenjobfinder/landing.html)
+
 ---
 
 ## מה זה
