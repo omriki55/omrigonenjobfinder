@@ -36,8 +36,13 @@ LIVENESS_SAMPLE = 10           # max jobs to liveness-check per run per user
 DEFAULT_APPLY_THRESHOLD = 6
 
 DEFAULT_ATS = {
-    "greenhouse": ["monday", "wiz", "fireblocks", "melio", "gong", "riskified",
-                   "similarweb", "lemonade", "jfrog", "snyk", "taboola", "verbit"],
+    "greenhouse": [
+        # Original
+        "monday", "wiz", "fireblocks", "melio", "gong", "riskified",
+        "similarweb", "lemonade", "jfrog", "snyk", "taboola", "verbit",
+        # Added: active Israeli-presence companies
+        "nice", "forter", "torq", "payoneer", "bigid",
+    ],
     "lever": ["yotpo", "bigpanda", "deel"],
     "ashby": ["island"],
     # Workable: tokens are search keywords (not company slugs).
