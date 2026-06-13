@@ -17,7 +17,17 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install anthropic
-      - run: python job_search/saas_pipeline.py
+      - name: Run job scan
+        run: python job_search/saas_pipeline.py
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: Send high-score email alerts
+        if: always()
+        run: python job_search/notify_high_scores.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+          ALERT_THRESHOLD: '8'
