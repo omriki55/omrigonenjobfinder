@@ -12,7 +12,9 @@
   <meta property="og:title" content="AI Job Search Engine — Built in Minutes"/>
   <meta property="og:description" content="Sign up, fill a 2-minute wizard, and your personal AI scans and scores jobs for you 3 times a day."/>
   <meta property="og:url" content="https://omriki55.github.io/omrigonenjobfinder/landing.html"/>
-  <meta name="twitter:card" content="summary"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta property="og:image" content="https://omriki55.github.io/omrigonenjobfinder/screenshot.png"/>
+  <meta name="twitter:image" content="https://omriki55.github.io/omrigonenjobfinder/screenshot.png"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
@@ -1091,9 +1093,15 @@
       <input type="text" id="field-profile" data-i18n-ph="wz3.expPh" placeholder="10 years RevOps, B2B SaaS, Salesforce expert"/>
       <label class="field-label" for="field-apikey" data-i18n-html="wz3.apikey">Anthropic API key <span style="font-weight:400;color:var(--ink-faint)">(powers your scans — free at console.anthropic.com)</span></label>
       <input type="password" id="field-apikey" placeholder="sk-ant-..."/>
+      <div style="margin-top:8px;margin-bottom:4px">
+        <a href="https://console.anthropic.com" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-size:.82rem;color:var(--primary);font-weight:600;text-decoration:none">
+          <span class="material-symbols-rounded" style="font-size:15px">open_in_new</span>
+          <span data-i18n="wz3.getkey">Get a free Anthropic key ← takes 2 min</span>
+        </a>
+      </div>
       <div class="field-note">
         <span class="material-symbols-rounded">lock</span>
-        <span data-i18n="wz3.note">Stored only in your GitHub Secrets — never transmitted to our servers.</span>
+        <span data-i18n="wz3.note">Encrypted and stored only in your account — never shared with third parties.</span>
       </div>
       <div class="wz-nav">
         <button class="btn-wz-back" onclick="wzBack(3)">
@@ -1592,7 +1600,8 @@
       'wz3.exp': 'הניסיון שלכם בשורה אחת',
       'wz3.expPh': '10 שנות RevOps, B2B SaaS, מומחיות ב-Salesforce',
       'wz3.apikey': 'מפתח Anthropic API <span style="font-weight:400;color:var(--ink-faint)">(מפעיל את הסריקות שלכם — חינמי ב-console.anthropic.com)</span>',
-      'wz3.note': 'נשמר רק ב-GitHub Secrets שלכם — לא נשלח לשום שרת.',
+      'wz3.note': 'מוצפן ונשמר בחשבון שלכם בלבד — לא משותף עם אף צד שלישי.',
+      'wz3.getkey': 'קבלו מפתח Anthropic חינמי ← 2 דקות',
       'wz4.title': 'הכול מוכן! 🎉',
       'wz4.sub': 'הפרופיל נשמר. אנחנו סורקים משרות מתאימות 3 פעמים ביום — התוצאות מחכות ב"המשרות שלי".',
       'wz4.keywarn': 'לא נשמר מפתח API — הסריקות עדיין לא רצות עבורכם. אפשר להוסיף בכל רגע ב"המשרות שלי".',
