@@ -945,6 +945,32 @@
     html[data-theme="dark"] .notes-ta{background:var(--surface-container-high)}
     html[data-theme="dark"] .fit-chip.on,html[data-theme="dark"] .sf-chip.on,html[data-theme="dark"] .sort-btn.on{background:var(--ink);color:#0B0B14}
     html[data-theme="dark"] .contact-box{background:var(--accentSoft)}
+
+    /* ── STAR Bank sheet ── */
+    #star-sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1100;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)}
+    #star-sheet.show{display:flex}
+    #star-inner{background:var(--surface);border-radius:22px 22px 0 0;width:100%;max-width:680px;max-height:88dvh;display:flex;flex-direction:column;overflow:hidden}
+    .star-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 0;flex-shrink:0}
+    .star-tabs{display:flex;gap:8px;padding:12px 20px 0;flex-shrink:0}
+    .star-tab{padding:6px 14px;border-radius:20px;border:1.5px solid var(--line-soft);background:transparent;font-size:.82rem;font-weight:600;color:var(--ink-faint);cursor:pointer;transition:all .15s}
+    .star-tab.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .star-body{flex:1;overflow-y:auto;padding:14px 20px 24px;display:flex;flex-direction:column;gap:14px}
+    .star-cats{display:flex;gap:7px;flex-wrap:wrap;padding-bottom:4px}
+    .star-cat{padding:5px 13px;border-radius:20px;border:1.5px solid var(--line-soft);font-size:.78rem;font-weight:600;cursor:pointer;background:transparent;color:var(--ink-faint);transition:all .15s}
+    .star-cat.sel{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .star-entry{background:var(--canvas);border:1px solid var(--line-soft);border-radius:14px;padding:13px 15px}
+    .star-entry-title{font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start}
+    .star-entry-field{margin-bottom:6px}
+    .star-entry-lbl{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--primary);margin-bottom:2px}
+    .star-entry-val{font-size:.82rem;color:var(--ink-faint);line-height:1.5;white-space:pre-wrap}
+    .star-add-form{background:var(--canvas);border:1.5px dashed var(--primary);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:9px}
+    .star-field-lbl{font-size:.73rem;font-weight:700;color:var(--primary);margin-bottom:2px}
+    .star-inp{width:100%;padding:8px 10px;border:1.5px solid var(--line-soft);border-radius:10px;font-size:.85rem;background:var(--surface);color:var(--ink);box-sizing:border-box;resize:vertical;font-family:inherit}
+    .star-inp:focus{outline:none;border-color:var(--primary)}
+    .star-save-btn{padding:9px 18px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:.85rem;cursor:pointer}
+    .star-cancel-btn{padding:9px 18px;background:transparent;color:var(--ink-faint);border:1.5px solid var(--line-soft);border-radius:12px;font-weight:600;font-size:.85rem;cursor:pointer}
+    .neg-form{display:flex;flex-direction:column;gap:10px}
+    .neg-result{background:var(--canvas);border:1px solid var(--line-soft);border-radius:14px;padding:14px;font-size:.84rem;line-height:1.6;white-space:pre-wrap;color:var(--ink);display:none}
   </style>
 </head>
 <body>
@@ -957,7 +983,11 @@
     <span class="material-symbols-rounded">analytics</span>
     <span class="nr-lbl">סטטיסטיקה</span>
   </button>
-  <div class="nr-spacer"></div>
+  <button class="nr-item" id="nr-star" onclick="nr('star')" title="בנק STAR">
+    <span class="material-symbols-rounded">psychology</span>
+    <span class="nr-lbl">בנק STAR</span>
+  </button>
+    <div class="nr-spacer"></div>
   <button class="nr-item" id="nr-support" onclick="openSupport()" title="תמיכה רגשית">
     <span class="material-symbols-rounded">favorite</span>
     <span class="nr-lbl">תמיכה</span>
@@ -1085,6 +1115,10 @@
     <span class="material-symbols-rounded">work</span>
     <span>משרות</span>
   </button>
+  <button class="mbn-item" id="mbn-star" onclick="mbnStar()">
+    <span class="material-symbols-rounded">psychology</span>
+    <span>STAR</span>
+  </button>
   <button class="mbn-item" id="mbn-analytics" onclick="mbnAnalytics()">
     <span class="material-symbols-rounded">analytics</span>
     <span>סטטיסטיקה</span>
@@ -1135,6 +1169,21 @@
 </div>
 
 <!-- ADD BY URL DIALOG -->
+
+<!-- STAR BANK SHEET -->
+<div id="star-sheet" onclick="if(event.target===this)closeStarBank()">
+  <div id="star-inner">
+    <div class="star-head">
+      <div><h3 style="margin:0;font-size:1.05rem">⭐ בנק STAR + משא ומתן</h3><div style="font-size:.78rem;color:var(--ink-faint);margin-top:2px">תשובות מוכנות לראיון ומינוף שכר</div></div>
+      <button class="modal-close" onclick="closeStarBank()">✕</button>
+    </div>
+    <div class="star-tabs">
+      <button class="star-tab on" id="stab-star" onclick="switchStarTab('star')">בנק STAR</button>
+      <button class="star-tab" id="stab-neg" onclick="switchStarTab('neg')">משא ומתן 💰</button>
+    </div>
+    <div class="star-body" id="star-body"><!-- filled by JS --></div>
+  </div>
+</div>
 <div id="add-url-overlay" onclick="if(event.target===this)closeAddByUrl()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1100;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)">
   <div class="modal-card" style="max-height:80vh">
     <div class="modal-head">
@@ -2917,6 +2966,7 @@ function nr(section){
   const btn=document.getElementById('nr-'+section);
   if(btn)btn.classList.add('active');
   if(section==='analytics')openAnalytics();
+  if(section==='star')openStarBank();
 }
 /* ── Mobile bottom nav handlers ── */
 function mbnJobs(){
@@ -3405,6 +3455,190 @@ function __showGate(msg) {
     });
   },1800); // small delay so page renders first
 })();
+
+/* ── STAR BANK + NEGOTIATION ── */
+const STAR_CATS=[
+  {id:'achievement',lbl:'הישג 🏆'},
+  {id:'leadership',lbl:'מנהיגות 👥'},
+  {id:'problem',lbl:'פתרון בעיות 🧩'},
+  {id:'conflict',lbl:'קונפליקט 🤝'},
+  {id:'failure',lbl:'כישלון ולמידה 💡'},
+  {id:'initiative',lbl:'יוזמה ⚡'},
+  {id:'teamwork',lbl:'עבודת צוות 🤜'},
+  {id:'pressure',lbl:'לחץ וזמנים ⏱️'}
+];
+let _starCat='all';
+let _starTabActive='star';
+let _starAddOpen=false;
+
+function loadStarBank(){try{return JSON.parse(localStorage.getItem('starBank')||'[]');}catch(e){return[];}}
+function saveStarBank(entries){localStorage.setItem('starBank',JSON.stringify(entries));}
+
+function openStarBank(){
+  document.getElementById('star-sheet').classList.add('show');
+  renderStarBank();
+}
+function closeStarBank(){document.getElementById('star-sheet').classList.remove('show');}
+
+function switchStarTab(tab){
+  _starTabActive=tab;
+  document.querySelectorAll('.star-tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('stab-'+tab).classList.add('on');
+  renderStarBank();
+}
+
+function renderStarBank(){
+  const body=document.getElementById('star-body');
+  if(_starTabActive==='neg'){renderNeg(body);return;}
+  const entries=loadStarBank();
+  const filtered=_starCat==='all'?entries:entries.filter(e=>e.cat===_starCat);
+  let html='';
+  // Category chips
+  html+='<div class="star-cats">';
+  html+=`<button class="star-cat${_starCat==='all'?' sel':''}" onclick="filterStarCat('all')">הכל (${entries.length})</button>`;
+  STAR_CATS.forEach(c=>{
+    const n=entries.filter(e=>e.cat===c.id).length;
+    html+=`<button class="star-cat${_starCat===c.id?' sel':''}" onclick="filterStarCat('${c.id}')">${c.lbl}${n?' ('+n+')':''}</button>`;
+  });
+  html+='</div>';
+  // Add button
+  html+=`<button onclick="toggleStarAdd()" style="padding:9px 16px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:.85rem;cursor:pointer;align-self:flex-start">+ הוסף תשובה</button>`;
+  // Add form
+  if(_starAddOpen){
+    html+=`<div class="star-add-form" id="star-add-form">
+      <div><div class="star-field-lbl">קומפטנציה</div>
+      <select class="star-inp" id="sa-cat">
+        ${STAR_CATS.map(c=>`<option value="${c.id}"${c.id===_starCat&&_starCat!=='all'?' selected':''}>${c.lbl}</option>`).join('')}
+      </select></div>
+      <div><div class="star-field-lbl">כותרת (למה זה?)</div><input class="star-inp" id="sa-title" placeholder="ניהול פרויקט במשבר Q3" /></div>
+      <div><div class="star-field-lbl">S — Situation (הרקע)</div><textarea class="star-inp" id="sa-s" rows="2" placeholder="הייתי מנהל RevOps ב-X, וב-Q3 הלקוח העיקרי פתאום..."></textarea></div>
+      <div><div class="star-field-lbl">T — Task (המשימה)</div><textarea class="star-inp" id="sa-t" rows="2" placeholder="הייתי צריך לשמור על ה-pipeline ולמנוע נטישה של..."></textarea></div>
+      <div><div class="star-field-lbl">A — Action (מה עשיתי)</div><textarea class="star-inp" id="sa-a" rows="3" placeholder="יזמתי ישיבת חירום עם ה-CEO, בניתי תכנית..."></textarea></div>
+      <div><div class="star-field-lbl">R — Result (תוצאה + מספרים)</div><textarea class="star-inp" id="sa-r" rows="2" placeholder="שמרנו את הלקוח, הגדלנו ARR ב-18%..."></textarea></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="star-save-btn" onclick="commitStarAdd()">שמור תשובה</button>
+        <button class="star-cancel-btn" onclick="toggleStarAdd()">ביטול</button>
+      </div>
+    </div>`;
+  }
+  // Entries
+  if(!filtered.length&&!_starAddOpen){
+    html+=`<div style="text-align:center;color:var(--ink-faint);padding:28px 0;font-size:.88rem">אין תשובות עדיין${_starCat!=='all'?' בקטגוריה זו':''} — לחץ "+ הוסף תשובה"</div>`;
+  }
+  filtered.forEach((e,i)=>{
+    const catLbl=STAR_CATS.find(c=>c.id===e.cat)?.lbl||e.cat;
+    const realIdx=entries.indexOf(e);
+    html+=`<div class="star-entry">
+      <div class="star-entry-title">
+        <div><div style="font-size:.7rem;color:var(--primary);font-weight:700;margin-bottom:2px">${catLbl}</div>${e.title}</div>
+        <button onclick="deleteStarEntry(${realIdx})" style="background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:.9rem;padding:2px">✕</button>
+      </div>
+      ${e.s?`<div class="star-entry-field"><div class="star-entry-lbl">Situation</div><div class="star-entry-val">${e.s}</div></div>`:''}
+      ${e.t?`<div class="star-entry-field"><div class="star-entry-lbl">Task</div><div class="star-entry-val">${e.t}</div></div>`:''}
+      ${e.a?`<div class="star-entry-field"><div class="star-entry-lbl">Action</div><div class="star-entry-val">${e.a}</div></div>`:''}
+      ${e.r?`<div class="star-entry-field"><div class="star-entry-lbl">Result</div><div class="star-entry-val">${e.r}</div></div>`:''}
+      <button onclick="copyStarEntry(${realIdx})" style="margin-top:8px;padding:5px 12px;border:1.5px solid var(--line-soft);background:transparent;border-radius:8px;font-size:.76rem;font-weight:600;cursor:pointer;color:var(--ink-faint)">📋 העתק לראיון</button>
+    </div>`;
+  });
+  body.innerHTML=html;
+}
+
+function filterStarCat(cat){_starCat=cat;_starAddOpen=false;renderStarBank();}
+function toggleStarAdd(){_starAddOpen=!_starAddOpen;renderStarBank();if(_starAddOpen){setTimeout(()=>document.getElementById('sa-title')?.focus(),60);}}
+
+function commitStarAdd(){
+  const cat=document.getElementById('sa-cat')?.value;
+  const title=(document.getElementById('sa-title')?.value||'').trim();
+  if(!title){document.getElementById('sa-title').style.borderColor='#ba1a1a';return;}
+  const entry={cat,title,s:(document.getElementById('sa-s')?.value||'').trim(),t:(document.getElementById('sa-t')?.value||'').trim(),a:(document.getElementById('sa-a')?.value||'').trim(),r:(document.getElementById('sa-r')?.value||'').trim(),ts:Date.now()};
+  const entries=loadStarBank();entries.unshift(entry);saveStarBank(entries);
+  _starAddOpen=false;_starCat=cat;showToast('תשובת STAR נשמרה ✓');renderStarBank();
+}
+
+function deleteStarEntry(idx){
+  const entries=loadStarBank();entries.splice(idx,1);saveStarBank(entries);renderStarBank();showToast('תשובה נמחקה');
+}
+
+function copyStarEntry(idx){
+  const e=loadStarBank()[idx];if(!e)return;
+  const text=`${e.title}\n\nSituation: ${e.s}\n\nTask: ${e.t}\n\nAction: ${e.a}\n\nResult: ${e.r}`;
+  navigator.clipboard.writeText(text).then(()=>showToast('תשובת STAR הועתקה ✓'));
+}
+
+/* ── Negotiation tab ── */
+function renderNeg(body){
+  body.innerHTML=`
+  <div class="neg-form">
+    <div style="font-size:.82rem;color:var(--ink-faint);line-height:1.5;margin-bottom:4px">הכנה למשא ומתן על שכר — הזינו את הנתונים ו-AI ייצר לכם סקריפט + טקטיקות.</div>
+    <div><div class="star-field-lbl">תפקיד</div><input class="star-inp" id="neg-role" placeholder="Head of Revenue Operations" /></div>
+    <div><div class="star-field-lbl">חברה</div><input class="star-inp" id="neg-company" placeholder="Wiz" /></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><div class="star-field-lbl">הצעה שקיבלתי (₪/חודש)</div><input class="star-inp" id="neg-offer" type="number" placeholder="30000" /></div>
+      <div><div class="star-field-lbl">יעד שלי (₪/חודש)</div><input class="star-inp" id="neg-target" type="number" placeholder="42000" /></div>
+    </div>
+    <div><div class="star-field-lbl">חוזקות שלך הרלוונטיות לתפקיד</div><textarea class="star-inp" id="neg-strengths" rows="3" placeholder="15 שנות ניסיון ב-B2B SaaS, הקמתי RevOps מאפס, הגדלתי ARR ב-40%..."></textarea></div>
+    <div><div class="star-field-lbl">שלב במשא ומתן</div>
+      <select class="star-inp" id="neg-stage">
+        <option value="first">קיבלתי הצעה ראשונה — עדיין לא הגבתי</option>
+        <option value="counter">שלחתי קאונטר — ממתין לתשובה</option>
+        <option value="final">הצעה "סופית" — רוצה לנסות עוד</option>
+      </select>
+    </div>
+    <button onclick="genNegScript()" style="padding:10px 18px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:.88rem;cursor:pointer">✨ צור סקריפט משא ומתן</button>
+    <div class="neg-result" id="neg-result"></div>
+  </div>`;
+}
+
+async function genNegScript(){
+  const role=(document.getElementById('neg-role')?.value||'').trim();
+  const company=(document.getElementById('neg-company')?.value||'').trim();
+  const offer=document.getElementById('neg-offer')?.value||'';
+  const target=document.getElementById('neg-target')?.value||'';
+  const strengths=(document.getElementById('neg-strengths')?.value||'').trim();
+  const stage=document.getElementById('neg-stage')?.value||'first';
+  if(!role||!offer||!target){showToast('נא למלא תפקיד, הצעה ויעד');return;}
+  const stageTxt={first:'קיבלתי הצעה ראשונה ועדיין לא הגבתי',counter:'שלחתי קאונטר וממתין לתשובה',final:'קיבלתי הצעה "סופית" ורוצה לנסות שוב'}[stage];
+  const prompt=`אתה יועץ ניהולי מומחה למשא ומתן על שכר בשוק ה-High-Tech הישראלי.
+
+מצב:
+- תפקיד: ${role} ב-${company||'חברה'}
+- הצעה שהתקבלה: ₪${offer}/חודש
+- יעד: ₪${target}/חודש (פער: ${Math.round(((target-offer)/offer)*100)}%)
+- שלב: ${stageTxt}
+- חוזקות: ${strengths||'לא צוינו'}
+
+צור:
+1. **ניתוח מצב** — האם הפער סביר? מה הטקטיקה המומלצת?
+2. **סקריפט דיבור** — מה לומר (עברית, טון עסקי-אנושי, לא אגרסיבי)
+3. **אלטרנטיבות אם לא יכולים להעלות בייס** — bonuses, equity, ימי WFH, vacation
+4. **שורת סיום** — אם מגיעים ל-₪${Math.round(offer*1.1/1000)*1000} מה לעשות?
+
+כתוב בעברית, תשובה מעשית וישירה.`;
+
+  const resultEl=document.getElementById('neg-result');
+  resultEl.style.display='block';
+  resultEl.textContent='מייצר סקריפט... ✨';
+  const key=getApiKey();const proxy=getProxy();
+  if(!key&&!proxy){
+    resultEl.textContent='';
+    _modalMode='prompt';_cvText=prompt;
+    navigator.clipboard.writeText(prompt).then(()=>showToast('פרומפט הועתק — הדבק ב-Claude.ai'));
+    resultEl.innerHTML='<em>אין מפתח API — הפרומפט הועתק ללוח שלך. <a href="https://claude.ai" target="_blank">פתח Claude.ai</a> והדבק.</em>';
+    return;
+  }
+  try{
+    const baseUrl=proxy||'https://api.anthropic.com';
+    const r=await fetch(baseUrl+'/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();
+    resultEl.textContent=d.content?.[0]?.text||'שגיאה בתגובה';
+    resultEl.innerHTML+=`<br><br><button onclick="navigator.clipboard.writeText(document.getElementById('neg-result').innerText).then(()=>showToast('הועתק!'))" style="padding:5px 12px;border:1.5px solid var(--line-soft);background:transparent;border-radius:8px;font-size:.76rem;cursor:pointer">📋 העתק</button>`;
+  }catch(e){resultEl.textContent='שגיאה: '+e.message;}
+}
+
+function mbnStar(){
+  mbnSetActive('mbn-star');
+  openStarBank();
+}
 
 /* ── PWA: register service worker for offline + installability ── */
 if('serviceWorker' in navigator){
