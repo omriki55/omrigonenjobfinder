@@ -963,25 +963,25 @@
     #star-inner{background:var(--surface);border-radius:22px 22px 0 0;width:100%;max-width:680px;max-height:88dvh;display:flex;flex-direction:column;overflow:hidden}
     .star-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 0;flex-shrink:0}
     .star-tabs{display:flex;gap:8px;padding:12px 20px 0;flex-shrink:0}
-    .star-tab{padding:6px 14px;border-radius:20px;border:1.5px solid var(--line-soft);background:transparent;font-size:.82rem;font-weight:600;color:var(--ink-faint);cursor:pointer;transition:all .15s}
+    .star-tab{padding:6px 14px;border-radius:20px;border:1.5px solid var(--lineSoft);background:transparent;font-size:.82rem;font-weight:600;color:var(--inkFaint);cursor:pointer;transition:all .15s}
     .star-tab.on{background:var(--primary);color:#fff;border-color:var(--primary)}
     .star-body{flex:1;overflow-y:auto;padding:14px 20px 24px;display:flex;flex-direction:column;gap:14px}
     .star-cats{display:flex;gap:7px;flex-wrap:wrap;padding-bottom:4px}
-    .star-cat{padding:5px 13px;border-radius:20px;border:1.5px solid var(--line-soft);font-size:.78rem;font-weight:600;cursor:pointer;background:transparent;color:var(--ink-faint);transition:all .15s}
+    .star-cat{padding:5px 13px;border-radius:20px;border:1.5px solid var(--lineSoft);font-size:.78rem;font-weight:600;cursor:pointer;background:transparent;color:var(--inkFaint);transition:all .15s}
     .star-cat.sel{background:var(--primary);color:#fff;border-color:var(--primary)}
-    .star-entry{background:var(--canvas);border:1px solid var(--line-soft);border-radius:14px;padding:13px 15px}
+    .star-entry{background:var(--canvas);border:1px solid var(--lineSoft);border-radius:14px;padding:13px 15px}
     .star-entry-title{font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start}
     .star-entry-field{margin-bottom:6px}
     .star-entry-lbl{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--primary);margin-bottom:2px}
-    .star-entry-val{font-size:.82rem;color:var(--ink-faint);line-height:1.5;white-space:pre-wrap}
+    .star-entry-val{font-size:.82rem;color:var(--inkFaint);line-height:1.5;white-space:pre-wrap}
     .star-add-form{background:var(--canvas);border:1.5px dashed var(--primary);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:9px}
     .star-field-lbl{font-size:.73rem;font-weight:700;color:var(--primary);margin-bottom:2px}
-    .star-inp{width:100%;padding:8px 10px;border:1.5px solid var(--line-soft);border-radius:10px;font-size:.85rem;background:var(--surface);color:var(--ink);box-sizing:border-box;resize:vertical;font-family:inherit}
+    .star-inp{width:100%;padding:8px 10px;border:1.5px solid var(--lineSoft);border-radius:10px;font-size:.85rem;background:var(--surface);color:var(--ink);box-sizing:border-box;resize:vertical;font-family:inherit}
     .star-inp:focus{outline:none;border-color:var(--primary)}
     .star-save-btn{padding:9px 18px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:.85rem;cursor:pointer}
-    .star-cancel-btn{padding:9px 18px;background:transparent;color:var(--ink-faint);border:1.5px solid var(--line-soft);border-radius:12px;font-weight:600;font-size:.85rem;cursor:pointer}
+    .star-cancel-btn{padding:9px 18px;background:transparent;color:var(--inkFaint);border:1.5px solid var(--lineSoft);border-radius:12px;font-weight:600;font-size:.85rem;cursor:pointer}
     .neg-form{display:flex;flex-direction:column;gap:10px}
-    .neg-result{background:var(--canvas);border:1px solid var(--line-soft);border-radius:14px;padding:14px;font-size:.84rem;line-height:1.6;white-space:pre-wrap;color:var(--ink);display:none}
+    .neg-result{background:var(--canvas);border:1px solid var(--lineSoft);border-radius:14px;padding:14px;font-size:.84rem;line-height:1.6;white-space:pre-wrap;color:var(--ink);display:none}
   </style>
 </head>
 <body>
@@ -1181,7 +1181,7 @@
 <div id="star-sheet" onclick="if(event.target===this)closeStarBank()">
   <div id="star-inner">
     <div class="star-head">
-      <div><h3 style="margin:0;font-size:1.05rem">⭐ בנק STAR + משא ומתן</h3><div style="font-size:.78rem;color:var(--ink-faint);margin-top:2px">תשובות מוכנות לראיון ומינוף שכר</div></div>
+      <div><h3 style="margin:0;font-size:1.05rem">⭐ בנק STAR + משא ומתן</h3><div style="font-size:.78rem;color:var(--inkFaint);margin-top:2px">תשובות מוכנות לראיון ומינוף שכר</div></div>
       <button class="modal-close" onclick="closeStarBank()">✕</button>
     </div>
     <div class="star-tabs">
@@ -3536,7 +3536,7 @@ function renderStarBank(){
   }
   // Entries
   if(!filtered.length&&!_starAddOpen){
-    html+=`<div style="text-align:center;color:var(--ink-faint);padding:28px 0;font-size:.88rem">אין תשובות עדיין${_starCat!=='all'?' בקטגוריה זו':''} — לחץ "+ הוסף תשובה"</div>`;
+    html+=`<div style="text-align:center;color:var(--inkFaint);padding:28px 0;font-size:.88rem">אין תשובות עדיין${_starCat!=='all'?' בקטגוריה זו':''} — לחץ "+ הוסף תשובה"</div>`;
   }
   filtered.forEach((e,i)=>{
     const catLbl=STAR_CATS.find(c=>c.id===e.cat)?.lbl||e.cat;
@@ -3544,13 +3544,13 @@ function renderStarBank(){
     html+=`<div class="star-entry">
       <div class="star-entry-title">
         <div><div style="font-size:.7rem;color:var(--primary);font-weight:700;margin-bottom:2px">${catLbl}</div>${e.title}</div>
-        <button onclick="deleteStarEntry(${realIdx})" style="background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:.9rem;padding:2px">✕</button>
+        <button onclick="deleteStarEntry(${realIdx})" style="background:none;border:none;color:var(--inkFaint);cursor:pointer;font-size:.9rem;padding:2px">✕</button>
       </div>
       ${e.s?`<div class="star-entry-field"><div class="star-entry-lbl">Situation</div><div class="star-entry-val">${e.s}</div></div>`:''}
       ${e.t?`<div class="star-entry-field"><div class="star-entry-lbl">Task</div><div class="star-entry-val">${e.t}</div></div>`:''}
       ${e.a?`<div class="star-entry-field"><div class="star-entry-lbl">Action</div><div class="star-entry-val">${e.a}</div></div>`:''}
       ${e.r?`<div class="star-entry-field"><div class="star-entry-lbl">Result</div><div class="star-entry-val">${e.r}</div></div>`:''}
-      <button onclick="copyStarEntry(${realIdx})" style="margin-top:8px;padding:5px 12px;border:1.5px solid var(--line-soft);background:transparent;border-radius:8px;font-size:.76rem;font-weight:600;cursor:pointer;color:var(--ink-faint)">📋 העתק לראיון</button>
+      <button onclick="copyStarEntry(${realIdx})" style="margin-top:8px;padding:5px 12px;border:1.5px solid var(--lineSoft);background:transparent;border-radius:8px;font-size:.76rem;font-weight:600;cursor:pointer;color:var(--inkFaint)">📋 העתק לראיון</button>
     </div>`;
   });
   body.innerHTML=html;
@@ -3582,7 +3582,7 @@ function copyStarEntry(idx){
 function renderNeg(body){
   body.innerHTML=`
   <div class="neg-form">
-    <div style="font-size:.82rem;color:var(--ink-faint);line-height:1.5;margin-bottom:4px">הכנה למשא ומתן על שכר — הזינו את הנתונים ו-AI ייצר לכם סקריפט + טקטיקות.</div>
+    <div style="font-size:.82rem;color:var(--inkFaint);line-height:1.5;margin-bottom:4px">הכנה למשא ומתן על שכר — הזינו את הנתונים ו-AI ייצר לכם סקריפט + טקטיקות.</div>
     <div><div class="star-field-lbl">תפקיד</div><input class="star-inp" id="neg-role" placeholder="Head of Revenue Operations" /></div>
     <div><div class="star-field-lbl">חברה</div><input class="star-inp" id="neg-company" placeholder="Wiz" /></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -3644,7 +3644,7 @@ async function genNegScript(){
     const r=await fetch(baseUrl+'/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
     const d=await r.json();
     resultEl.textContent=d.content?.[0]?.text||'שגיאה בתגובה';
-    resultEl.innerHTML+=`<br><br><button onclick="navigator.clipboard.writeText(document.getElementById('neg-result').innerText).then(()=>showToast('הועתק!'))" style="padding:5px 12px;border:1.5px solid var(--line-soft);background:transparent;border-radius:8px;font-size:.76rem;cursor:pointer">📋 העתק</button>`;
+    resultEl.innerHTML+=`<br><br><button onclick="navigator.clipboard.writeText(document.getElementById('neg-result').innerText).then(()=>showToast('הועתק!'))" style="padding:5px 12px;border:1.5px solid var(--lineSoft);background:transparent;border-radius:8px;font-size:.76rem;cursor:pointer">📋 העתק</button>`;
   }catch(e){resultEl.textContent='שגיאה: '+e.message;}
 }
 
