@@ -271,6 +271,16 @@
     .act-prep{background:var(--tertiary-container);color:var(--on-tertiary-container)}
     .act-dossier{background:#d7e3ff;color:#0b4ba0}
     .act-practice{background:#ffe0ec;color:#a01050}
+    .act-contact{background:var(--secondary-container);color:var(--on-secondary-container)}
+    .act-more{background:var(--surface-container-highest);color:var(--inkSoft)}
+    /* collapsible action panels (צור קשר / עוד) */
+    .action-panel{flex-basis:100%;width:100%;display:none;flex-wrap:wrap;gap:8px;margin-top:2px}
+    .action-panel.open{display:flex}
+    .action-panel .channel-wrap{flex-basis:100%;width:100%}
+    .act-btn.menu-open{outline:2px solid var(--primary);outline-offset:-2px}
+    /* no-key marker on AI buttons */
+    .pmark{font-size:.72em;opacity:.85;margin-inline-start:3px}
+    .act-btn.prompt-mode{opacity:.92}
 
     /* dismiss section */
     .dismiss-toggle{background:none;border:none;font-size:.74rem;color:var(--inkFaint);cursor:pointer;padding:4px 0;font-family:var(--font-ui);text-align:right;direction:rtl}
@@ -512,8 +522,9 @@
       /* action buttons: stable 2-per-row grid for thumb reach */
       .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
       .act-btn{min-width:0;padding:13px 6px;font-size:.76rem}
-      .act-open{grid-column:span 2}
-      .act-dismiss{grid-column:span 2}
+      .action-panel{grid-column:1/-1}
+      .action-panel.open{display:grid;grid-template-columns:1fr 1fr}
+      .action-panel .act-support,.action-panel .act-dismiss,.action-panel .channel-wrap,.action-panel .act-letter{grid-column:1/-1}
       .step-btn{padding:11px 3px;font-size:.72rem}
       .modal-card{max-height:92vh}
       /* touch targets */
@@ -992,10 +1003,6 @@
     <span class="material-symbols-rounded">favorite</span>
     <span class="nr-lbl">תמיכה</span>
   </button>
-  <button class="nr-item" id="nr-theme" onclick="toggleTheme()" title="מצב תצוגה">
-    <span class="material-symbols-rounded" id="theme-ico2">dark_mode</span>
-    <span class="nr-lbl">תצוגה</span>
-  </button>
   <button class="nr-item" id="nr-settings" onclick="openSettings()" title="הגדרות">
     <span class="material-symbols-rounded">settings</span>
     <span class="nr-lbl">הגדרות</span>
@@ -1432,6 +1439,17 @@ function undismissJob(j){
   STATE[k]=cur;saveState(STATE);render();
 }
 function toggleDismissPanel(btn){btn.nextElementSibling.classList.toggle('open');}
+function toggleCardMenu(btn,id){
+  const panel=document.getElementById(id);
+  if(!panel)return;
+  const wasOpen=panel.classList.contains('open');
+  const wrap=btn.closest('.actions');
+  if(wrap){
+    wrap.querySelectorAll('.action-panel.open').forEach(p=>p.classList.remove('open'));
+    wrap.querySelectorAll('.act-btn.menu-open').forEach(b=>b.classList.remove('menu-open'));
+  }
+  if(!wasOpen){panel.classList.add('open');btn.classList.add('menu-open');}
+}
 
 /* ── stats ── */
 function computeStats(){
@@ -1506,9 +1524,7 @@ function resetFilters(){
   render();
 }
 function onSearch(inp){fQ=inp.value.trim().toLowerCase();document.getElementById("search-clear").classList.toggle("show",!!fQ);render();}
-function clearSearch(){fQ="";const i=document.getElementById("search-inp");i.value="";document.getElementById("search-clear").classList.remove("show");const id=document.getElementById("search-inp-d");if(id)id.value="";const icd=document.getElementById("search-clear-d");if(icd)icd.classList.remove("show");render();}
-function onSearchDesktop(inp){fQ=inp.value.trim().toLowerCase();const icd=document.getElementById("search-clear-d");if(icd)icd.classList.toggle("show",!!fQ);render();}
-function clearSearchDesktop(){fQ="";const id=document.getElementById("search-inp-d");if(id)id.value="";const icd=document.getElementById("search-clear-d");if(icd)icd.classList.remove("show");render();}
+function clearSearch(){fQ="";const i=document.getElementById("search-inp");i.value="";document.getElementById("search-clear").classList.remove("show");render();}
 
 /* ── collapse / expand ── */
 function toggleCard(el){
@@ -1772,7 +1788,6 @@ function launchChat({title,sub,system,kickoff,fallbackText,pdf}){
     document.getElementById('modal').classList.add('show');
   }
 }
-function copyCV(){copyModalText();}
 function downloadCV(){
   const b=new Blob([_cvText],{type:"text/plain;charset=utf-8"}),a=document.createElement("a");
   a.href=URL.createObjectURL(b);a.download=(_modalMode==="cv"?"CV_":"prompt_")+_cvCompany.replace(/[^a-z0-9]+/gi,"_")+".txt";a.click();
@@ -2800,6 +2815,9 @@ function render(){
   }
   window._buildCard=function(x,i,forceOpen,show){
     const j=x.j,st=x.st,stage=x.stage;
+    const aiLive=chatReady();
+    const aiTag=aiLive?'':' <span class="pmark" title="ללא מפתח API — לחיצה מעתיקה פרומפט ללוח">📋</span>';
+    const aiTitle=aiLive?'':' title="ללא מפתח API — לחיצה מעתיקה פרומפט ללוח (לא צ׳אט חי)"';
     const isDismissed=!!st.dismissed;
     const sc=stageColor(STAGES.find(s=>s.key===stage)?.hue||235);
     const fc=fitColor(j.fit_score);
@@ -2910,18 +2928,24 @@ function render(){
               <div class="stepper-lbl">📌 איפה זה עומד?</div>
               <div class="stepper">${stepBtns}</div>
             </div>
-            ${channelHTML}
             <div class="actions">
-              <button class="act-btn act-letter" onclick='event.stopPropagation();copyLetterPrompt(this,${i})'><span class="material-symbols-rounded">mail</span>מכתב</button>
-              <button class="act-btn act-prep" onclick='event.stopPropagation();openPrep(${i})'><span class="material-symbols-rounded">quiz</span>הכנה לראיון</button>
-              <button class="act-btn act-practice" onclick='event.stopPropagation();openPractice(${i})'><span class="material-symbols-rounded">record_voice_over</span>תרגול ראיון</button>
-              <button class="act-btn act-dossier" onclick='event.stopPropagation();openDossier(${i})'><span class="material-symbols-rounded">corporate_fare</span>דוסייר</button>
-              <button class="act-btn act-cv" onclick='event.stopPropagation();openCV(${i})'><span class="material-symbols-rounded">description</span>קו״ח</button>
-              <button class="act-btn act-copy" onclick='event.stopPropagation();copyOpener(this,${i})'>פנייה 📋</button>
-              <button class="act-btn act-wa" onclick='event.stopPropagation();shareWA(${i})'>וואטסאפ</button>
               <a href="${j.url}" target="_blank" rel="noopener" class="act-btn act-open" onclick='event.stopPropagation()'><span class="material-symbols-rounded">open_in_new</span>פתח משרה</a>
-              <button class="act-btn act-support" onclick='event.stopPropagation();openJobSupport(${i})'><span class="material-symbols-rounded">favorite</span>תמיכה רגשית</button>
-              <button class="act-btn act-dismiss" onclick='event.stopPropagation();learnIrrelevant(this,${i})'><span class="material-symbols-rounded">thumb_down</span>לא רלוונטי — למד מזה</button>
+              <button class="act-btn act-cv" onclick='event.stopPropagation();openCV(${i})'><span class="material-symbols-rounded">description</span>קו״ח</button>
+              <button class="act-btn act-contact" onclick='event.stopPropagation();toggleCardMenu(this,"contact-${i}")'><span class="material-symbols-rounded">forward_to_inbox</span>צור קשר</button>
+              <button class="act-btn act-more" onclick='event.stopPropagation();toggleCardMenu(this,"more-${i}")'><span class="material-symbols-rounded">more_horiz</span>עוד</button>
+              <div class="action-panel" id="contact-${i}">
+                <button class="act-btn act-letter${aiLive?'':' prompt-mode'}"${aiTitle} onclick='event.stopPropagation();copyLetterPrompt(this,${i})'><span class="material-symbols-rounded">mail</span>מכתב${aiTag}</button>
+                <button class="act-btn act-copy" onclick='event.stopPropagation();copyOpener(this,${i})'>פנייה 📋</button>
+                <button class="act-btn act-wa" onclick='event.stopPropagation();shareWA(${i})'>וואטסאפ</button>
+                ${channelHTML}
+              </div>
+              <div class="action-panel" id="more-${i}">
+                <button class="act-btn act-prep${aiLive?'':' prompt-mode'}"${aiTitle} onclick='event.stopPropagation();openPrep(${i})'><span class="material-symbols-rounded">quiz</span>הכנה לראיון${aiTag}</button>
+                <button class="act-btn act-practice${aiLive?'':' prompt-mode'}"${aiTitle} onclick='event.stopPropagation();openPractice(${i})'><span class="material-symbols-rounded">record_voice_over</span>תרגול ראיון${aiTag}</button>
+                <button class="act-btn act-dossier${aiLive?'':' prompt-mode'}"${aiTitle} onclick='event.stopPropagation();openDossier(${i})'><span class="material-symbols-rounded">corporate_fare</span>דוסייר${aiTag}</button>
+                <button class="act-btn act-support" onclick='event.stopPropagation();openJobSupport(${i})'><span class="material-symbols-rounded">favorite</span>תמיכה רגשית</button>
+                <button class="act-btn act-dismiss" onclick='event.stopPropagation();learnIrrelevant(this,${i})'><span class="material-symbols-rounded">thumb_down</span>לא רלוונטי — למד מזה</button>
+              </div>
             </div>
             ${dismissSection}
           </div>
@@ -2978,10 +3002,11 @@ function mbnAnalytics(){
   document.querySelectorAll('.mbn-item').forEach(b=>b.classList.remove('active'));
   const btn=document.getElementById('mbn-analytics');if(btn)btn.classList.add('active');
   openAnalytics();
-  /* restore jobs active state after sheet closes */
-  document.getElementById('sheet').addEventListener('click',function once(e){
-    if(e.target===this){document.querySelectorAll('.mbn-item').forEach(b=>b.classList.remove('active'));const j=document.getElementById('mbn-jobs');if(j)j.classList.add('active');this.removeEventListener('click',once);}
-  });
+  /* restore jobs active state after sheet closes (single listener, no stacking) */
+  const sh=document.getElementById('sheet');
+  if(sh._mbnRestore)sh.removeEventListener('click',sh._mbnRestore);
+  sh._mbnRestore=function(e){if(e.target===sh){mbnRestoreJobs();sh.removeEventListener('click',sh._mbnRestore);sh._mbnRestore=null;}};
+  sh.addEventListener('click',sh._mbnRestore);
 }
 function mbnSetActive(id){
   document.querySelectorAll('.mbn-item').forEach(b=>b.classList.remove('active'));
@@ -3001,10 +3026,11 @@ function toggleFilters(){
 function mbnSupport(){
   mbnSetActive('mbn-support');
   openSupport();
-  /* restore jobs active when modal closes */
-  document.getElementById('modal').addEventListener('click',function once(e){
-    if(e.target===this){mbnRestoreJobs();this.removeEventListener('click',once);}
-  });
+  /* restore jobs active when modal closes (single listener, no stacking) */
+  const md=document.getElementById('modal');
+  if(md._mbnRestore)md.removeEventListener('click',md._mbnRestore);
+  md._mbnRestore=function(e){if(e.target===md){mbnRestoreJobs();md.removeEventListener('click',md._mbnRestore);md._mbnRestore=null;}};
+  md.addEventListener('click',md._mbnRestore);
 }
 function mbnSettings(){
   mbnSetActive('mbn-settings');
@@ -3216,25 +3242,12 @@ function saveRoles(){
   const lines=document.getElementById('roles-ta').value.split('\n').map(l=>l.trim()).filter(Boolean);
   localStorage.setItem('desired_roles',JSON.stringify(lines));__syncState();
 }
-function downloadConfig(){
-  const roles=JSON.parse(localStorage.getItem('desired_roles')||'null')||CV_BASE_ROLES;
-  const cfg={roles,updated:new Date().toISOString().slice(0,10)};
-  const b=new Blob([JSON.stringify(cfg,null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='config.json';a.click();
-}
-function saveGhToken(){
-  const tk=document.getElementById('gh-token-inp').value.trim();
-  if(tk){localStorage.setItem('gh_token',tk);document.getElementById('gh-token-status').textContent='Token שמור ✓';showToast('Token נשמר');}
-  else{localStorage.removeItem('gh_token');document.getElementById('gh-token-status').textContent='';showToast('Token הוסר');}
-}
 
 /* ── theme toggle (light / dark, persisted; defaults to system) ── */
 function applyTheme(t){
   document.documentElement.setAttribute('data-theme',t);
   const ico=document.getElementById('theme-ico');
   if(ico)ico.textContent=(t==='dark')?'light_mode':'dark_mode';
-  const ico2=document.getElementById('theme-ico2');
-  if(ico2)ico2.textContent=(t==='dark')?'light_mode':'dark_mode';
   const icoSet=document.getElementById('theme-ico-set');
   if(icoSet)icoSet.textContent=(t==='dark')?'light_mode':'dark_mode';
 }
