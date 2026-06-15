@@ -50,6 +50,12 @@ DEFAULT_ATS = {
     ],
     "lever": ["walkme"],
     "ashby": [],
+    # Comeet (very common ATS in Israel). Each entry is "COMPANY_UID:API_TOKEN";
+    # both are public values harvested from the company's careers page.
+    "comeet": [
+        "10.000:1030901050040401080",                 # guesty
+        "45.00A:54A1A7225062A50FDE2F9A1FBC01FBC1528",  # minute media
+    ],
     # Workable: tokens are search keywords (not company slugs).
     # Returns cross-company results filtered to Israel by the location filter.
     "workable": [
@@ -57,6 +63,17 @@ DEFAULT_ATS = {
         "sales operations", "marketing operations", "growth",
     ],
 }
+
+# Broad go-to-market / RevOps role family. Merged into each user's own role
+# keywords so GTM-adjacent titles are caught even when they don't substring-match
+# the user's exact configured role names.
+GTM_KEYWORDS = [
+    "gtm", "go-to-market", "go to market",
+    "revenue operation", "revops", "rev ops", "revenue strategy",
+    "sales operation", "sales ops", "sales strategy", "sales enablement",
+    "marketing operation", "marketing ops", "demand generation",
+    "growth", "business operation", "revenue enablement", "partnerships",
+]
 
 SENIORITY_PREFIXES = ("head of ", "senior ", "sr. ", "sr ", "lead ", "principal ",
                       "director of ", "director, ", "vp of ", "vp ", "chief ", "staff ")
@@ -271,6 +288,8 @@ def process_user(profile: dict, key: str, all_jobs: list[dict],
     if not keywords:
         print(f"  {username}: no roles configured — skipping")
         return
+    # Broaden recall with the GTM/RevOps family (dedupe, keep stable order).
+    keywords = sorted(set(keywords) | set(GTM_KEYWORDS))
 
     existing = _sb("GET", f"jobs?user_id=eq.{uid}&select=url") or []
     existing_urls = {r["url"] for r in existing}

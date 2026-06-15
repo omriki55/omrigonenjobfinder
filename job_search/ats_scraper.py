@@ -204,6 +204,49 @@ def scrape_workable(query: str) -> list[dict]:
     return out
 
 
+# ── Comeet ────────────────────────────────────────────────────────────────────
+
+def scrape_comeet(uid_token: str) -> list[dict]:
+    """Scrape a company's Comeet board.
+
+    Config entries use the form 'COMPANY_UID:API_TOKEN'. Both values are public
+    (embedded in the company's careers page) and identify one company's board,
+    e.g. '10.000:1030901050040401080'.
+    """
+    if ":" not in (uid_token or ""):
+        return []
+    uid, token = uid_token.split(":", 1)
+    url = f"https://www.comeet.co/careers-api/2.0/company/{uid}/positions?token={token}"
+    try:
+        data = _get_json(url)
+    except Exception as e:
+        print(f"  ⚠️  Comeet {uid}: {e}")
+        return []
+    if not isinstance(data, list):
+        return []
+    out = []
+    for j in data:
+        if not isinstance(j, dict):
+            continue
+        updated = j.get("time_updated", "") or ""
+        if not _recent(updated):
+            continue
+        loc = j.get("location") or {}
+        loc_name = loc.get("name") or ", ".join(
+            x for x in (loc.get("city"), loc.get("country")) if x
+        )
+        out.append(_job(
+            j.get("company_name", ""),
+            j.get("name", ""),
+            loc_name,
+            # public hosted page — never the position_url (it carries the token)
+            j.get("url_active_page") or j.get("url_comeet_hosted_page", ""),
+            updated[:10],
+            j.get("department", ""),
+        ))
+    return out
+
+
 # ── Registry ──────────────────────────────────────────────────────────────────
 
 _SCRAPERS = {
@@ -211,6 +254,7 @@ _SCRAPERS = {
     "lever": scrape_lever,
     "ashby": scrape_ashby,
     "workable": scrape_workable,
+    "comeet": scrape_comeet,
 }
 
 # Title keywords used to pre-filter ATS jobs before scoring. ATS boards return
