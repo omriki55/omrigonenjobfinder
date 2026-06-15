@@ -126,6 +126,22 @@ def load_apply_threshold() -> int:
     return DEFAULT_APPLY_THRESHOLD
 
 
+def load_exclude_titles():
+    """Title substrings to drop from scans. Admin-configurable via the
+    site_content key 'platform:exclude_titles' (JSON list of strings).
+    Falls back to the scraper's built-in defaults when unset."""
+    try:
+        rows = _sb("GET", "site_content?key=eq.platform%3Aexclude_titles&select=value")
+        if rows:
+            cfg = json.loads(rows[0]["value"])
+            if isinstance(cfg, list):
+                print(f"  Using admin exclude list ({len(cfg)} terms)")
+                return [str(x) for x in cfg]
+    except Exception as e:
+        print(f"  ⚠️  platform:exclude_titles read failed: {e}")
+    return None  # scrape_ats uses its built-in defaults
+
+
 def detect_meta_column() -> bool:
     """Return True if jobs table has a 'meta' column (runtime detection)."""
     try:
@@ -377,7 +393,7 @@ def main():
 
     print("🔍 Scraping ATS boards (platform-wide, once)...")
     ats = load_platform_ats()
-    all_jobs = scrape_ats(ats, keywords=[""])
+    all_jobs = scrape_ats(ats, keywords=[""], exclude=load_exclude_titles())
     seen: set[str] = set()
     unique_jobs = []
     for j in all_jobs:

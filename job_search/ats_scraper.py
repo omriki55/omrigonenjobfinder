@@ -280,9 +280,24 @@ _DEFAULT_LOCATIONS = [
 ]
 
 
+# Title substrings to ALWAYS drop (employment types / roles off the user's
+# GTM/RevOps/Growth profile). Derived from "irrelevant" feedback; can be
+# overridden via the site_content key 'platform:exclude_titles'.
+_DEFAULT_EXCLUDE = [
+    "hrbp", "human resources", "recruiter", "talent acquisition",
+    "maternity", "contractor", "temporary", "temp position", "(temp)",
+    "intern", "internship", "student", "working student",
+]
+
+
 def _title_relevant(title: str, keywords: list[str]) -> bool:
     t = (title or "").lower()
     return any(k in t for k in keywords)
+
+
+def _excluded(title: str, exclude: list[str]) -> bool:
+    t = (title or "").lower()
+    return any(x in t for x in exclude)
 
 
 def _location_ok(location: str, locations: list[str]) -> bool:
@@ -293,7 +308,8 @@ def _location_ok(location: str, locations: list[str]) -> bool:
 
 
 def scrape_ats(ats_config: dict, keywords: list[str] | None = None,
-               locations: list[str] | None = None) -> list[dict]:
+               locations: list[str] | None = None,
+               exclude: list[str] | None = None) -> list[dict]:
     """Run all configured ATS scrapers, returning role- and location-relevant jobs.
 
     `keywords` filters by job title (target roles).
@@ -306,7 +322,9 @@ def scrape_ats(ats_config: dict, keywords: list[str] | None = None,
     """
     keywords = [k.lower() for k in (keywords or _DEFAULT_KEYWORDS)]
     locations = [l.lower() for l in (locations or _DEFAULT_LOCATIONS)]
+    exclude = [x.lower() for x in (exclude if exclude is not None else _DEFAULT_EXCLUDE)]
     jobs = []
+    dropped = 0
     for provider, tokens in (ats_config or {}).items():
         fn = _SCRAPERS.get(provider)
         if not fn:
@@ -315,11 +333,16 @@ def scrape_ats(ats_config: dict, keywords: list[str] | None = None,
             found = fn(token)
             relevant = [
                 j for j in found
-                if _title_relevant(j["title"], keywords) and _location_ok(j["location"], locations)
+                if _title_relevant(j["title"], keywords)
+                and _location_ok(j["location"], locations)
+                and not _excluded(j["title"], exclude)
             ]
+            dropped += sum(1 for j in found if _excluded(j["title"], exclude))
             if found:
                 print(f"  {provider}/{token}: {len(relevant)}/{len(found)} relevant (title+location)")
             jobs.extend(relevant)
+    if dropped:
+        print(f"  🚫 excluded {dropped} jobs by title filter")
     return jobs
 
 
