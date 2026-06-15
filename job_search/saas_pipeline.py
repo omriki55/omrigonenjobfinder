@@ -375,7 +375,7 @@ def process_user(profile: dict, key: str, all_jobs: list[dict],
 def main():
     print("👥 Loading users...")
     profiles = _sb("GET",
-                   "profiles?select=user_id,username,full_name,roles,location,profile_summary"
+                   "profiles?select=user_id,username,full_name,roles,location,profile_summary,last_scanned"
                    ) or []
     secrets = _sb("GET", "user_secrets?select=user_id,anthropic_key") or []
     keys = {s["user_id"]: s["anthropic_key"] for s in secrets if s.get("anthropic_key")}
@@ -384,6 +384,18 @@ def main():
     if not active:
         print("Nothing to do.")
         return
+
+    # ONLY_NEW mode (frequent catch-up run): score only users who have never
+    # been scanned, so new sign-ups get their first jobs within minutes instead
+    # of waiting for the daily deep scan. Exits cheaply (before scraping) when
+    # there are no new users.
+    if os.getenv("ONLY_NEW") == "1":
+        active = [p for p in active if not p.get("last_scanned")]
+        if not active:
+            print("  ONLY_NEW: no new users to scan — exiting")
+            print("✅ Done")
+            return
+        print(f"  ONLY_NEW: {len(active)} new user(s) to onboard")
 
     threshold = load_apply_threshold()
     print(f"  apply threshold: {threshold}/10")
