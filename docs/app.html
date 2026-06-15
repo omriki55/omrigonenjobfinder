@@ -282,6 +282,22 @@
     .pmark{font-size:.72em;opacity:.85;margin-inline-start:3px}
     .act-btn.prompt-mode{opacity:.92}
 
+    /* bulk-select */
+    .bulk-cb{display:none;width:20px;height:20px;border:2px solid var(--line);border-radius:6px;flex:0 0 auto;cursor:pointer;align-items:center;justify-content:center;background:var(--surface);transition:all .12s;margin-inline-end:8px}
+    body.bulk-mode .bulk-cb{display:inline-flex}
+    .bulk-cb.on{background:var(--primary);border-color:var(--primary)}
+    .bulk-cb.on::after{content:"✓";color:#fff;font-size:13px;font-weight:800;line-height:1}
+    body.bulk-mode .rail-row,body.bulk-mode .card-head{cursor:default}
+    #bulk-toggle.on{background:var(--primary);color:#fff}
+    .bulk-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:1300;background:var(--ink);color:#fff;border-radius:16px;padding:10px 12px;display:none;align-items:center;gap:8px;box-shadow:0 14px 34px -8px rgba(0,0,0,.55);font-family:var(--font-ui);max-width:94vw;flex-wrap:wrap;justify-content:center}
+    .bulk-bar.show{display:flex}
+    .bulk-bar .bb-count{font-weight:800;font-size:.88rem;padding-inline:4px}
+    .bulk-bar button{border:none;border-radius:11px;padding:9px 13px;font-weight:700;font-size:.82rem;cursor:pointer;font-family:var(--font-ui);white-space:nowrap}
+    .bb-irr{background:var(--error-container);color:#5c0d0d}
+    .bb-rej{background:#ffd8a8;color:#7a3b00}
+    .bb-all{background:rgba(255,255,255,.16);color:#fff}
+    .bb-cancel{background:transparent;color:rgba(255,255,255,.65)}
+
     /* dismiss section */
     .dismiss-toggle{background:none;border:none;font-size:.74rem;color:var(--inkFaint);cursor:pointer;padding:4px 0;font-family:var(--font-ui);text-align:right;direction:rtl}
     .dismiss-toggle:hover{color:var(--ink)}
@@ -1078,6 +1094,7 @@
           <div class="exp-btns">
             <button class="exp-btn" onclick="expandAll()">פתח הכל</button>
             <button class="exp-btn" onclick="collapseAll()">סגור הכל</button>
+            <button class="exp-btn" id="bulk-toggle" onclick="toggleBulkMode()" title="בחירה מרובה">☑️ בחירה</button>
             <button class="exp-btn add-url-btn" onclick="openAddByUrl()" title="הוסף משרה לפי לינק"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">add_link</span> הוסף לינק</button>
           </div>
         </div>
@@ -1114,6 +1131,13 @@
 </div>
 
 <div id="toast"></div>
+<div class="bulk-bar" id="bulk-bar">
+  <span class="bb-count" id="bb-count">0 נבחרו</span>
+  <button class="bb-irr" onclick="bulkApply('irrelevant')">🚫 לא רלוונטי</button>
+  <button class="bb-rej" onclick="bulkApply('rejected')">❌ נסגר</button>
+  <button class="bb-all" onclick="bulkSelectAll()">בחר הכל</button>
+  <button class="bb-cancel" onclick="toggleBulkMode()">בטל</button>
+</div>
 
 
 <!-- MOBILE BOTTOM NAV (hidden on desktop ≥1024px) -->
@@ -2874,6 +2898,7 @@ function render(){
              animation:cardIn .45s ${delay}s both"
       id="jc-${i}">
       <div class="card-head" onclick="${forceOpen?'':'toggleCard(this.parentElement)'}">
+        <span class="bulk-cb${window._bulkSel&&window._bulkSel.has(jobKey(j))?' on':''}" data-bk="${jobKey(j).replace(/"/g,'&quot;')}" onclick="event.stopPropagation();toggleBulkPick(this)"></span>
         <button class="star-btn${st.starred?" on":""}" onclick='event.stopPropagation();toggleStar(window._sorted[${i}])'>★</button>
         <div class="fit-mark" style="background:${fc.bg}">
           <div class="fit-num" style="color:${fc.fg}">${j.fit_score}</div>
@@ -2982,7 +3007,54 @@ function render(){
   document.getElementById("count-lbl").textContent=ct;
 }
 
-function selectJob(i){window._selIndex=i;render();}
+function selectJob(i){if(window._bulkMode)return;window._selIndex=i;render();}
+
+/* ── Bulk select: mark many jobs as irrelevant / closed at once ── */
+window._bulkMode=false; window._bulkSel=new Set();
+function toggleBulkMode(){
+  window._bulkMode=!window._bulkMode;
+  document.body.classList.toggle('bulk-mode',window._bulkMode);
+  const tg=document.getElementById('bulk-toggle');if(tg)tg.classList.toggle('on',window._bulkMode);
+  if(!window._bulkMode){window._bulkSel.clear();document.querySelectorAll('.bulk-cb.on').forEach(e=>e.classList.remove('on'));}
+  updateBulkBar();
+}
+function toggleBulkPick(el){
+  const k=el&&el.dataset.bk;if(!k)return;
+  if(window._bulkSel.has(k)){window._bulkSel.delete(k);el.classList.remove('on');}
+  else{window._bulkSel.add(k);el.classList.add('on');}
+  updateBulkBar();
+}
+function bulkSelectAll(){
+  document.querySelectorAll('.bulk-cb').forEach(el=>{
+    if(el.offsetParent===null)return;           // skip hidden (filtered-out) rows
+    const k=el.dataset.bk;if(!k)return;
+    window._bulkSel.add(k);el.classList.add('on');
+  });
+  updateBulkBar();
+}
+function updateBulkBar(){
+  const bar=document.getElementById('bulk-bar');if(!bar)return;
+  const n=window._bulkSel.size;
+  const c=document.getElementById('bb-count');if(c)c.textContent=n+' נבחרו';
+  bar.classList.toggle('show',window._bulkMode&&n>0);
+}
+function bulkApply(action){
+  const keys=[...window._bulkSel];if(!keys.length)return;
+  const today=new Date().toISOString().slice(0,10);let n=0;
+  keys.forEach(k=>{
+    const j=JOBS.find(x=>jobKey(x)===k);if(!j)return;
+    const cur=STATE[k]||{};
+    if(action==='irrelevant'){cur.dismissed=true;cur.dismiss_reason='irrelevant';cur.dismiss_date=today;cur.score_feedback='down';cur.company=j.company;}
+    else if(action==='rejected'){cur.status='rejected';cur.statusDate=today;}
+    STATE[k]=cur;n++;
+  });
+  saveState(STATE);
+  window._bulkSel.clear();window._bulkMode=false;
+  document.body.classList.remove('bulk-mode');
+  const tg=document.getElementById('bulk-toggle');if(tg)tg.classList.remove('on');
+  render();updateBulkBar();
+  showToast(action==='irrelevant'?('🚫 '+n+' סומנו כלא רלוונטי'):('❌ '+n+' סומנו כנסגר'));
+}
 
 /* ── Navigation rail ── */
 function nr(section){
@@ -3046,6 +3118,7 @@ function buildRailRow(x,i,sel){
   const novel=isNew(j),follow=needsFollowupDirect(st);
   const sm=STAGES.find(s=>s.key===stage)||STAGES[0];
   return`<div class="rail-row${sel?" sel":""}" onclick="selectJob(${i})">
+    <span class="bulk-cb${window._bulkSel&&window._bulkSel.has(jobKey(j))?' on':''}" data-bk="${jobKey(j).replace(/"/g,'&quot;')}" onclick="event.stopPropagation();toggleBulkPick(this)"></span>
     <div class="rr-fit" style="background:${fc.bg};color:${fc.fg}">${j.fit_score}</div>
     <div class="rr-text"><div class="rr-co">${j.company}</div><div class="rr-ti">${j.title}</div></div>
     ${st.starred?'<span class="rr-star">★</span>':''}
