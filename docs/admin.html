@@ -151,7 +151,7 @@ where username = 'YOUR_USERNAME';</pre>
   <h2><span class="material-symbols-rounded">group</span>משתמשים רשומים</h2>
   <div class="panel">
     <table id="users-table">
-      <thead><tr><th>שם משתמש</th><th>שם מלא</th><th>GitHub</th><th>תפקידים</th><th>הרשאה</th><th>נרשם</th></tr></thead>
+      <thead><tr><th>שם משתמש</th><th>שם מלא</th><th>GitHub</th><th>תפקידים</th><th>משרות</th><th>הרשאה</th><th>נרשם</th></tr></thead>
       <tbody></tbody>
     </table>
   </div>
@@ -228,10 +228,13 @@ where username = 'YOUR_USERNAME';</pre>
     const since14 = new Date(Date.now() - 14 * 864e5).toISOString();
     const since7 = new Date(Date.now() - 7 * 864e5).toISOString();
 
-    const [{ data: users }, { data: ev30 }] = await Promise.all([
-      sb.from('profiles').select('username,full_name,github_username,roles,role,created_at').order('created_at', { ascending: false }),
-      sb.from('events').select('event,created_at').gte('created_at', since30).order('created_at', { ascending: true }).limit(5000)
+    const [{ data: users }, { data: ev30 }, { data: jobCounts }] = await Promise.all([
+      sb.from('profiles').select('user_id,username,full_name,github_username,roles,role,created_at').order('created_at', { ascending: false }),
+      sb.from('events').select('event,created_at').gte('created_at', since30).order('created_at', { ascending: true }).limit(5000),
+      sb.rpc('admin_user_job_counts')
     ]);
+    const jobMap = {};
+    for (const r of (jobCounts || [])) jobMap[r.uid] = r.jobs;
 
     // Stat cards
     const totalUsers = (users || []).length;
@@ -277,9 +280,10 @@ where username = 'YOUR_USERNAME';</pre>
         '<tr><td><strong>' + esc(u.username) + '</strong></td><td>' + esc(u.full_name || '—') +
         '</td><td>' + esc(u.github_username || '—') +
         '</td><td>' + esc((u.roles || []).slice(0, 3).join(', ') || '—') +
+        '</td><td><strong>' + (jobMap[u.user_id] || 0) + '</strong>' +
         '</td><td><span class="tag' + (u.role === 'admin' ? ' admin' : '') + '">' + (u.role === 'admin' ? 'מנהל' : 'משתמש') + '</span>' +
         '</td><td>' + fmtDate(u.created_at) + '</td></tr>').join('') ||
-      '<tr><td colspan="6" style="color:var(--ink-faint)">אין משתמשים עדיין</td></tr>';
+      '<tr><td colspan="7" style="color:var(--ink-faint)">אין משתמשים עדיין</td></tr>';
 
     // Content editor
     const { data: content } = await sb.from('site_content').select('key,value');
