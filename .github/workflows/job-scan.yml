@@ -4,10 +4,8 @@ permissions:
 on:
   workflow_dispatch:
   schedule:
-    # 3x daily, Sunday–Thursday (Israeli work week), UTC times
-    - cron: '0 5 * * 0-4'    # 08:00 Israel
-    - cron: '0 10 * * 0-4'   # 13:00 Israel
-    - cron: '0 15 * * 0-4'   # 18:00 Israel
+    # Deep scan once daily, Sunday–Thursday (Israeli work week)
+    - cron: '0 6 * * 0-4'    # 09:00 Israel
 jobs:
   scan:
     runs-on: ubuntu-latest
