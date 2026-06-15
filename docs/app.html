@@ -135,7 +135,6 @@
     .job-card:active{transform:scale(.99)}
     .job-card.open{background:var(--surface-container-high)}
     .job-card.st-rejected{opacity:.7}
-    .job-card.has-followup{box-shadow:inset 0 0 0 2px #e8a33d}
     .job-card.dismissed{opacity:.5}
     .job-card.removing{opacity:0!important;transform:translateX(-24px) scale(.97);transition:opacity .28s ease,transform .28s ease;pointer-events:none}
 
@@ -157,7 +156,6 @@
     .fit-lbl{display:none}
     .chevron{font-size:22px;color:var(--inkFaint);transition:transform .25s var(--ease);flex-shrink:0;line-height:1}
     .job-card.open .chevron{transform:rotate(180deg)}
-    .follow-badge{font-size:.64rem;background:#fef0d8;color:#7a5900;border-radius:999px;padding:3px 9px;font-weight:700;white-space:nowrap}
     /* ── Multi-dim meta panel ── */
     .meta-dims{background:var(--surface-container-highest);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:7px}
     .meta-dims-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:2px}
@@ -173,19 +171,6 @@
     .meta-comp{font-size:.74rem;color:var(--ink);font-weight:600}
     .meta-gaps{display:flex;flex-wrap:wrap;gap:4px}
     .meta-gap-chip{background:var(--surface-container);color:var(--inkSoft);border-radius:8px;padding:2px 9px;font-size:.65rem;font-weight:600;border:1px solid var(--lineSoft)}
-    /* ── Today Actions panel ── */
-    #today-panel{background:linear-gradient(135deg,#fff8ed 0%,#fff3e0 100%);border:1.5px solid #f5c464;border-radius:18px;padding:14px 18px 12px;margin-bottom:14px;display:none}
-    #today-panel.has-actions{display:block}
-    .tp-title{font-size:.8rem;font-weight:800;color:#7a5900;letter-spacing:.03em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-    .tp-list{display:flex;flex-direction:column;gap:8px}
-    .tp-item{background:#fff;border:1px solid #f5d78a;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:.82rem}
-    .tp-item-text{flex:1;color:var(--ink);line-height:1.4}
-    .tp-item-text b{font-weight:700}
-    .tp-item-text .tp-age{color:#a07000;font-size:.74rem;margin-left:4px}
-    .tp-action-btn{background:#f5c464;color:#5a3a00;border:none;border-radius:8px;padding:5px 12px;font-size:.76rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit}
-    .tp-action-btn:hover{background:#f0b830}
-    .tp-dismiss-btn{background:none;border:none;color:#b0a080;cursor:pointer;font-size:14px;padding:2px 4px;line-height:1}
-    .tp-dismiss-btn:hover{color:#7a5900}
     .new-badge{background:var(--primary);color:#fff;border-radius:999px;padding:3px 9px;font-size:.64rem;font-weight:700;white-space:nowrap}
 
     .card-body-wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.2,.7,.3,1)}
@@ -552,7 +537,7 @@
       .search-clear{width:40px;height:40px;display:flex;align-items:center;justify-content:center;left:6px}
       /* tiny text floors */
       .fit-lbl{font-size:.55rem}
-      .new-badge,.follow-badge{font-size:.7rem}
+      .new-badge{font-size:.7rem}
       .next-pill{font-size:.7rem}
       .card-posted{font-size:.7rem}
     }
@@ -1100,7 +1085,6 @@
         </div>
         </div>
       </div>
-      <div id="today-panel"><div class="tp-title">📋 מה לעשות היום</div><div class="tp-list" id="tp-list"></div></div>
       <div id="container" style="display:flex;flex-direction:column;gap:14px"></div>
     </div>
     <aside id="detail"></aside>
@@ -1478,36 +1462,23 @@ function toggleCardMenu(btn,id){
 /* ── stats ── */
 function computeStats(){
   const by={saved:0,applied:0,interview:0,offer:0,rejected:0};
-  let starred=0,followup=0,dismissedCount=0,newCount=0;
+  let starred=0,dismissedCount=0,newCount=0;
   JOBS.forEach(j=>{
     const st=getJobState(j);
     if(st.dismissed){dismissedCount++;return;}
     const stage=getStage(j);
     if(by[stage]!==undefined)by[stage]++;
     if(st.starred)starred++;
-    if(needsFollowup(st))followup++;
     if(isNew(j))newCount++;
   });
   const inPlay=by.saved+by.applied+by.interview;
-  return{by,starred,followup,inPlay,interviews:by.interview,offers:by.offer,total:JOBS.length,dismissed:dismissedCount,newCount};
+  return{by,starred,inPlay,interviews:by.interview,offers:by.offer,total:JOBS.length,dismissed:dismissedCount,newCount};
 }
 function coachLine(stats){
   if(stats.offers>0)return`יש לך ${stats.offers} הצעות 🎉`;
   if(stats.interviews>0)return`${stats.interviews} ראיונות בתהליך 💪`;
   if(stats.inPlay>0)return`${stats.inPlay} מועמדויות בתהליך`;
   return"בוא נצבור מומנטום 🚀";
-}
-function needsFollowup(st){
-  if(getStage({company:st.company,title:st.title}||{})==="applied"||st.status==="applied"){
-    if(!st.statusDate)return false;
-    return Math.round((new Date()-new Date(st.statusDate))/86400000)>=7;
-  }
-  return false;
-}
-function needsFollowupDirect(st){
-  if(st.status!=="applied")return false;
-  if(!st.statusDate)return false;
-  return Math.round((new Date()-new Date(st.statusDate))/86400000)>=7;
 }
 
 /* ── filters ── */
@@ -2452,7 +2423,6 @@ function openAnalytics(){
     <div class="an-row">
       <div class="an-kpi"><div class="v">${avgWait} ימים</div><div class="cl">המתנה ממוצעת אחרי הגשה</div></div>
       <div class="an-kpi"><div class="v">${passed}/${totalRounds}</div><div class="cl">סבבי ראיון שעברת</div></div>
-      <div class="an-kpi"><div class="v">${stats.followup}</div><div class="cl">ממתינים ל-follow up</div></div>
     </div>`;
   document.getElementById("sheet").classList.add("show");
 }
@@ -2666,77 +2636,6 @@ function abuSave(){
 }
 
 /* ── RENDER ── */
-/* ── Today Actions Panel ── */
-const _tpDismissed=new Set();
-function renderTodayPanel(){
-  const NOW2=new Date();
-  const actions=[];
-  JOBS.forEach((j,i)=>{
-    const st=getJobState(j);
-    if(st.dismissed)return;
-    const key=j.company+"|"+j.title;
-    if(_tpDismissed.has(key))return;
-    // Applied 5+ days ago → follow-up nudge
-    if(st.status==="applied"&&st.statusDate){
-      const days=Math.round((NOW2-new Date(st.statusDate))/86400000);
-      if(days>=5){
-        actions.push({
-          icon:"💬",
-          text:`<b>${j.company}</b> — הוגשת לפני <span class="tp-age">${days} ימים</span>. שלח follow-up?`,
-          btn:"שלח follow-up",
-          key,
-          onclick:`openFollowupEmail(${i})`
-        });
-      }
-    }
-    // Interview round with pending outcome 2+ days ago → send thank-you
-    const rounds=getRounds(j);
-    rounds.forEach((r,ri)=>{
-      if(r.outcome==="pending"&&r.date){
-        const days=Math.round((NOW2-new Date(r.date))/86400000);
-        if(days>=2){
-          const rkey=key+"|r"+ri;
-          if(!_tpDismissed.has(rkey))
-            actions.push({
-              icon:"🙏",
-              text:`<b>${j.company}</b> — ראיון לפני <span class="tp-age">${days} ימים</span>. שלח תודה?`,
-              btn:"שלח תודה",
-              key:rkey,
-              onclick:`openThankYouEmail(${i})`
-            });
-        }
-      }
-    });
-  });
-  const panel=document.getElementById("today-panel");
-  const list=document.getElementById("tp-list");
-  if(!panel||!list)return;
-  if(actions.length===0){panel.classList.remove("has-actions");return;}
-  panel.classList.add("has-actions");
-  list.innerHTML=actions.map((a,ai)=>`
-    <div class="tp-item" id="tpi-${ai}">
-      <span style="font-size:18px">${a.icon}</span>
-      <div class="tp-item-text">${a.text}</div>
-      <button class="tp-action-btn" onclick="${a.onclick}">${a.btn}</button>
-      <button class="tp-dismiss-btn" onclick="_tpDismissed.add('${a.key}');renderTodayPanel()" title="הסתר">✕</button>
-    </div>`).join("");
-}
-function openFollowupEmail(i){
-  const j=JOBS[i];const st=getJobState(j);
-  const name=(st.contact?.name)||"שלום";
-  const body=encodeURIComponent(`${name},\n\nרציתי לבדוק מה קורה עם הגשתי לתפקיד ${j.title}.\n\nתודה,\n${USER_NAME}`);
-  const sub=encodeURIComponent(`Follow-up — ${j.title} @ ${j.company}`);
-  const email=st.contact?.email||"";
-  window.open(`mailto:${email}?subject=${sub}&body=${body}`,"_blank");
-}
-function openThankYouEmail(i){
-  const j=JOBS[i];const st=getJobState(j);
-  const name=(st.contact?.name)||"שלום";
-  const body=encodeURIComponent(`${name},\n\nתודה על זמנכם בראיון ל-${j.title}. שמחתי לשמוע על ${j.company}. \n\nתודה,\n${USER_NAME}`);
-  const sub=encodeURIComponent(`תודה על הראיון — ${j.title} @ ${j.company}`);
-  const email=st.contact?.email||"";
-  window.open(`mailto:${email}?subject=${sub}&body=${body}`,"_blank");
-}
 
 
 function metaPanel(j){
@@ -2772,7 +2671,7 @@ function metaPanel(j){
 }
 function render(){
   const stats=computeStats();
-  const gEl=document.getElementById("hero-greeting");  renderTodayPanel();
+  const gEl=document.getElementById("hero-greeting");
 
   if(gEl){const h=new Date().getHours();const g=h<5?"לילה טוב":h<12?"בוקר טוב":h<17?"צהריים טובים":h<21?"ערב טוב":"לילה טוב";gEl.textContent=`${g}, ${USER_NAME} 👋`;}
   document.getElementById("hero-meta").textContent=`10/06/2026 15:33 · ${stats.total} משרות פעילות`;
@@ -2807,7 +2706,6 @@ function render(){
   chips.push(`<div class="m-chip">🔥 מחפש פעיל</div>`);
   if(stats.interviews>0)chips.push(`<div class="m-chip">📅 <span class="val">${stats.interviews}</span> ראיונות בתהליך</div>`);
   if(stats.offers>0)chips.push(`<div class="m-chip">★ <span class="val">${stats.offers}</span> הצעות</div>`);
-  if(stats.followup>0)chips.push(`<div class="m-chip">💬 <span class="val">${stats.followup}</span> follow-up</div>`);
   if(stats.newCount>0)chips.push(`<div class="m-chip">✨ <span class="val">${stats.newCount}</span> חדשות</div>`);
   document.getElementById("m-chips").innerHTML=chips.join("");
 
@@ -2845,7 +2743,6 @@ function render(){
     const isDismissed=!!st.dismissed;
     const sc=stageColor(STAGES.find(s=>s.key===stage)?.hue||235);
     const fc=fitColor(j.fit_score);
-    const follow=needsFollowupDirect(st);
     const sm=STAGES.find(s=>s.key===stage)||STAGES[0];
     const c=j.contact||st.contact;
     const delay=Math.min(i,12)*0.03;
@@ -2893,7 +2790,7 @@ function render(){
           </div>
         </div>`;
 
-    return`<div class="job-card st-${stage}${follow?" has-followup":""}${isDismissed?" dismissed":""}${forceOpen?" open":""}"
+    return`<div class="job-card st-${stage}${isDismissed?" dismissed":""}${forceOpen?" open":""}"
       style="display:${show?"":"none"};--s-solid:${sc.solid};--s-bg:${sc.bg};--s-fg:${sc.fg};
              animation:cardIn .45s ${delay}s both"
       id="jc-${i}">
@@ -2910,7 +2807,6 @@ function render(){
             <span class="s-pill" style="--s-bg:${sc.bg};--s-fg:${sc.fg};--s-solid:${sc.solid}">
               <span class="s-dot"></span>${sm.he}${st.statusDate?" · "+fmtDate(st.statusDate):""}
             </span>
-            ${follow?`<span class="follow-badge">💬 Follow up?</span>`:""}
             ${novel?`<span class="new-badge">חדש ✨</span>`:""}
             ${j.posted?`<span class="card-posted">🕐 ${postedLabel(j.posted)}</span>`:""}
           </div>
@@ -3002,7 +2898,6 @@ function render(){
   const starredC=JOBS.filter(j=>getJobState(j).starred).length;
   let ct=`${v} משרות`;
   if(starredC)ct+=` · ⭐ ${starredC}`;
-  if(stats.followup)ct+=` · 💬 ${stats.followup} follow-up`;
   if(stats.newCount)ct+=` · ✨ ${stats.newCount} חדשות`;
   document.getElementById("count-lbl").textContent=ct;
 }
@@ -3115,14 +3010,14 @@ function mbnSettings(){
 function buildRailRow(x,i,sel){
   const j=x.j,st=x.st,stage=x.stage;
   const fc=fitColor(j.fit_score),sc=stageColor(STAGES.find(s=>s.key===stage)?.hue||235);
-  const novel=isNew(j),follow=needsFollowupDirect(st);
+  const novel=isNew(j);
   const sm=STAGES.find(s=>s.key===stage)||STAGES[0];
   return`<div class="rail-row${sel?" sel":""}" onclick="selectJob(${i})">
     <span class="bulk-cb${window._bulkSel&&window._bulkSel.has(jobKey(j))?' on':''}" data-bk="${jobKey(j).replace(/"/g,'&quot;')}" onclick="event.stopPropagation();toggleBulkPick(this)"></span>
     <div class="rr-fit" style="background:${fc.bg};color:${fc.fg}">${j.fit_score}</div>
     <div class="rr-text"><div class="rr-co">${j.company}</div><div class="rr-ti">${j.title}</div></div>
     ${st.starred?'<span class="rr-star">★</span>':''}
-    ${novel?'<span class="new-badge">חדש</span>':(follow?'<span class="follow-badge">💬</span>':'')}
+    ${novel?'<span class="new-badge">חדש</span>':''}
     <span class="rr-dot" style="background:${sc.solid}" title="${sm.he}"></span>
   </div>`;
 }
