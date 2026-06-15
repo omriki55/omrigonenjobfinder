@@ -223,11 +223,16 @@ _DEFAULT_KEYWORDS = [
 ]
 
 # Location keywords — a job is kept only if its location matches one of these.
-# Covers Israel-based roles plus genuinely remote/global ones.
+# Israel-only: remote / global / telecommute are intentionally excluded so the
+# deep daily scan focuses purely on on-the-ground Israeli roles.
 _DEFAULT_LOCATIONS = [
-    "israel", "tel aviv", "tel-aviv", "herzliya", "ra'anana", "raanana",
-    "petah tikva", "netanya", "haifa", "jerusalem", "remote", "telecommute", "global",
-    "anywhere", "worldwide",
+    "israel", "ישראל",
+    "tel aviv", "tel-aviv", "tel aviv-yafo", "tlv",
+    "herzliya", "hertzliya", "ra'anana", "raanana", "petah tikva", "petach tikva",
+    "netanya", "haifa", "jerusalem", "rehovot", "ness ziona", "nes ziona",
+    "yokneam", "yoqneam", "kfar saba", "hod hasharon", "ramat gan", "givatayim",
+    "be'er sheva", "beer sheva", "modiin", "modi'in", "caesarea", "or yehuda",
+    "airport city", "rosh haayin", "rosh ha'ayin", "lod", "bnei brak", "holon",
 ]
 
 

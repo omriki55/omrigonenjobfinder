@@ -36,18 +36,26 @@ LIVENESS_SAMPLE = 10           # max jobs to liveness-check per run per user
 DEFAULT_APPLY_THRESHOLD = 6
 
 DEFAULT_ATS = {
+    # All slugs below were verified live against each ATS public API
+    # (board returns active postings). Dead/migrated slugs were removed.
     "greenhouse": [
-        # Original
-        "monday", "wiz", "fireblocks", "melio", "gong", "riskified",
-        "similarweb", "lemonade", "jfrog", "snyk", "taboola", "verbit",
-        # Added: active Israeli-presence companies
+        # Core Israeli-presence companies (verified live)
+        "fireblocks", "melio", "riskified", "similarweb", "jfrog", "taboola",
         "nice", "forter", "torq", "payoneer", "bigid",
+        # Expanded coverage (verified live)
+        "transmitsecurity", "lightricks", "descope", "bringg", "pagaya",
+        "optimove", "augury", "zoominfo", "orcasecurity", "appsflyer",
+        "saltsecurity", "catonetworks", "axonius", "cybereason", "sisense",
+        "yotpo",
     ],
-    "lever": ["yotpo", "bigpanda", "deel"],
-    "ashby": ["island"],
+    "lever": ["walkme"],
+    "ashby": [],
     # Workable: tokens are search keywords (not company slugs).
-    # Returns cross-company results; includes remote/TELECOMMUTE roles globally.
-    "workable": ["revops", "revenue operations"],
+    # Returns cross-company results filtered to Israel by the location filter.
+    "workable": [
+        "revops", "revenue operations", "go-to-market",
+        "sales operations", "marketing operations", "growth",
+    ],
 }
 
 SENIORITY_PREFIXES = ("head of ", "senior ", "sr. ", "sr ", "lead ", "principal ",
