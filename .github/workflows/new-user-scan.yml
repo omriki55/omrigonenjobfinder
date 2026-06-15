@@ -1,0 +1,33 @@
+name: New User Onboarding Scan
+
+# Lightweight catch-up scan: every 15 minutes, scores ONLY brand-new users
+# (those never scanned yet) so sign-ups get their first jobs within minutes,
+# instead of waiting for the once-daily deep scan. Exits cheaply (before any
+# scraping) when there are no new users, so it is very low cost.
+
+permissions:
+  contents: read
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # every 15 minutes
+  workflow_dispatch:
+
+concurrency:
+  group: new-user-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install anthropic
+      - name: Scan new users only
+        run: python job_search/saas_pipeline.py
+        env:
+          ONLY_NEW: '1'
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
