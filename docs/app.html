@@ -1282,6 +1282,13 @@
         <div class="d-hint">Cloudflare Worker ששומר את המפתח כסוד בצד שרת. ראה הוראות הקמה ב-worker/README.md. כך אפשר גם לשתף את הטראקר בלי לחשוף מפתח.</div>
       </div>
       <div class="d-section">
+        <div class="d-lbl">📧 מייל להתראות — משרות עם התאמה גבוהה</div>
+        <input class="d-inp" id="alert-email-inp" type="email" placeholder="you@example.com" autocomplete="email" inputmode="email"/>
+        <button class="d-btn primary" onclick="saveAlertEmail()" style="margin-top:6px">שמור מייל</button>
+        <div class="d-status" id="alert-email-status"></div>
+        <div class="d-hint">לכאן יישלחו התראות אוטומטיות על משרות עם ציון 8+. נשמר בפרופיל שלך ב-Supabase (לא בדפדפן בלבד).</div>
+      </div>
+      <div class="d-section">
         <div class="d-lbl">🔑 Anthropic API Key — חלופה (מפתח בדפדפן)</div>
         <input class="d-inp" id="api-key-inp" type="password" placeholder="sk-ant-..." autocomplete="off"/>
         <button class="d-btn primary" onclick="saveApiKey()" style="margin-top:6px">שמור מפתח</button>
@@ -1626,6 +1633,19 @@ function saveApiKey(){
   const v=document.getElementById('api-key-inp').value.trim();
   if(v){localStorage.setItem('anthropic_key',v);__syncKey(v);document.getElementById('api-key-status').textContent='מפתח שמור ✓ — הכפתורים יפתחו צ\'אט חי';showToast('מפתח API נשמר');}
   else{localStorage.removeItem('anthropic_key');__syncKey('');document.getElementById('api-key-status').textContent='';showToast('מפתח הוסר');}
+}
+function saveAlertEmail(){
+  const el=document.getElementById('alert-email-inp');
+  const st=document.getElementById('alert-email-status');
+  const v=(el.value||'').trim();
+  if(v && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){st.textContent='כתובת מייל לא תקינה';return;}
+  if(!__sb||!__uid){st.textContent='התחבר/י כדי לשמור';return;}
+  __sb.from('profiles').update({contact_email:v||null}).eq('user_id',__uid).then(({error})=>{
+    if(error){st.textContent='שגיאה בשמירה';return;}
+    window.__contactEmail=v;
+    st.textContent=v?'נשמר ✓ — התראות יישלחו לכאן':'';
+    showToast(v?'מייל התראות נשמר':'מייל הוסר');
+  });
 }
 function saveProxy(){
   const v=document.getElementById('proxy-inp').value.trim().replace(/\/$/,'');
@@ -3227,6 +3247,9 @@ function openSettings(tab){
   const elk=getElKey();
   document.getElementById('el-key-inp').value=elk;
   document.getElementById('el-key-status').textContent=elk?'מפתח ElevenLabs שמור ✓ — ראיון קולי אנושי פעיל':'';
+  const ae=window.__contactEmail||'';
+  const aeInp=document.getElementById('alert-email-inp');
+  if(aeInp){aeInp.value=ae;document.getElementById('alert-email-status').textContent=ae?'נשמר ✓ — התראות יישלחו לכאן':'';}
   if(tab)switchDrawerTabByKey(tab);
 }
 function closeSettings(){
@@ -3414,13 +3437,14 @@ function __showGate(msg) {
   window.USER_NAME = (data.user.user_metadata && (data.user.user_metadata.full_name || data.user.user_metadata.username)) || '';
 
   const [{ data: prof }, { data: rows }, { data: us }, { data: sec }] = await Promise.all([
-    __sb.from('profiles').select('full_name,username,roles,profile_summary,location').eq('user_id', __uid).maybeSingle(),
+    __sb.from('profiles').select('full_name,username,roles,profile_summary,location,contact_email').eq('user_id', __uid).maybeSingle(),
     __sb.from('jobs').select('company,title,location,url,description,fit_score,score_reason,ai_opener,status,posted,scan_date,meta').order('fit_score', { ascending: false }).limit(400),
     __sb.from('user_state').select('state').eq('user_id', __uid).maybeSingle(),
     __sb.from('user_secrets').select('anthropic_key').eq('user_id', __uid).maybeSingle()
   ]);
 
   if (prof) {
+    window.__contactEmail = prof.contact_email || '';
     window.USER_NAME = prof.full_name || prof.username || window.USER_NAME;
     Object.assign(CV_BASE, {
       name: (prof.full_name || prof.username || '').toUpperCase(),
