@@ -56,6 +56,20 @@ def fetch_todays_high_scores():
     return rows
 
 
+def fetch_contact_emails(user_ids):
+    """Return {user_id: contact_email} from the profiles table — the address
+    the user set themselves in the app settings (preferred over auth email)."""
+    if not user_ids:
+        return {}
+    ids = ",".join(user_ids)
+    try:
+        rows = _sb("GET", f"profiles?user_id=in.({ids})&select=user_id,contact_email") or []
+        return {r["user_id"]: (r.get("contact_email") or "").strip() for r in rows}
+    except Exception as e:
+        print(f"  ⚠️  Could not fetch contact emails: {e}")
+        return {}
+
+
 def fetch_user_emails(user_ids):
     """Return {user_id: email} from Supabase auth admin API."""
     if not user_ids:
@@ -186,16 +200,24 @@ def main():
 
     print(f"  {len(jobs)} jobs across {len(by_user)} users")
 
-    # Fetch emails via Supabase auth admin API (no profiles table required)
+    # Preferred: the contact_email the user set in settings. Fallback: auth email.
+    contact_emails = fetch_contact_emails(list(by_user.keys()))
     user_emails = fetch_user_emails(list(by_user.keys()))
 
     sent = 0
     for uid, user_jobs in by_user.items():
-        # Real auth email if present. Sign-ups use a synthetic address
-        # (username@users.jobfinder.local) that can't receive mail, so route
-        # those to ALERT_EMAIL (the operator's real inbox) instead.
+        # 1) the email the user set in settings (profiles.contact_email);
+        # 2) else the auth email, unless it's the synthetic non-deliverable
+        #    username@users.jobfinder.local sign-up address;
+        # 3) else the operator inbox (ALERT_EMAIL).
+        ce = contact_emails.get(uid) or ""
         real = user_emails.get(uid) or ""
-        email = real if (real and not real.endswith("@users.jobfinder.local")) else ALERT_EMAIL
+        if ce:
+            email = ce
+        elif real and not real.endswith("@users.jobfinder.local"):
+            email = real
+        else:
+            email = ALERT_EMAIL
         username = ""
 
         if not email:
