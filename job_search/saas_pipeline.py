@@ -329,10 +329,6 @@ def process_user(profile: dict, key: str, all_jobs: list[dict],
     except Exception as e:
         print(f"    liveness check error: {e}")
 
-    if not candidates:
-        _sb("PATCH", f"profiles?user_id=eq.{uid}", {"last_scanned": _now_iso()})
-        return
-
     client = Anthropic(api_key=key)
     rows = []
     today = date.today().isoformat()
@@ -374,6 +370,39 @@ def process_user(profile: dict, key: str, all_jobs: list[dict],
         _sb("POST", "jobs?on_conflict=user_id,url", rows,
             prefer="resolution=merge-duplicates,return=minimal")
         print(f"    saved {len(rows)} jobs")
+
+    # Re-score jobs still at fit_score 0 (e.g. manually/email-added) so they get
+    # a real AI score instead of a misleading 0. min 1 so they aren't re-picked.
+    try:
+        unscored = _sb("GET",
+            f"jobs?user_id=eq.{uid}&fit_score=eq.0&status=neq.נסגרה"
+            f"&select=id,company,title,location,url,description&limit=12") or []
+        rescored = 0
+        for jb in unscored:
+            scored = score_job(client, profile, jb, threshold)
+            if not scored:
+                continue
+            fs = max(1, int(scored.get("fit_score", 0)))
+            patch = {
+                "fit_score": fs,
+                "score_reason": scored.get("score_reason", ""),
+                "ai_opener": scored.get("ai_opener", ""),
+            }
+            if has_meta:
+                patch["meta"] = json.dumps({
+                    "dimensions": scored.get("dimensions"),
+                    "comp_estimate": scored.get("comp_estimate"),
+                    "gaps": scored.get("gaps", []),
+                    "verdict": scored.get("verdict", ""),
+                    "apply": scored.get("apply", fs >= threshold),
+                })
+            _sb("PATCH", f"jobs?id=eq.{jb['id']}", patch)
+            rescored += 1
+            time.sleep(0.4)
+        if rescored:
+            print(f"    re-scored {rescored} previously-unscored jobs")
+    except Exception as e:
+        print(f"    re-score error: {e}")
 
     _sb("PATCH", f"profiles?user_id=eq.{uid}", {"last_scanned": _now_iso()})
 
