@@ -83,6 +83,9 @@ SENIORITY_PREFIXES = ("head of ", "senior ", "sr. ", "sr ", "lead ", "principal 
 
 def _sb(method: str, path: str, body=None, prefer: str | None = None):
     url = f"{SUPABASE_URL}/rest/v1/{path}"
+    # Percent-encode non-ASCII (e.g. Hebrew status values like 'נסגרה' used in
+    # filters) so urllib can build the request without an 'ascii' codec crash.
+    url = urllib.parse.quote(url, safe="%/:?#[]@!$&'()*+,;=.~_-")
     headers = {
         "apikey": SERVICE_KEY,
         "Authorization": f"Bearer {SERVICE_KEY}",
