@@ -184,8 +184,11 @@ def main():
 
     sent = 0
     for uid, user_jobs in by_user.items():
-        # Use auth email if found, else fall back to ALERT_EMAIL env var
-        email = user_emails.get(uid) or ALERT_EMAIL
+        # Real auth email if present. Sign-ups use a synthetic address
+        # (username@users.jobfinder.local) that can't receive mail, so route
+        # those to ALERT_EMAIL (the operator's real inbox) instead.
+        real = user_emails.get(uid) or ""
+        email = real if (real and not real.endswith("@users.jobfinder.local")) else ALERT_EMAIL
         username = ""
 
         if not email:
