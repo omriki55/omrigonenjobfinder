@@ -252,6 +252,14 @@ def score_job(client: Anthropic, profile: dict, job: dict, threshold: int) -> di
 
 def check_liveness(url: str) -> bool:
     """Return False if the URL returns 404/410 (job taken down)."""
+    if not url:
+        return True
+    # Percent-encode any non-ASCII characters (e.g. Hebrew in the path/query)
+    # so urllib doesn't raise "'ascii' codec can't encode" on the request URL.
+    try:
+        url = urllib.parse.quote(url, safe=":/?#[]@!$&'()*+,;=%~")
+    except Exception:
+        return True
     try:
         req = urllib.request.Request(url, method="HEAD",
                                      headers={"User-Agent": "JobSearchAI-liveness/1.0"})
