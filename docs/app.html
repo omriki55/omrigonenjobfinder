@@ -1059,7 +1059,7 @@
           <div class="search-wrap">
             <span class="search-ico material-symbols-rounded">search</span>
             <input class="search-inp" id="search-inp" type="text" placeholder="חיפוש חברה או תפקיד…" oninput="onSearch(this)"/>
-            <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
+            <button class="search-clear" id="search-clear" onclick="clearSearch()" aria-label="נקה חיפוש">✕</button>
           </div>
           <button class="add-job-btn" onclick="openAddByUrl()" title="הוסף משרה לפי לינק"><span class="material-symbols-rounded" style="font-size:18px">add</span>הוסף משרה</button>
         </div>
@@ -2756,6 +2756,26 @@ function render(){
   if(fSort==="score")list.sort((a,b)=>(b.st.starred-a.st.starred)||b.j.fit_score-a.j.fit_score);
   else if(fSort==="posted")list.sort((a,b)=>(b.st.starred-a.st.starred)||new Date(b.j.posted||0)-new Date(a.j.posted||0));
   else list.sort((a,b)=>(b.st.starred-a.st.starred)||(a.j.company||"").localeCompare(b.j.company||"","he"));
+
+  // Collapse duplicate postings — the same role scraped under slightly
+  // different company names (e.g. "Sett" vs "Sett AI"). Display only: the
+  // underlying rows and saved statuses are untouched. Keep the most
+  // informative copy — one with a real stage/star wins, then higher fit.
+  (function dedupeList(){
+    const norm=s=>(s||"").toLowerCase()
+      .replace(/\b(ai|inc|ltd|labs|technologies|technology|software|solutions|the)\b/g,"")
+      .replace(/[^a-z0-9֐-׿]+/g,"").trim();
+    const rank=x=>(x.st.starred?4:0)+((x.stage&&x.stage!=="saved")?2:0)
+      +(Number(x.j.fit_score)||0)/100+((x.st.note&&x.st.note.length)?0.5:0);
+    const best=new Map();
+    for(const x of list){
+      const k=norm(x.j.company)+"|"+norm(x.j.title);
+      const cur=best.get(k);
+      if(!cur||rank(x)>rank(cur))best.set(k,x);
+    }
+    list=list.filter(x=>best.get(norm(x.j.company)+"|"+norm(x.j.title))===x);
+  })();
+
   window._sorted=list.map(x=>x.j);
 
   function jobVisible(x){
@@ -2829,7 +2849,7 @@ function render(){
       id="jc-${i}">
       <div class="card-head" onclick="${forceOpen?'':'toggleCard(this.parentElement)'}">
         <span class="bulk-cb${window._bulkSel&&window._bulkSel.has(jobKey(j))?' on':''}" data-bk="${jobKey(j).replace(/"/g,'&quot;')}" onclick="event.stopPropagation();toggleBulkPick(this)"></span>
-        <button class="star-btn${st.starred?" on":""}" onclick='event.stopPropagation();toggleStar(window._sorted[${i}])'>★</button>
+        <button class="star-btn${st.starred?" on":""}" onclick='event.stopPropagation();toggleStar(window._sorted[${i}])' aria-label="${st.starred?'הסר מהנבחרות':'הוסף לנבחרות'}" aria-pressed="${st.starred?'true':'false'}">★</button>
         <div class="fit-mark" style="background:${fc.bg}">
           <div class="fit-num" style="color:${fc.fg}">${j.fit_score||'—'}</div>
         </div>
