@@ -2880,7 +2880,13 @@ function render(){
   const desktop=window.matchMedia('(min-width:1024px)').matches;
   const vis=[];
   list.forEach((x,i)=>{ if(jobVisible(x)){v++;vis.push({x,i});} });
-  if(desktop){
+  if(JOBS.length===0){
+    // Brand-new account: guide onboarding instead of an empty list.
+    const ob=onboardingHTML();
+    window._selIndex=-1;
+    document.getElementById("container").innerHTML=ob;
+    document.getElementById("detail").innerHTML=desktop?ob:'';
+  }else if(desktop){
     if(!vis.some(o=>o.i===window._selIndex))window._selIndex=vis.length?vis[0].i:-1;
     document.getElementById("container").innerHTML=vis.map(o=>buildRailRow(o.x,o.i,o.i===window._selIndex)).join("");
     const selO=vis.find(o=>o.i===window._selIndex);
@@ -2889,7 +2895,7 @@ function render(){
     document.getElementById("detail").innerHTML='';
     if(v===0){
       const cleared=(fStage!=='all'||fFit!=='all'||fAge!=='all'||fQ)?'<button class="empty-cta" onclick="resetFilters()">נקה סינון</button>':'';
-      document.getElementById("container").innerHTML=`<div class="list-empty"><span class="le-icon material-symbols-rounded">travel_explore</span><div class="le-title">${fQ?'לא נמצאו משרות תואמות':'אין משרות בתצוגה הזו'}</div><div class="le-sub">${fQ?'נסה מונח חיפוש אחר':'הסריקה רצה אוטומטית 3× ביום — משרות חדשות יופיעו כאן'}</div>${cleared}</div>`;
+      document.getElementById("container").innerHTML=`<div class="list-empty"><span class="le-icon material-symbols-rounded">travel_explore</span><div class="le-title">${fQ?'לא נמצאו משרות תואמות':'אין משרות בתצוגה הזו'}</div><div class="le-sub">${fQ?'נסה מונח חיפוש אחר':'הסריקה רצה אוטומטית כל יום — משרות חדשות יופיעו כאן'}</div>${cleared}</div>`;
     }else{
       document.getElementById("container").innerHTML=list.map((x,i)=>window._buildCard(x,i,false,jobVisible(x))).join("");
     }
@@ -2902,6 +2908,13 @@ function render(){
   document.getElementById("count-lbl").textContent=ct;
 }
 
+function onboardingHTML(){
+  const hasKey=!!(getApiKey()||getProxy());
+  if(hasKey){
+    return '<div class="list-empty"><span class="le-icon material-symbols-rounded">hourglass_top</span><div class="le-title">המערכת סורקת ומדרגת משרות עבורך</div><div class="le-sub">זה לוקח כמה דקות מההרשמה — רענן בעוד מעט ✨</div></div>';
+  }
+  return '<div class="list-empty"><span class="le-icon material-symbols-rounded">vpn_key</span><div class="le-title">כמעט שם — חסר מפתח Anthropic</div><div class="le-sub">כדי שהמערכת תדרג עבורך משרות, צריך להוסיף מפתח Anthropic פעם אחת. תוך כ-15 דקות יופיעו משרות מדורגות אוטומטית.</div><button class="empty-cta" onclick="openSettings(\'connect\')">פתח הגדרות והוסף מפתח</button></div>';
+}
 function selectJob(i){if(window._bulkMode)return;window._selIndex=i;render();}
 
 /* ── Bulk select: mark many jobs as irrelevant / closed at once ── */
