@@ -2798,7 +2798,7 @@ function render(){
         <span class="bulk-cb${window._bulkSel&&window._bulkSel.has(jobKey(j))?' on':''}" data-bk="${jobKey(j).replace(/"/g,'&quot;')}" onclick="event.stopPropagation();toggleBulkPick(this)"></span>
         <button class="star-btn${st.starred?" on":""}" onclick='event.stopPropagation();toggleStar(window._sorted[${i}])'>★</button>
         <div class="fit-mark" style="background:${fc.bg}">
-          <div class="fit-num" style="color:${fc.fg}">${j.fit_score}</div>
+          <div class="fit-num" style="color:${fc.fg}">${j.fit_score||'—'}</div>
         </div>
         <div class="card-text">
           <div class="card-company">${j.company}</div>
@@ -3027,7 +3027,7 @@ function buildRailRow(x,i,sel){
   const sm=STAGES.find(s=>s.key===stage)||STAGES[0];
   return`<div class="rail-row${sel?" sel":""}" onclick="selectJob(${i})">
     <span class="bulk-cb${window._bulkSel&&window._bulkSel.has(jobKey(j))?' on':''}" data-bk="${jobKey(j).replace(/"/g,'&quot;')}" onclick="event.stopPropagation();toggleBulkPick(this)"></span>
-    <div class="rr-fit" style="background:${fc.bg};color:${fc.fg}">${j.fit_score}</div>
+    <div class="rr-fit" style="background:${fc.bg};color:${fc.fg}">${j.fit_score||'—'}</div>
     <div class="rr-text"><div class="rr-co">${j.company}</div><div class="rr-ti">${j.title}</div></div>
     ${st.starred?'<span class="rr-star">★</span>':''}
     ${novel?'<span class="new-badge">חדש</span>':''}
