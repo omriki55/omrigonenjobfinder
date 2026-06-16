@@ -23,7 +23,7 @@ from collections import defaultdict
 SUPABASE_URL = os.environ["SUPABASE_URL"].rstrip("/")
 SERVICE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 RESEND_KEY = os.environ.get("RESEND_API_KEY", "")
-ALERT_EMAIL = os.environ.get("ALERT_EMAIL", "omrigonen5050@gmail.com")
+ALERT_EMAIL = os.environ.get("ALERT_EMAIL") or "omrigonen5050@gmail.com"
 ALERT_FROM = os.environ.get("ALERT_FROM", "onboarding@resend.dev")  # free-tier default
 THRESHOLD = int(os.environ.get("ALERT_THRESHOLD", "8"))
 
