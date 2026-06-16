@@ -150,7 +150,14 @@ def send_email(to_email, subject, html):
     req = urllib.request.Request(
         "https://api.resend.com/emails",
         data=body,
-        headers={"Authorization": f"Bearer {RESEND_KEY}", "Content-Type": "application/json"},
+        headers={
+            "Authorization": f"Bearer {RESEND_KEY}",
+            "Content-Type": "application/json",
+            # api.resend.com sits behind Cloudflare, which 403s (error 1010) the
+            # default "Python-urllib" User-Agent. Send a normal UA so it passes.
+            "User-Agent": "Mozilla/5.0 (compatible; JobSearchAI/1.0)",
+            "Accept": "application/json",
+        },
         method="POST",
     )
     try:
