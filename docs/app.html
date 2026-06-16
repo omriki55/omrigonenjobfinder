@@ -106,28 +106,45 @@
     .m-chip{background:rgba(255,255,255,.55);border-radius:999px;padding:6px 13px;font-size:.74rem;font-weight:600;display:inline-flex;align-items:center;gap:5px;color:var(--on-primary-container)}
     .m-chip .val{font-weight:800;color:var(--primary)}
 
-    /* ===== TOOLBAR ===== */
-    .toolbar{background:var(--surface-container);border-radius:28px;padding:16px;display:flex;flex-direction:column;gap:12px}
-    .search-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-    .search-wrap{flex:1;position:relative;min-width:160px}
+    /* ===== TOOLBAR (Apple style) ===== */
+    .toolbar{background:var(--surface-container);border-radius:24px;padding:14px;display:flex;flex-direction:column;gap:12px}
+    .search-row{display:flex;align-items:center;gap:10px}
+    .search-wrap{flex:1;position:relative;min-width:0}
     .search-ico{position:absolute;top:50%;right:14px;transform:translateY(-50%);color:var(--inkFaint);pointer-events:none}
-    .search-inp{width:100%;border:none;border-radius:999px;padding:12px 42px 12px 14px;font-size:.85rem;font-family:var(--font-ui);color:var(--ink);background:var(--surface-container-highest);outline:none;direction:rtl;transition:box-shadow .15s}
+    .search-inp{width:100%;border:none;border-radius:12px;padding:11px 42px 11px 14px;font-size:.9rem;font-family:var(--font-ui);color:var(--ink);background:var(--surface-container-highest);outline:none;direction:rtl;transition:box-shadow .15s}
     .search-inp:focus{box-shadow:0 0 0 2px var(--primary)}
     .search-clear{position:absolute;top:50%;left:12px;transform:translateY(-50%);background:none;border:none;color:var(--inkFaint);cursor:pointer;font-size:.95rem;padding:0;line-height:1;display:none}
     .search-clear.show{display:block}
-    .sort-seg{display:flex;background:transparent;border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px}
-    .sort-btn{flex:1;padding:7px 13px;border:none;background:none;border-radius:999px;font-size:.76rem;font-weight:600;font-family:var(--font-ui);color:var(--inkSoft);cursor:pointer;white-space:nowrap;transition:all .13s}
-    .sort-btn.on{background:var(--secondary-container);color:var(--on-secondary-container)}
-    .filter-row{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
-    .filter-lbl{font-size:.64rem;font-weight:700;color:var(--inkFaint);flex-shrink:0}
-    .sf-chip,.fit-chip{background:transparent;border:1px solid var(--line);color:var(--inkSoft);border-radius:999px;padding:8px 14px;font-size:.76rem;font-weight:600;font-family:var(--font-ui);cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;gap:5px;outline:none}
-    .sf-chip .n{font-size:.7rem;background:rgba(0,0,0,.07);border-radius:99px;padding:1px 7px}
-    .sf-chip.on-all,.sf-chip.on-stage,.fit-chip.on{background:var(--secondary-container);color:var(--on-secondary-container);border-color:transparent}
-    .exp-row{display:flex;align-items:center;justify-content:space-between}
-    .exp-count{font-size:.78rem;font-weight:700;color:var(--inkSoft)}
-    .exp-btns{display:flex;gap:6px}
-    .exp-btn{background:none;border:1px solid var(--line);color:var(--inkSoft);border-radius:999px;padding:6px 12px;font-size:.72rem;font-weight:600;font-family:var(--font-ui);cursor:pointer;transition:all .13s}
+    /* primary add-job CTA */
+    .add-job-btn{display:inline-flex;align-items:center;gap:5px;flex-shrink:0;height:42px;padding:0 16px;border:none;border-radius:12px;background:var(--primary);color:var(--on-primary);font-size:.85rem;font-weight:700;font-family:var(--font-ui);cursor:pointer;white-space:nowrap;transition:filter .13s,transform .1s}
+    .add-job-btn:hover{filter:brightness(.94)}
+    .add-job-btn:active{transform:scale(.97)}
+    /* iOS segmented control */
+    .sort-seg{display:flex;background:var(--surface-container-highest);border:none;border-radius:12px;padding:3px;gap:3px}
+    .sort-btn{flex:1;padding:8px 13px;border:none;background:none;border-radius:9px;font-size:.8rem;font-weight:600;font-family:var(--font-ui);color:var(--inkSoft);cursor:pointer;white-space:nowrap;transition:all .15s}
+    .sort-btn.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+    .filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .filter-lbl{font-size:.66rem;font-weight:700;color:var(--inkFaint);flex-shrink:0}
+    /* soft Apple pills */
+    .sf-chip,.fit-chip{background:var(--surface-container-highest);border:none;color:var(--inkSoft);border-radius:999px;padding:8px 14px;font-size:.78rem;font-weight:600;font-family:var(--font-ui);cursor:pointer;transition:all .14s;display:inline-flex;align-items:center;gap:6px;outline:none}
+    .sf-chip .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .sf-chip .n{font-size:.7rem;color:var(--inkFaint);font-weight:700}
+    .sf-chip.on-all,.sf-chip.on-stage{background:var(--ink);color:var(--surface)}
+    .sf-chip.on-all .n,.sf-chip.on-stage .n{color:rgba(255,255,255,.7)}
+    .fit-chip.on{background:var(--primary);color:var(--on-primary)}
+    .fit-chip.on .n{color:rgba(255,255,255,.75)}
+    /* action bar — always visible */
+    .action-bar{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .action-bar-start,.action-bar-end{display:flex;align-items:center;gap:8px}
+    .exp-count{font-size:.8rem;font-weight:700;color:var(--inkSoft)}
+    .exp-btn{display:inline-flex;align-items:center;gap:5px;background:var(--surface-container-highest);border:none;color:var(--inkSoft);border-radius:999px;padding:7px 13px;font-size:.76rem;font-weight:600;font-family:var(--font-ui);cursor:pointer;transition:all .14s}
     .exp-btn:hover{background:var(--surface-container-high);color:var(--ink)}
+    .exp-btn.icon-only{width:36px;height:36px;padding:0;justify-content:center;border-radius:50%}
+    /* filters toggle + active badge */
+    .filters-toggle-chip{display:inline-flex;align-items:center;gap:5px;background:var(--surface-container-highest);border:none;color:var(--inkSoft);border-radius:999px;padding:7px 13px;font-size:.76rem;font-weight:600;font-family:var(--font-ui);cursor:pointer;transition:all .14s;outline:none}
+    .filters-toggle-chip.open{background:var(--primary-container);color:var(--on-primary-container)}
+    .filters-toggle-chip .fbadge{display:none}
+    .filters-toggle-chip .fbadge.show{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 5px;border-radius:999px;background:var(--primary);color:var(--on-primary);font-size:.62rem;font-weight:800}
 
     /* ===== JOB CARD ===== */
     @keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
@@ -305,8 +322,6 @@
     /* ===== RESEARCH REPORT (dossier) ===== */
     .rp-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:48px 24px;text-align:center;color:var(--inkSoft);font-size:.9rem;font-weight:600}
     .rp-loading-sub{font-size:.76rem;color:var(--inkFaint);font-weight:400}
-    .add-url-btn{background:var(--primary-container)!important;color:var(--on-primary-container)!important;font-weight:700}
-    .add-url-btn:hover{background:var(--accentSoft)!important}
     .rp-spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--lineSoft);border-top-color:var(--primary);animation:fabSpin .8s linear infinite}
     @keyframes fabSpin{to{transform:rotate(360deg)}}
     .rp-err{padding:32px 22px;text-align:center;color:var(--error);font-size:.86rem;line-height:1.6}
@@ -469,17 +484,12 @@
     /* Hide funnel + momentum chips on mobile — toolbar stage-chips are the single filter */
     @media(max-width:1023px){.funnel,.m-chips{display:none}}
 
-    /* Secondary filter collapse on mobile */
-    .secondary-filters{display:flex;flex-direction:column;gap:12px}
-    @media(max-width:1023px){
-      .secondary-filters{display:none}
-      .secondary-filters.open{display:flex}
-      .filters-toggle-chip{background:transparent;border:1px solid var(--line);color:var(--inkSoft);border-radius:999px;padding:8px 14px;font-size:.76rem;font-weight:600;font-family:var(--font-ui);cursor:pointer;display:inline-flex;align-items:center;gap:5px;outline:none;flex-shrink:0;transition:all .12s}
-      .filters-toggle-chip.open{background:var(--secondary-container);color:var(--on-secondary-container);border-color:transparent}
-    }
-    @media(min-width:1024px){
-      .filters-toggle-chip{display:none}
-    }
+    /* Secondary filters — popover, hidden until toggled (all viewports) */
+    .secondary-filters{display:none;flex-direction:column;gap:12px;background:var(--surface-container-highest);border-radius:16px;padding:14px}
+    .secondary-filters.open{display:flex;animation:sfIn .18s ease}
+    @keyframes sfIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+    .sf-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .sf-group .filter-lbl{min-width:40px}
 
     /* Bottom nav pill active indicator */
     .mbn-item{position:relative}
@@ -946,16 +956,22 @@
     .notes-ta{background:var(--surface);border:1px solid var(--lineSoft);border-radius:14px}
     .notes-ta:focus{border-color:var(--accent)}
     .save-btn{background:var(--grad);border:none;border-radius:999px;color:#fff;box-shadow:0 8px 18px -8px rgba(91,91,246,.5)}
-    .fit-chip,.sf-chip,.sort-btn{background:var(--surface);border:1px solid var(--lineSoft)}
-    .fit-chip.on,.sf-chip.on,.sort-btn.on{background:var(--ink);border-color:transparent;color:#fff}
+    .fit-chip,.sf-chip{background:var(--surface-container-highest);border:none}
+    .sort-btn{background:none;border:none}
+    .sort-btn.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+    .sf-chip.on-all,.sf-chip.on-stage{background:var(--ink);color:var(--surface);border-color:transparent}
+    .fit-chip.on{background:var(--primary);color:var(--on-primary);border-color:transparent}
     .contact-box{background:var(--accentSoft);border:1px solid rgba(91,91,246,.15);border-radius:18px}
     html[data-theme="dark"] .job-card{background:var(--surfaceAlt)}
     html[data-theme="dark"] .actions .act-btn,html[data-theme="dark"] .modal-foot .act-btn,
     html[data-theme="dark"] .step-btn,html[data-theme="dark"] .chan-btn,
     html[data-theme="dark"] .search-inp,html[data-theme="dark"] .meta-chip,
-    html[data-theme="dark"] .fit-chip,html[data-theme="dark"] .sf-chip,html[data-theme="dark"] .sort-btn,
+    html[data-theme="dark"] .fit-chip,html[data-theme="dark"] .sf-chip,
     html[data-theme="dark"] .notes-ta{background:var(--surface-container-high)}
-    html[data-theme="dark"] .fit-chip.on,html[data-theme="dark"] .sf-chip.on,html[data-theme="dark"] .sort-btn.on{background:var(--ink);color:#0B0B14}
+    html[data-theme="dark"] .sort-btn{background:none}
+    html[data-theme="dark"] .sort-btn.on{background:var(--surface-container-highest);color:var(--ink)}
+    html[data-theme="dark"] .sf-chip.on-all,html[data-theme="dark"] .sf-chip.on-stage{background:var(--ink);color:#0B0B14}
+    html[data-theme="dark"] .fit-chip.on{background:var(--primary);color:var(--on-primary)}
     html[data-theme="dark"] .contact-box{background:var(--accentSoft)}
 
     /* ── STAR Bank sheet ── */
@@ -1045,44 +1061,47 @@
             <input class="search-inp" id="search-inp" type="text" placeholder="חיפוש חברה או תפקיד…" oninput="onSearch(this)"/>
             <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
           </div>
-          <div class="sort-seg">
-            <button class="sort-btn" data-val="score" onclick="setSort(this)">התאמה</button>
-            <button class="sort-btn on" data-val="posted" onclick="setSort(this)">עדכני</button>
-            <button class="sort-btn" data-val="az" onclick="setSort(this)">A–Z</button>
-          </div>
+          <button class="add-job-btn" onclick="openAddByUrl()" title="הוסף משרה לפי לינק"><span class="material-symbols-rounded" style="font-size:18px">add</span>הוסף משרה</button>
         </div>
-        <div class="filter-row">
-          <button class="sf-chip on-all" data-stage="all" onclick="setStageFilter(this)"><span class="material-symbols-rounded" style="font-size:17px">tune</span>הכל <span class="n" id="fc-all"></span></button>
-          <button class="sf-chip" data-stage="saved" onclick="setStageFilter(this)" style="--f-bg:#dde1ff;--f-fg:#001257;--f-solid:#4F6BED">שמורות <span class="n" id="fc-saved"></span></button>
-          <button class="sf-chip" data-stage="applied" onclick="setStageFilter(this)" style="--f-bg:#d7e3ff;--f-fg:#0b4ba0;--f-solid:#0b66c2">הוגשו <span class="n" id="fc-applied"></span></button>
-          <button class="sf-chip" data-stage="interview" onclick="setStageFilter(this)" style="--f-bg:#ffd8e8;--f-fg:#31101d;--f-solid:#9c4267">ראיונות <span class="n" id="fc-interview"></span></button>
-          <button class="sf-chip" data-stage="offer" onclick="setStageFilter(this)" style="--f-bg:#b3f1c7;--f-fg:#0c3a22;--f-solid:#2e6b46">הצעות <span class="n" id="fc-offer"></span></button>
-          <button class="sf-chip" data-stage="rejected" onclick="setStageFilter(this)" style="--f-bg:#ffdad6;--f-fg:#5c0d0d;--f-solid:#ba1a1a">נדחה <span class="n" id="fc-rejected"></span></button>
-          <button class="sf-chip" data-stage="starred" onclick="setStageFilter(this)">⭐ נבחרות</button>
-          <button class="sf-chip" data-stage="dismissed" onclick="setStageFilter(this)" style="--f-bg:#ffdad6;--f-fg:#5c0d0d;--f-solid:#ba1a1a">🗑️ ארכיון <span class="n" id="fc-dismissed"></span></button>
-          <button class="filters-toggle-chip" id="filters-toggle" onclick="toggleFilters()"><span class="material-symbols-rounded" style="font-size:16px">tune</span>מסננים</button>
+        <div class="sort-seg">
+          <button class="sort-btn" data-val="score" onclick="setSort(this)">התאמה</button>
+          <button class="sort-btn on" data-val="posted" onclick="setSort(this)">עדכני</button>
+          <button class="sort-btn" data-val="az" onclick="setSort(this)">A–Z</button>
+        </div>
+        <div class="filter-row stage-row">
+          <button class="sf-chip on-all" data-stage="all" onclick="setStageFilter(this)">הכל <span class="n" id="fc-all"></span></button>
+          <button class="sf-chip" data-stage="saved" onclick="setStageFilter(this)"><span class="dot" style="background:#4F6BED"></span>שמורות <span class="n" id="fc-saved"></span></button>
+          <button class="sf-chip" data-stage="applied" onclick="setStageFilter(this)"><span class="dot" style="background:#0b66c2"></span>הוגשו <span class="n" id="fc-applied"></span></button>
+          <button class="sf-chip" data-stage="interview" onclick="setStageFilter(this)"><span class="dot" style="background:#9c4267"></span>ראיונות <span class="n" id="fc-interview"></span></button>
+          <button class="sf-chip" data-stage="offer" onclick="setStageFilter(this)"><span class="dot" style="background:#2e6b46"></span>הצעות <span class="n" id="fc-offer"></span></button>
+          <button class="sf-chip" data-stage="rejected" onclick="setStageFilter(this)"><span class="dot" style="background:#ba1a1a"></span>נדחה <span class="n" id="fc-rejected"></span></button>
+          <button class="sf-chip" data-stage="starred" onclick="setStageFilter(this)"><span class="material-symbols-rounded" style="font-size:15px">star</span>נבחרות</button>
+          <button class="sf-chip" data-stage="dismissed" onclick="setStageFilter(this)"><span class="material-symbols-rounded" style="font-size:15px">inventory_2</span>ארכיון <span class="n" id="fc-dismissed"></span></button>
+        </div>
+        <div class="action-bar">
+          <div class="action-bar-start">
+            <span class="exp-count" id="count-lbl"></span>
+            <button class="filters-toggle-chip" id="filters-toggle" onclick="toggleFilters()"><span class="material-symbols-rounded" style="font-size:16px">tune</span>מסננים<span class="fbadge" id="filter-badge"></span></button>
+          </div>
+          <div class="action-bar-end">
+            <button class="exp-btn" id="bulk-toggle" onclick="toggleBulkMode()" title="בחירה מרובה"><span class="material-symbols-rounded" style="font-size:16px">check_box</span>בחירה</button>
+            <button class="exp-btn icon-only" id="expand-toggle" onclick="toggleExpandAll()" title="פתח / כווץ הכל"><span class="material-symbols-rounded" style="font-size:18px">unfold_more</span></button>
+          </div>
         </div>
         <div class="secondary-filters" id="secondary-filters">
-        <div class="filter-row">
-          <span class="filter-lbl">ציון</span>
-          <button class="fit-chip on" data-fit="all" onclick="setFitFilter(this)">הכל</button>
-          <button class="fit-chip" data-fit="high" onclick="setFitFilter(this)">8+</button>
-          <button class="fit-chip" data-fit="mid" onclick="setFitFilter(this)">5–7</button>
-          <span class="filter-lbl" style="margin-right:6px">תאריך</span>
-          <button class="fit-chip on" data-age="all" onclick="setAgeFilter(this)">הכל <span id="age-all" class="n"></span></button>
-          <button class="fit-chip" data-age="day" onclick="setAgeFilter(this)">24ש <span id="age-day" class="n"></span></button>
-          <button class="fit-chip" data-age="week" onclick="setAgeFilter(this)">שבוע <span id="age-week" class="n"></span></button>
-          <button class="fit-chip" data-age="month" onclick="setAgeFilter(this)">חודש <span id="age-month" class="n"></span></button>
-        </div>
-        <div class="exp-row">
-          <span class="exp-count" id="count-lbl"></span>
-          <div class="exp-btns">
-            <button class="exp-btn" onclick="expandAll()">פתח הכל</button>
-            <button class="exp-btn" onclick="collapseAll()">סגור הכל</button>
-            <button class="exp-btn" id="bulk-toggle" onclick="toggleBulkMode()" title="בחירה מרובה">☑️ בחירה</button>
-            <button class="exp-btn add-url-btn" onclick="openAddByUrl()" title="הוסף משרה לפי לינק"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">add_link</span> הוסף לינק</button>
+          <div class="sf-group">
+            <span class="filter-lbl">ציון</span>
+            <button class="fit-chip on" data-fit="all" onclick="setFitFilter(this)">הכל</button>
+            <button class="fit-chip" data-fit="high" onclick="setFitFilter(this)">8+</button>
+            <button class="fit-chip" data-fit="mid" onclick="setFitFilter(this)">5–7</button>
           </div>
-        </div>
+          <div class="sf-group">
+            <span class="filter-lbl">תאריך</span>
+            <button class="fit-chip on" data-age="all" onclick="setAgeFilter(this)">הכל <span id="age-all" class="n"></span></button>
+            <button class="fit-chip" data-age="day" onclick="setAgeFilter(this)">24ש <span id="age-day" class="n"></span></button>
+            <button class="fit-chip" data-age="week" onclick="setAgeFilter(this)">שבוע <span id="age-week" class="n"></span></button>
+            <button class="fit-chip" data-age="month" onclick="setAgeFilter(this)">חודש <span id="age-month" class="n"></span></button>
+          </div>
         </div>
       </div>
       <div id="container" style="display:flex;flex-direction:column;gap:14px"></div>
@@ -1499,14 +1518,21 @@ function setFunnelFilter(stage){
 function setFitFilter(b){
   fFit=b.dataset.fit;
   document.querySelectorAll(".fit-chip[data-fit]").forEach(c=>c.classList.remove("on"));
-  b.classList.add("on");render();
+  b.classList.add("on");updateFilterBadge();render();
+}
+function updateFilterBadge(){
+  const badge=document.getElementById("filter-badge");
+  if(!badge)return;
+  const n=(fFit!=="all"?1:0)+(fAge!=="all"?1:0);
+  badge.textContent=n||"";
+  badge.classList.toggle("show",n>0);
 }
 function setSort(b){
   fSort=b.dataset.val;
   document.querySelectorAll(".sort-btn").forEach(c=>c.classList.remove("on"));
   b.classList.add("on");render();
 }
-function setAgeFilter(b){fAge=b.dataset.age;document.querySelectorAll("[data-age]").forEach(c=>c.classList.remove("on"));b.classList.add("on");render();}
+function setAgeFilter(b){fAge=b.dataset.age;document.querySelectorAll("[data-age]").forEach(c=>c.classList.remove("on"));b.classList.add("on");updateFilterBadge();render();}
 function resetFilters(){
   fStage="all";fFit="all";fAge="all";fQ="";
   document.querySelectorAll(".search-inp").forEach(i=>{i.value="";});
@@ -1516,7 +1542,7 @@ function resetFilters(){
   document.querySelectorAll(".sf-chip").forEach(c=>c.classList.remove("on-all","on-stage"));
   document.querySelectorAll('[data-fit="all"],[data-age="all"]').forEach(c=>c.classList.add("on"));
   const allStage=document.querySelector('.sf-chip[data-stage="all"]');if(allStage)allStage.classList.add("on-all");
-  render();
+  updateFilterBadge();render();
 }
 function onSearch(inp){fQ=inp.value.trim().toLowerCase();document.getElementById("search-clear").classList.toggle("show",!!fQ);render();}
 function clearSearch(){fQ="";const i=document.getElementById("search-inp");i.value="";document.getElementById("search-clear").classList.remove("show");render();}
@@ -1536,6 +1562,13 @@ function toggleCard(el){
 }
 function expandAll(){document.querySelectorAll(".job-card").forEach(c=>{if(c.offsetParent!==null)c.classList.add("open");});}
 function collapseAll(){document.querySelectorAll(".job-card").forEach(c=>c.classList.remove("open"));}
+function toggleExpandAll(){
+  const cards=[...document.querySelectorAll(".job-card")].filter(c=>c.offsetParent!==null);
+  const anyClosed=cards.some(c=>!c.classList.contains("open"));
+  if(anyClosed)expandAll();else collapseAll();
+  const ic=document.querySelector("#expand-toggle .material-symbols-rounded");
+  if(ic)ic.textContent=anyClosed?"unfold_less":"unfold_more";
+}
 
 /* ── helpers ── */
 const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
