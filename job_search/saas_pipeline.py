@@ -47,6 +47,16 @@ DEFAULT_ATS = {
         "optimove", "augury", "zoominfo", "orcasecurity", "appsflyer",
         "saltsecurity", "catonetworks", "axonius", "cybereason", "sisense",
         "yotpo",
+        # Batch 3 — verified live against Greenhouse API, all with active
+        # Israel-located openings (token shown; company name comes from the API)
+        "sentinellabs",       # SentinelOne
+        "wizinc",             # Wiz
+        "gongio",             # Gong
+        "armissecurity",      # Armis
+        "aidocmedical",       # Aidoc
+        "tipaltisolutions",   # Tipalti
+        "openweb",            # OpenWeb
+        "cymulate",           # Cymulate
     ],
     "lever": ["walkme"],
     "ashby": [],
