@@ -79,6 +79,10 @@ DEFAULT_ATS = {
         "10.000:1030901050040401080",                 # guesty
         "45.00A:54A1A7225062A50FDE2F9A1FBC01FBC1528",  # minute media
     ],
+    # Secret Tel Aviv — curated Israeli aggregator, public WPJobBoard RSS feed.
+    # One entry = the feed URL; covers many companies' latest roles. Overlaps
+    # with the ATS sources are removed by the company|title dedup downstream.
+    "secrettlv": ["https://jobs.secrettelaviv.com/wpjobboard/xml/rss/"],
     # Workable: tokens are search keywords (not company slugs).
     # Returns cross-company results filtered to Israel by the location filter.
     "workable": [

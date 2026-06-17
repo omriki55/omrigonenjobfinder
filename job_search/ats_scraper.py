@@ -22,7 +22,9 @@ import json
 import re
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 from datetime import date, datetime, timezone
+from email.utils import parsedate_to_datetime
 
 _TIMEOUT = 20
 _UA = {"User-Agent": "Mozilla/5.0 (compatible; JobSearchBot/1.0)"}
@@ -247,6 +249,61 @@ def scrape_comeet(uid_token: str) -> list[dict]:
     return out
 
 
+# ── Secret Tel Aviv (WPJobBoard RSS) ────────────────────────────────────────────
+
+def scrape_secrettlv(feed_url: str) -> list[dict]:
+    """Scrape the Secret Tel Aviv job board via its public WPJobBoard RSS feed.
+
+    Unlike the ATS providers (one company each), this is a curated Israeli
+    aggregator: a single RSS feed listing the latest roles across many
+    companies, each <item> carrying <company_name>/<company_city>. The config
+    token is the full feed URL, so other WPJobBoard feeds can be added the same
+    way. These re-post company listings, so the pipeline's company|title dedup
+    collapses overlaps with the ATS sources.
+    """
+    try:
+        req = urllib.request.Request(feed_url, headers=_UA)
+        with urllib.request.urlopen(req, timeout=_TIMEOUT) as r:
+            raw = r.read().decode("utf-8", "replace")
+    except Exception as e:
+        print(f"  ⚠️  SecretTLV: {e}")
+        return []
+    # feed sometimes has a BOM / blank line before the <?xml declaration
+    raw = raw.lstrip("﻿ \t\r\n")
+    try:
+        root = ET.fromstring(raw)
+    except Exception as e:
+        print(f"  ⚠️  SecretTLV parse: {e}")
+        return []
+    out = []
+    for item in root.iter("item"):
+        def txt(tag):
+            el = item.find(tag)
+            return (el.text or "").strip() if el is not None and el.text else ""
+        title = txt("title")
+        link = txt("link")
+        if not title or not link:
+            continue
+        pub = txt("pubDate")
+        posted = ""
+        if pub:
+            try:
+                posted = parsedate_to_datetime(pub).date().isoformat()
+            except Exception:
+                posted = ""
+        if posted and not _recent(posted):
+            continue
+        out.append(_job(
+            txt("company_name") or "Secret Tel Aviv",
+            title,
+            txt("company_city") or "Israel",   # TLV board → Israel by default
+            link,
+            posted,
+            txt("description"),
+        ))
+    return out
+
+
 # ── Registry ──────────────────────────────────────────────────────────────────
 
 _SCRAPERS = {
@@ -255,6 +312,7 @@ _SCRAPERS = {
     "ashby": scrape_ashby,
     "workable": scrape_workable,
     "comeet": scrape_comeet,
+    "secrettlv": scrape_secrettlv,
 }
 
 # Title keywords used to pre-filter ATS jobs before scoring. ATS boards return
