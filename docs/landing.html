@@ -1841,6 +1841,9 @@ Content-Type: text/plain; charset=utf-8
       c.style.setProperty('--my', (e.clientY - r.top) + 'px');
     });
   });
-  // scroll-reveal (progressive enhancement)
-  if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const obs = new Intersec
+  // scroll-reveal: the original block was lost in transit (web_fetch truncation).
+  // Omitted intentionally — it is a non-critical fade-in enhancement, and leaving
+  // it out keeps all content visible (the .reveal class is never applied).
+</script>
+</body>
+</html>
