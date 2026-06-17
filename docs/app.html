@@ -2200,7 +2200,7 @@ ${cvData.name} — ${cvData.tagline}. ${cvData.summary}
     active:true,muted:false,busy:false,
     messages:[],system:sysPrompt,lang:langCode,
     jobLabel:j.company,stageLabel:stageUsed+(interviewer?" · "+interviewer:""),
-    rec:null
+    rec:null,_fatalMic:false,_retries:0
   });
 
   // setup UI
@@ -2261,14 +2261,23 @@ async function voiceCallClaude(){
     if(!res.ok)throw new Error("API "+res.status);
     const data=await res.json();
     const text=data.content?.[0]?.text||"";
+    _vc._retries=0;
     _vc.messages.push({role:"assistant",content:text});
     document.getElementById("vo-last-ai").textContent=text.slice(0,160)+(text.length>160?"…":"");
     voiceSpeak(text);
   }catch(e){
     console.error(e);
-    const msg=_vc.lang.startsWith("he")?"שגיאה בחיבור ל-API":"API connection error";
-    document.getElementById("vo-who").textContent=msg;
     _vc.busy=false;
+    // self-heal: retry the SAME turn (don't listen again — that would push two
+    // user messages in a row and break role alternation) so a transient API
+    // hiccup doesn't leave the interview silent.
+    _vc._retries=(_vc._retries||0)+1;
+    if(_vc.active&&_vc._retries<=2){
+      document.getElementById("vo-who").textContent=_vc.lang.startsWith("he")?"מתחבר מחדש…":"Reconnecting…";
+      setTimeout(()=>{if(_vc.active&&!_vc.busy)voiceCallClaude();},1200);
+    }else{
+      document.getElementById("vo-who").textContent=_vc.lang.startsWith("he")?"שגיאה בחיבור ל-API. בדוק/י את מפתח ה-API בהגדרות.":"API connection error. Check your API key in Settings.";
+    }
   }
 }
 
@@ -2331,21 +2340,38 @@ async function voiceSpeakEL(text,apiKey){
 }
 
 function voiceSpeakNative(clean){
-  const utt=new SpeechSynthesisUtterance(clean);
-  utt.lang=_vc.lang;
-  utt.rate=_vc.lang.startsWith("he")?0.88:0.9;
-  utt.pitch=1.0;
+  try{_vc.synth.cancel();}catch(e){}
+  const lp=_vc.lang.slice(0,2);
   // prefer Google voices — sound more natural than system TTS
   const voices=_vc.synth.getVoices();
-  const lp=_vc.lang.slice(0,2);
   const best=voices.find(v=>v.lang===_vc.lang&&/google/i.test(v.name))
             ||voices.find(v=>v.lang.startsWith(lp)&&/google/i.test(v.name))
             ||voices.find(v=>v.lang===_vc.lang)
             ||voices.find(v=>v.lang.startsWith(lp));
-  if(best)utt.voice=best;
-  utt.onend=()=>{if(_vc.active&&!_vc.muted)voiceListen();else _vc.busy=false;};
-  utt.onerror=()=>{if(_vc.active)voiceListen();};
-  _vc.synth.speak(utt);
+  // Chrome silently DROPS any utterance that runs longer than ~15s and never
+  // fires onend — which froze the loop (the "disconnects after 2 sentences"
+  // bug, hit on the English native fallback). Split into short sentence chunks
+  // so each utterance is well under that limit and onend fires reliably.
+  const parts=clean.match(/[^.!?…]+[.!?…]*/g)||[clean];
+  const chunks=[];let cur="";
+  for(const p of parts){ if((cur+p).length>160){ if(cur.trim())chunks.push(cur.trim()); cur=p; } else cur+=p; }
+  if(cur.trim())chunks.push(cur.trim());
+  if(!chunks.length)chunks.push(clean);
+  let idx=0,done=false;
+  const finish=()=>{ if(done)return; done=true; if(_vc.active&&!_vc.muted)voiceListen(); else _vc.busy=false; };
+  const speakNext=()=>{
+    if(!_vc.active||_vc.muted){ _vc.busy=false; return; }
+    if(idx>=chunks.length){ finish(); return; }
+    const utt=new SpeechSynthesisUtterance(chunks[idx++]);
+    utt.lang=_vc.lang;
+    utt.rate=lp==="he"?0.92:0.95;
+    utt.pitch=1.0;
+    if(best)utt.voice=best;
+    utt.onend=()=>speakNext();
+    utt.onerror=()=>speakNext();
+    _vc.synth.speak(utt);
+  };
+  speakNext();
 }
 
 function voiceListen(){
@@ -2378,10 +2404,16 @@ function voiceListen(){
     }
   };
   rec.onerror=(e)=>{
-    if(e.error==="no-speech"&&_vc.active)voiceListen();
+    if(e.error==="not-allowed"||e.error==="service-not-allowed"){
+      _vc._fatalMic=true;
+      document.getElementById("vo-who").textContent=_vc.lang.startsWith("he")?"אפשר/י גישה למיקרופון כדי להמשיך":"Allow microphone access to continue";
+    }
+    // recoverable errors (no-speech, aborted, network, audio-capture) resume via onend below
   };
   rec.onend=()=>{
-    if(_vc.active&&!_vc.busy&&!_vc.muted)voiceListen();
+    if(!_vc.active||_vc.busy||_vc.muted||_vc._fatalMic)return;
+    // small delay avoids a tight restart loop on transient recognition errors
+    setTimeout(()=>{if(_vc.active&&!_vc.busy&&!_vc.muted&&!_vc._fatalMic)voiceListen();},300);
   };
   rec.start();
 }
