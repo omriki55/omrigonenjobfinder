@@ -2092,11 +2092,30 @@ Empowering, not crushing. Even critical feedback should leave me energised and c
 const _vc={
   active:false, muted:false, busy:false,
   messages:[], system:'', lang:'he-IL',
-  rec:null, synth:window.speechSynthesis,
+  rec:null, synth:window.speechSynthesis, _player:null,
   jobLabel:'', stageLabel:''
 };
 
+// Grant audio-playback permission inside the user's click gesture so the
+// ElevenLabs <audio> (played AFTER an awaited fetch) isn't autoplay-blocked —
+// which is what made it fall back to the robotic browser voice.
+function _unlockAudio(){
+  try{
+    if(!_vc._player) _vc._player=new Audio();
+    const a=_vc._player; a.muted=true;
+    const sr=8000,len=400,bytes=44+len,buf=new ArrayBuffer(bytes),dv=new DataView(buf);
+    const w=(o,s)=>{for(let k=0;k<s.length;k++)dv.setUint8(o+k,s.charCodeAt(k));};
+    w(0,'RIFF');dv.setUint32(4,bytes-8,true);w(8,'WAVE');w(12,'fmt ');dv.setUint32(16,16,true);
+    dv.setUint16(20,1,true);dv.setUint16(22,1,true);dv.setUint32(24,sr,true);dv.setUint32(28,sr,true);
+    dv.setUint16(32,1,true);dv.setUint16(34,8,true);w(36,'data');dv.setUint32(40,len,true);
+    for(let k=0;k<len;k++)dv.setUint8(44+k,128);
+    a.src=URL.createObjectURL(new Blob([buf],{type:'audio/wav'}));
+    a.play().then(()=>{try{a.pause();}catch(e){} a.muted=false;}).catch(()=>{a.muted=false;});
+  }catch(e){}
+}
+
 function startVoicePractice(i){
+  _unlockAudio(); // unlock audio within the click gesture (fixes robotic fallback)
   const {stage,lang}=window._practiceCtx||{};
   const j=window._sorted[i],cvData=getCV();
   const interviewer=(document.getElementById("iview-manual")||{}).value||"";
@@ -2296,7 +2315,9 @@ async function voiceSpeakEL(text,apiKey){
   if(!res.ok)throw new Error("EL "+res.status);
   const blob=await res.blob();
   const url=URL.createObjectURL(blob);
-  const audio=new Audio(url);
+  // Reuse the gesture-unlocked player so play() isn't blocked after the await.
+  const audio=_vc._player||(_vc._player=new Audio());
+  audio.muted=false; audio.src=url;
   _vc._audio=audio;
   return new Promise((resolve,reject)=>{
     audio.onended=()=>{
