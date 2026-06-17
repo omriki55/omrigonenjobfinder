@@ -73,6 +73,7 @@ DEFAULT_ATS = {
     "ashby": [
         "lemonade",           # Lemonade
         "unit",               # Unit (fintech)
+        "redis",              # Redis (Israeli-founded, TLV R&D) — verified live
     ],
     # Comeet (very common ATS in Israel). Each entry is "COMPANY_UID:API_TOKEN";
     # both are public values harvested from the company's careers page.
