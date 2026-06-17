@@ -1005,29 +1005,33 @@
 <nav id="nav-rail">
   <button class="nr-item active" id="nr-jobs" onclick="nr('jobs')" title="משרות">
     <span class="material-symbols-rounded">work</span>
-    <span class="nr-lbl">משרות</span>
+    <span class="nr-lbl" data-t="nav.jobs">משרות</span>
   </button>
   <button class="nr-item" id="nr-analytics" onclick="nr('analytics')" title="אנליטיקה">
     <span class="material-symbols-rounded">analytics</span>
-    <span class="nr-lbl">סטטיסטיקה</span>
+    <span class="nr-lbl" data-t="nav.stats">סטטיסטיקה</span>
   </button>
   <button class="nr-item" id="nr-star" onclick="nr('star')" title="בנק STAR">
     <span class="material-symbols-rounded">psychology</span>
-    <span class="nr-lbl">בנק STAR</span>
+    <span class="nr-lbl" data-t="nav.star">בנק STAR</span>
   </button>
     <div class="nr-spacer"></div>
   <button class="nr-item" id="nr-support" onclick="openSupport()" title="תמיכה רגשית">
     <span class="material-symbols-rounded">favorite</span>
-    <span class="nr-lbl">תמיכה</span>
+    <span class="nr-lbl" data-t="nav.support">תמיכה</span>
   </button>
   <button class="nr-item" id="nr-settings" onclick="openSettings()" title="הגדרות">
     <span class="material-symbols-rounded">settings</span>
-    <span class="nr-lbl">הגדרות</span>
+    <span class="nr-lbl" data-t="nav.settings">הגדרות</span>
   </button>
   <a class="nr-item" href="./landing.html" title="שתף / About" style="text-decoration:none">
     <span class="material-symbols-rounded">share</span>
-    <span class="nr-lbl">שתף</span>
+    <span class="nr-lbl" data-t="nav.share">שתף</span>
   </a>
+  <button class="nr-item" id="nr-lang" onclick="toggleLang()" title="Language / שפה">
+    <span class="material-symbols-rounded">language</span>
+    <span class="nr-lbl" id="lang-lbl">EN</span>
+  </button>
 </nav>
 <div id="app">
   <!-- DESKTOP TOP BAR -->
@@ -1058,49 +1062,49 @@
         <div class="search-row">
           <div class="search-wrap">
             <span class="search-ico material-symbols-rounded">search</span>
-            <input class="search-inp" id="search-inp" type="text" placeholder="חיפוש חברה או תפקיד…" oninput="onSearch(this)"/>
+            <input class="search-inp" id="search-inp" type="text" placeholder="חיפוש חברה או תפקיד…" data-t-ph="search.ph" oninput="onSearch(this)"/>
             <button class="search-clear" id="search-clear" onclick="clearSearch()" aria-label="נקה חיפוש">✕</button>
           </div>
-          <button class="add-job-btn" onclick="openAddByUrl()" title="הוסף משרה לפי לינק"><span class="material-symbols-rounded" style="font-size:18px">add</span>הוסף משרה</button>
+          <button class="add-job-btn" onclick="openAddByUrl()" title="הוסף משרה לפי לינק"><span class="material-symbols-rounded" style="font-size:18px">add</span><span data-t="toolbar.addJob">הוסף משרה</span></button>
         </div>
         <div class="sort-seg">
-          <button class="sort-btn" data-val="score" onclick="setSort(this)">התאמה</button>
-          <button class="sort-btn on" data-val="posted" onclick="setSort(this)">עדכני</button>
+          <button class="sort-btn" data-val="score" onclick="setSort(this)"><span data-t="sort.score">התאמה</span></button>
+          <button class="sort-btn on" data-val="posted" onclick="setSort(this)"><span data-t="sort.posted">עדכני</span></button>
           <button class="sort-btn" data-val="az" onclick="setSort(this)">A–Z</button>
         </div>
         <div class="filter-row stage-row">
-          <button class="sf-chip on-all" data-stage="all" onclick="setStageFilter(this)">הכל <span class="n" id="fc-all"></span></button>
-          <button class="sf-chip" data-stage="saved" onclick="setStageFilter(this)"><span class="dot" style="background:#4F6BED"></span>שמורות <span class="n" id="fc-saved"></span></button>
-          <button class="sf-chip" data-stage="applied" onclick="setStageFilter(this)"><span class="dot" style="background:#0b66c2"></span>הוגשו <span class="n" id="fc-applied"></span></button>
-          <button class="sf-chip" data-stage="interview" onclick="setStageFilter(this)"><span class="dot" style="background:#9c4267"></span>ראיונות <span class="n" id="fc-interview"></span></button>
-          <button class="sf-chip" data-stage="offer" onclick="setStageFilter(this)"><span class="dot" style="background:#2e6b46"></span>הצעות <span class="n" id="fc-offer"></span></button>
-          <button class="sf-chip" data-stage="rejected" onclick="setStageFilter(this)"><span class="dot" style="background:#ba1a1a"></span>נדחה <span class="n" id="fc-rejected"></span></button>
-          <button class="sf-chip" data-stage="starred" onclick="setStageFilter(this)"><span class="material-symbols-rounded" style="font-size:15px">star</span>נבחרות</button>
-          <button class="sf-chip" data-stage="dismissed" onclick="setStageFilter(this)"><span class="material-symbols-rounded" style="font-size:15px">inventory_2</span>ארכיון <span class="n" id="fc-dismissed"></span></button>
+          <button class="sf-chip on-all" data-stage="all" onclick="setStageFilter(this)"><span data-t="stage.all">הכל</span> <span class="n" id="fc-all"></span></button>
+          <button class="sf-chip" data-stage="saved" onclick="setStageFilter(this)"><span class="dot" style="background:#4F6BED"></span><span data-t="stage.saved">שמורות</span> <span class="n" id="fc-saved"></span></button>
+          <button class="sf-chip" data-stage="applied" onclick="setStageFilter(this)"><span class="dot" style="background:#0b66c2"></span><span data-t="stage.applied">הוגשו</span> <span class="n" id="fc-applied"></span></button>
+          <button class="sf-chip" data-stage="interview" onclick="setStageFilter(this)"><span class="dot" style="background:#9c4267"></span><span data-t="stage.interview">ראיונות</span> <span class="n" id="fc-interview"></span></button>
+          <button class="sf-chip" data-stage="offer" onclick="setStageFilter(this)"><span class="dot" style="background:#2e6b46"></span><span data-t="stage.offer">הצעות</span> <span class="n" id="fc-offer"></span></button>
+          <button class="sf-chip" data-stage="rejected" onclick="setStageFilter(this)"><span class="dot" style="background:#ba1a1a"></span><span data-t="stage.rejected">נדחה</span> <span class="n" id="fc-rejected"></span></button>
+          <button class="sf-chip" data-stage="starred" onclick="setStageFilter(this)"><span class="material-symbols-rounded" style="font-size:15px">star</span><span data-t="stage.starred">נבחרות</span></button>
+          <button class="sf-chip" data-stage="dismissed" onclick="setStageFilter(this)"><span class="material-symbols-rounded" style="font-size:15px">inventory_2</span><span data-t="stage.dismissed">ארכיון</span> <span class="n" id="fc-dismissed"></span></button>
         </div>
         <div class="action-bar">
           <div class="action-bar-start">
             <span class="exp-count" id="count-lbl"></span>
-            <button class="filters-toggle-chip" id="filters-toggle" onclick="toggleFilters()"><span class="material-symbols-rounded" style="font-size:16px">tune</span>מסננים<span class="fbadge" id="filter-badge"></span></button>
+            <button class="filters-toggle-chip" id="filters-toggle" onclick="toggleFilters()"><span class="material-symbols-rounded" style="font-size:16px">tune</span><span data-t="filters.toggle">מסננים</span><span class="fbadge" id="filter-badge"></span></button>
           </div>
           <div class="action-bar-end">
-            <button class="exp-btn" id="bulk-toggle" onclick="toggleBulkMode()" title="בחירה מרובה"><span class="material-symbols-rounded" style="font-size:16px">check_box</span>בחירה</button>
+            <button class="exp-btn" id="bulk-toggle" onclick="toggleBulkMode()" title="בחירה מרובה"><span class="material-symbols-rounded" style="font-size:16px">check_box</span><span data-t="action.bulk">בחירה</span></button>
             <button class="exp-btn icon-only" id="expand-toggle" onclick="toggleExpandAll()" title="פתח / כווץ הכל"><span class="material-symbols-rounded" style="font-size:18px">unfold_more</span></button>
           </div>
         </div>
         <div class="secondary-filters" id="secondary-filters">
           <div class="sf-group">
-            <span class="filter-lbl">ציון</span>
-            <button class="fit-chip on" data-fit="all" onclick="setFitFilter(this)">הכל</button>
+            <span class="filter-lbl" data-t="filters.score">ציון</span>
+            <button class="fit-chip on" data-fit="all" onclick="setFitFilter(this)"><span data-t="fit.all">הכל</span></button>
             <button class="fit-chip" data-fit="high" onclick="setFitFilter(this)">8+</button>
             <button class="fit-chip" data-fit="mid" onclick="setFitFilter(this)">5–7</button>
           </div>
           <div class="sf-group">
-            <span class="filter-lbl">תאריך</span>
-            <button class="fit-chip on" data-age="all" onclick="setAgeFilter(this)">הכל <span id="age-all" class="n"></span></button>
-            <button class="fit-chip" data-age="day" onclick="setAgeFilter(this)">24ש <span id="age-day" class="n"></span></button>
-            <button class="fit-chip" data-age="week" onclick="setAgeFilter(this)">שבוע <span id="age-week" class="n"></span></button>
-            <button class="fit-chip" data-age="month" onclick="setAgeFilter(this)">חודש <span id="age-month" class="n"></span></button>
+            <span class="filter-lbl" data-t="filters.date">תאריך</span>
+            <button class="fit-chip on" data-age="all" onclick="setAgeFilter(this)"><span data-t="age.all">הכל</span> <span id="age-all" class="n"></span></button>
+            <button class="fit-chip" data-age="day" onclick="setAgeFilter(this)"><span data-t="age.day">24ש</span> <span id="age-day" class="n"></span></button>
+            <button class="fit-chip" data-age="week" onclick="setAgeFilter(this)"><span data-t="age.week">שבוע</span> <span id="age-week" class="n"></span></button>
+            <button class="fit-chip" data-age="month" onclick="setAgeFilter(this)"><span data-t="age.month">חודש</span> <span id="age-month" class="n"></span></button>
           </div>
         </div>
       </div>
@@ -3313,6 +3317,37 @@ function initTheme(){
   if(!t)t=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
   applyTheme(t);
 }
+/* ===== i18n (Phase 1: shell — nav + toolbar) ===== */
+const STR={
+  he:{
+    'nav.jobs':'משרות','nav.stats':'סטטיסטיקה','nav.star':'בנק STAR','nav.support':'תמיכה','nav.settings':'הגדרות','nav.share':'שתף',
+    'search.ph':'חיפוש חברה או תפקיד…','toolbar.addJob':'הוסף משרה',
+    'sort.score':'התאמה','sort.posted':'עדכני',
+    'stage.all':'הכל','stage.saved':'שמורות','stage.applied':'הוגשו','stage.interview':'ראיונות','stage.offer':'הצעות','stage.rejected':'נדחה','stage.starred':'נבחרות','stage.dismissed':'ארכיון',
+    'filters.toggle':'מסננים','filters.score':'ציון','filters.date':'תאריך',
+    'fit.all':'הכל','age.all':'הכל','age.day':'24ש','age.week':'שבוע','age.month':'חודש','action.bulk':'בחירה'
+  },
+  en:{
+    'nav.jobs':'Jobs','nav.stats':'Analytics','nav.star':'STAR Bank','nav.support':'Support','nav.settings':'Settings','nav.share':'Share',
+    'search.ph':'Search company or role…','toolbar.addJob':'Add job',
+    'sort.score':'Match','sort.posted':'Recent',
+    'stage.all':'All','stage.saved':'Saved','stage.applied':'Applied','stage.interview':'Interviews','stage.offer':'Offers','stage.rejected':'Rejected','stage.starred':'Starred','stage.dismissed':'Archive',
+    'filters.toggle':'Filters','filters.score':'Score','filters.date':'Date',
+    'fit.all':'All','age.all':'All','age.day':'24h','age.week':'Week','age.month':'Month','action.bulk':'Select'
+  }
+};
+let LANG=localStorage.getItem('lang')||'he';
+function t(k){ const d=STR[LANG]; if(d&&d[k]!==undefined)return d[k]; return (STR.he[k]!==undefined)?STR.he[k]:k; }
+function applyI18n(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll('[data-t]').forEach(el=>{ const v=t(el.dataset.t); if(v!=null) el.textContent=v; });
+  document.querySelectorAll('[data-t-ph]').forEach(el=>{ const v=t(el.dataset.tPh); if(v!=null) el.placeholder=v; });
+  const ll=document.getElementById('lang-lbl'); if(ll) ll.textContent=(LANG==='he')?'EN':'עב';
+}
+function setLang(l){ LANG=l; try{localStorage.setItem('lang',l);}catch(e){} applyI18n(); }
+function toggleLang(){ setLang(LANG==='he'?'en':'he'); }
+try{ applyI18n(); }catch(e){}
+
 function toggleTheme(){
   const cur=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
   localStorage.setItem('theme',cur);applyTheme(cur);
