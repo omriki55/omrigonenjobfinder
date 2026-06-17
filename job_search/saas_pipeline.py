@@ -58,9 +58,21 @@ DEFAULT_ATS = {
         "tipaltisolutions",   # Tipalti
         "openweb",            # OpenWeb
         "cymulate",           # Cymulate
+        # Batch 4 — verified live against Greenhouse API with active Israel roles
+        "datarails",          # Datarails
+        "tomorrow",           # Tomorrow.io
+        "workato",            # Workato (Tel Aviv R&D)
+        "tripactions",        # Navan (ex-TripActions)
     ],
-    "lever": ["walkme"],
-    "ashby": [],
+    "lever": [
+        "walkme",
+        "cloudinary",         # Cloudinary — verified live, Israel roles
+    ],
+    # Ashby boards — verified live against the Ashby posting API, Israel roles
+    "ashby": [
+        "lemonade",           # Lemonade
+        "unit",               # Unit (fintech)
+    ],
     # Comeet (very common ATS in Israel). Each entry is "COMPANY_UID:API_TOKEN";
     # both are public values harvested from the company's careers page.
     "comeet": [
