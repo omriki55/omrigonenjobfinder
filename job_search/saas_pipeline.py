@@ -20,6 +20,7 @@ import os
 import time
 import urllib.parse
 import urllib.request
+import re
 from datetime import date, datetime, timezone
 
 from anthropic import Anthropic
@@ -422,6 +423,40 @@ def process_user(profile: dict, key: str, all_jobs: list[dict],
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
+HEALTH_FLOOR = 8  # if fewer than this many jobs scrape platform-wide, alert (likely breakage)
+
+
+def _norm(x: str) -> str:
+    x = (x or "").lower()
+    x = re.sub(r"\b(ai|inc|ltd|labs|technologies|technology|software|solutions|the)\b", " ", x)
+    return re.sub(r"[^a-z0-9֐-׿]+", "", x).strip()
+
+
+def _send_health_alert(scraped: int):
+    key = os.environ.get("RESEND_API_KEY", "")
+    to = os.environ.get("ALERT_EMAIL", "")
+    if not key or not to:
+        print("  (health alert: RESEND_API_KEY/ALERT_EMAIL not set — skipping)")
+        return
+    body = json.dumps({
+        "from": os.environ.get("ALERT_FROM", "onboarding@resend.dev"),
+        "to": [to],
+        "subject": "\u26a0\ufe0f JobSearch scan health: very few jobs scraped",
+        "html": f"<p>The daily scan scraped only <b>{scraped}</b> jobs platform-wide "
+                f"(floor {HEALTH_FLOOR}). This usually means an ATS API changed or a "
+                f"scraper broke \u2014 worth a look.</p>",
+    }).encode()
+    req = urllib.request.Request(
+        "https://api.resend.com/emails", data=body, method="POST",
+        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json",
+                 "User-Agent": "Mozilla/5.0 (compatible; JobSearchAI/1.0)"})
+    try:
+        with urllib.request.urlopen(req, timeout=15):
+            print("  \U0001f4e7 scan-health alert sent")
+    except Exception as e:
+        print(f"  health alert failed: {e}")
+
+
 def main():
     print("👥 Loading users...")
     profiles = _sb("GET",
@@ -457,12 +492,21 @@ def main():
     ats = load_platform_ats()
     all_jobs = scrape_ats(ats, keywords=[""], exclude=load_exclude_titles())
     seen: set[str] = set()
+    seen_rt: set[str] = set()  # normalized company|title — collapse cross-source dupes
     unique_jobs = []
     for j in all_jobs:
-        if j["url"] and j["url"] not in seen:
-            seen.add(j["url"])
-            unique_jobs.append(j)
+        if not j["url"] or j["url"] in seen:
+            continue
+        rt = _norm(j.get("company")) + "|" + _norm(j.get("title"))
+        if rt and rt in seen_rt:
+            continue
+        seen.add(j["url"])
+        seen_rt.add(rt)
+        unique_jobs.append(j)
     print(f"  {len(unique_jobs)} unique jobs scraped")
+    if len(unique_jobs) < HEALTH_FLOOR and os.getenv("ONLY_NEW") != "1":
+        print(f"  \u26a0\ufe0f  scrape health: only {len(unique_jobs)} jobs (<{HEALTH_FLOOR}) \u2014 sending alert")
+        _send_health_alert(len(unique_jobs))
 
     for profile in active:
         try:
