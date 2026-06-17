@@ -1,0 +1,42 @@
+name: CI smoke check
+
+# Fast guard: on every push, make sure the Python pipeline compiles and the
+# inline JavaScript in the deployed HTML pages has no syntax errors — so a
+# broken file can't go live unnoticed (the site deploys straight from main).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Compile Python pipeline
+        run: python -m py_compile job_search/saas_pipeline.py job_search/ats_scraper.py job_search/notify_high_scores.py
+
+      - uses: actions/setup-node@v4
+      - name: Syntax-check inline JS in HTML pages
+        run: |
+          node -e '
+            const fs = require("fs"), vm = require("vm");
+            for (const f of ["docs/app.html", "docs/landing.html"]) {
+              const s = fs.readFileSync(f, "utf8");
+              const blocks = [...s.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+              if (!blocks.length) { console.error(f + ": no inline scripts found"); process.exit(1); }
+              for (let i = 0; i < blocks.length; i++) {
+                try { new vm.Script(blocks[i]); }
+                catch (e) { console.error(f + " script #" + (i+1) + ": " + e.message); process.exit(1); }
+              }
+              console.log(f + " OK (" + blocks.length + " inline script(s))");
+            }
+          '

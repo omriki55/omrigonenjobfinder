@@ -4,8 +4,9 @@ permissions:
 on:
   workflow_dispatch:
   schedule:
-    # Deep scan once daily, Sunday–Thursday (Israeli work week)
-    - cron: '0 6 * * 0-4'    # 09:00 Israel
+    # Deep scan 3× daily, Sunday–Thursday (Israeli work week).
+    # 05:00/10:00/15:00 UTC ≈ 08:00/13:00/18:00 Israel time.
+    - cron: '0 5,10,15 * * 0-4'
 jobs:
   scan:
     runs-on: ubuntu-latest
@@ -20,6 +21,8 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
       - name: Send high-score email alerts
         if: always()
         run: python job_search/notify_high_scores.py
