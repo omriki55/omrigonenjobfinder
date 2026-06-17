@@ -35,6 +35,7 @@ LIVENESS_AGE_DAYS = 7          # re-check jobs older than this
 LIVENESS_SAMPLE = 10           # max jobs to liveness-check per run per user
 
 DEFAULT_APPLY_THRESHOLD = 6
+UPLOAD_FLOOR = 8               # never store jobs the AI scored below this (only 8+)
 
 DEFAULT_ATS = {
     # All slugs below were verified live against each ATS public API
@@ -368,6 +369,10 @@ def process_user(profile: dict, key: str, all_jobs: list[dict],
         scored = score_job(client, profile, job, threshold)
         if scored is None:
             continue
+        fit = int(scored.get("fit_score", 0))
+        if fit < UPLOAD_FLOOR:
+            print(f"      skipped (fit {fit} < {UPLOAD_FLOOR})")
+            continue
 
         row = {
             "user_id": uid,
@@ -376,7 +381,7 @@ def process_user(profile: dict, key: str, all_jobs: list[dict],
             "location": job.get("location", ""),
             "url": job.get("url", ""),
             "description": (job.get("description") or "")[:600],
-            "fit_score": int(scored.get("fit_score", 0)),
+            "fit_score": fit,
             "score_reason": scored.get("score_reason", ""),
             "ai_opener": scored.get("ai_opener", ""),
             "posted": job.get("posted") or today,
