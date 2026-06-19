@@ -3490,33 +3490,80 @@ function __dbToJob(r) {
 }
 
 function __showGate(msg) {
+  let mode = 'login';
   const div = document.createElement('div');
   div.id = 'auth-gate';
   div.style.cssText = 'position:fixed;inset:0;z-index:9999;background:var(--bg,#fbf8ff);display:flex;align-items:center;justify-content:center;padding:20px;direction:rtl';
+  const inCss = 'width:100%;box-sizing:border-box;padding:11px 14px;border:1.5px solid rgba(127,127,127,.4);border-radius:12px;font-family:inherit;font-size:.95rem';
+  const tabCss = 'flex:1;padding:9px;border:1.5px solid;border-radius:10px;font-family:inherit;font-weight:700;cursor:pointer';
   div.innerHTML = '<div style="max-width:380px;width:100%;background:var(--card,#fff);border:1px solid rgba(127,127,127,.25);border-radius:22px;padding:32px 28px;font-family:Heebo,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.08)">' +
     '<h1 style="font-size:1.3rem;margin:0 0 6px">הטרקר שלי</h1>' +
-    '<p style="font-size:.9rem;opacity:.7;margin:0 0 14px">' + (msg || 'התחברו כדי להמשיך') + '</p>' +
+    '<p style="font-size:.9rem;opacity:.7;margin:0 0 16px">' + (msg || 'התחברו או הירשמו כדי להמשיך') + '</p>' +
+    '<div style="display:flex;gap:8px;margin-bottom:14px">' +
+      '<button id="ag-tab-login" style="' + tabCss + '">התחברות</button>' +
+      '<button id="ag-tab-signup" style="' + tabCss + '">הרשמה</button>' +
+    '</div>' +
     '<label style="display:block;font-size:.85rem;font-weight:600;margin:12px 0 6px">שם משתמש</label>' +
-    '<input id="ag-user" type="text" autocapitalize="off" spellcheck="false" style="width:100%;box-sizing:border-box;padding:11px 14px;border:1.5px solid rgba(127,127,127,.4);border-radius:12px;font-family:inherit;font-size:.95rem"/>' +
+    '<input id="ag-user" type="text" autocapitalize="off" spellcheck="false" placeholder="natan-shemesh" style="' + inCss + '"/>' +
+    '<div id="ag-user-hint" style="font-size:.75rem;opacity:.6;margin:6px 2px 0;line-height:1.35">אותיות באנגלית, מספרים או מקף — זה שם הכניסה, לא השם המלא.</div>' +
     '<label style="display:block;font-size:.85rem;font-weight:600;margin:12px 0 6px">סיסמה</label>' +
-    '<input id="ag-pass" type="password" style="width:100%;box-sizing:border-box;padding:11px 14px;border:1.5px solid rgba(127,127,127,.4);border-radius:12px;font-family:inherit;font-size:.95rem"/>' +
+    '<input id="ag-pass" type="password" style="' + inCss + '"/>' +
+    '<div id="ag-name-wrap" style="display:none"><label style="display:block;font-size:.85rem;font-weight:600;margin:12px 0 6px">השם שלך (אפשר בעברית)</label>' +
+    '<input id="ag-name" type="text" placeholder="נתן שמש" style="' + inCss + '"/></div>' +
     '<p id="ag-err" style="display:none;color:#ba1a1a;font-size:.85rem;font-weight:600;margin:10px 0 0"></p>' +
     '<button id="ag-btn" style="width:100%;margin-top:18px;padding:12px;border:none;border-radius:100px;background:#4F6BED;color:#fff;font-family:inherit;font-size:1rem;font-weight:700;cursor:pointer">התחברות</button>' +
-    '<p style="font-size:.85rem;opacity:.7;margin:14px 0 0;text-align:center">אין חשבון? <a href="./landing.html#setup" style="color:#4F6BED">להרשמה</a></p></div>';
+    '</div>';
   document.body.appendChild(div);
+
+  const $ = id => document.getElementById(id);
+  const err = m => { const e = $('ag-err'); e.textContent = m; e.style.display = 'block'; };
+  const onC = 'background:#4F6BED;color:#fff;border-color:#4F6BED';
+  const offC = 'background:#fff;color:inherit;border-color:rgba(127,127,127,.4)';
+
+  function setMode(m) {
+    mode = m; $('ag-err').style.display = 'none';
+    $('ag-tab-login').style.cssText = tabCss + ';' + (m === 'login' ? onC : offC);
+    $('ag-tab-signup').style.cssText = tabCss + ';' + (m === 'signup' ? onC : offC);
+    $('ag-name-wrap').style.display = m === 'signup' ? 'block' : 'none';
+    $('ag-btn').textContent = m === 'signup' ? 'יצירת חשבון' : 'התחברות';
+  }
+  // username is the login handle → must be ASCII; auto-fix as they type
+  $('ag-user').addEventListener('input', () => {
+    const el = $('ag-user');
+    el.value = el.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]+/g, '').replace(/-+/g, '-').slice(0, 24);
+    $('ag-user-hint').textContent = el.value ? ('תתחבר/י כ: ' + el.value) : 'אותיות באנגלית, מספרים או מקף — זה שם הכניסה, לא השם המלא.';
+  });
+  $('ag-tab-login').addEventListener('click', () => setMode('login'));
+  $('ag-tab-signup').addEventListener('click', () => setMode('signup'));
+
   const go = async () => {
-    const u = document.getElementById('ag-user').value.trim().toLowerCase();
-    const p = document.getElementById('ag-pass').value;
-    const { error } = await __sb.auth.signInWithPassword({ email: u + '@users.jobfinder.local', password: p });
-    if (error) {
-      const er = document.getElementById('ag-err');
-      er.textContent = 'שם המשתמש או הסיסמה שגויים.'; er.style.display = 'block';
-      return;
-    }
-    location.reload();
+    const u = $('ag-user').value.trim().toLowerCase();
+    const p = $('ag-pass').value;
+    if (!/^[a-z0-9_-]{3,24}$/.test(u)) return err('שם המשתמש: אותיות באנגלית/מספרים/מקף, 3–24 תווים (למשל natan-shemesh).');
+    if (p.length < 6) return err('הסיסמה צריכה להיות לפחות 6 תווים.');
+    const email = u + '@users.jobfinder.local';
+    const btn = $('ag-btn'); btn.disabled = true; btn.style.opacity = .7;
+    try {
+      if (mode === 'signup') {
+        const { error } = await __sb.auth.signUp({ email, password: p, options: { data: { username: u, full_name: $('ag-name').value.trim() } } });
+        if (error) { err(/registered|already|exists/i.test(error.message) ? 'שם המשתמש כבר תפוס — בחרו שם אחר או התחברו.' : error.message); return; }
+        location.reload();
+      } else {
+        const { error } = await __sb.auth.signInWithPassword({ email, password: p });
+        if (error) {
+          // most common cause is "no account yet" — funnel into signup (keep creds) instead of looping
+          setMode('signup');
+          err('אין חשבון בשם הזה. השלימו הרשמה כאן — השם והסיסמה כבר מולאו.');
+          return;
+        }
+        location.reload();
+      }
+    } finally { btn.disabled = false; btn.style.opacity = 1; }
   };
-  document.getElementById('ag-btn').addEventListener('click', go);
-  document.getElementById('ag-pass').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+  $('ag-btn').addEventListener('click', go);
+  $('ag-pass').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+  $('ag-user').addEventListener('keydown', e => { if (e.key === 'Enter') $('ag-pass').focus(); });
+  setMode('login');
 }
 
 (async function __boot() {
