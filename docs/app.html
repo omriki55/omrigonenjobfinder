@@ -3504,12 +3504,12 @@ function __showGate(msg) {
       '<button id="ag-tab-signup" style="' + tabCss + '">הרשמה</button>' +
     '</div>' +
     '<label style="display:block;font-size:.85rem;font-weight:600;margin:12px 0 6px">שם משתמש</label>' +
-    '<input id="ag-user" type="text" autocapitalize="off" spellcheck="false" placeholder="natan-shemesh" style="' + inCss + '"/>' +
+    '<input id="ag-user" type="text" autocapitalize="off" spellcheck="false" placeholder="omri" style="' + inCss + '"/>' +
     '<div id="ag-user-hint" style="font-size:.75rem;opacity:.6;margin:6px 2px 0;line-height:1.35">אותיות באנגלית, מספרים או מקף — זה שם הכניסה, לא השם המלא.</div>' +
     '<label style="display:block;font-size:.85rem;font-weight:600;margin:12px 0 6px">סיסמה</label>' +
     '<input id="ag-pass" type="password" style="' + inCss + '"/>' +
     '<div id="ag-name-wrap" style="display:none"><label style="display:block;font-size:.85rem;font-weight:600;margin:12px 0 6px">השם שלך (אפשר בעברית)</label>' +
-    '<input id="ag-name" type="text" placeholder="נתן שמש" style="' + inCss + '"/></div>' +
+    '<input id="ag-name" type="text" placeholder="עומרי גונן" style="' + inCss + '"/></div>' +
     '<p id="ag-err" style="display:none;color:#ba1a1a;font-size:.85rem;font-weight:600;margin:10px 0 0"></p>' +
     '<button id="ag-btn" style="width:100%;margin-top:18px;padding:12px;border:none;border-radius:100px;background:#4F6BED;color:#fff;font-family:inherit;font-size:1rem;font-weight:700;cursor:pointer">התחברות</button>' +
     '</div>';
@@ -3539,7 +3539,7 @@ function __showGate(msg) {
   const go = async () => {
     const u = $('ag-user').value.trim().toLowerCase();
     const p = $('ag-pass').value;
-    if (!/^[a-z0-9_-]{3,24}$/.test(u)) return err('שם המשתמש: אותיות באנגלית/מספרים/מקף, 3–24 תווים (למשל natan-shemesh).');
+    if (!/^[a-z0-9_-]{3,24}$/.test(u)) return err('שם המשתמש: אותיות באנגלית/מספרים/מקף, 3–24 תווים (למשל omri).');
     if (p.length < 6) return err('הסיסמה צריכה להיות לפחות 6 תווים.');
     const email = u + '@users.jobfinder.local';
     const btn = $('ag-btn'); btn.disabled = true; btn.style.opacity = .7;
