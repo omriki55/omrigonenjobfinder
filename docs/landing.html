@@ -1268,12 +1268,13 @@ Content-Type: text/plain; charset=utf-8
       <div style="flex:1;height:1px;background:var(--line-soft)"></div>
     </div>
     <label class="field-label" for="auth-username" data-i18n="auth.username">Username</label>
-    <input type="text" id="auth-username" autocomplete="username" autocapitalize="off" spellcheck="false"/>
+    <input type="text" id="auth-username" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="natan-shemesh" oninput="sanitizeUsername(this)"/>
+    <div id="auth-username-hint" style="font-size:.74rem;color:var(--ink-faint);margin:-6px 0 12px;line-height:1.35" data-i18n="auth.usernameHint">English letters, numbers or hyphen — this is your login, not your display name.</div>
     <label class="field-label" for="auth-password" data-i18n="auth.password">Password</label>
     <input type="password" id="auth-password" autocomplete="current-password" onkeydown="if(event.key==='Enter')submitAuth()"/>
     <div id="auth-name-wrap" style="display:none">
-      <label class="field-label" for="auth-fullname" data-i18n="auth.fullname">Full name (optional)</label>
-      <input type="text" id="auth-fullname"/>
+      <label class="field-label" for="auth-fullname" data-i18n="auth.fullname">Your name (Hebrew is fine)</label>
+      <input type="text" id="auth-fullname" placeholder="נתן שמש"/>
     </div>
     <p class="auth-error" id="auth-error"></p>
     <button class="auth-submit" id="auth-submit" onclick="submitAuth()" data-i18n="auth.login">Log in</button>
@@ -1441,6 +1442,19 @@ Content-Type: text/plain; charset=utf-8
   function authError(msg) {
     const el = document.getElementById('auth-error');
     el.textContent = msg; el.style.display = 'block';
+  }
+
+  function sanitizeUsername(el) {
+    // customers naturally type their real name (often Hebrew + spaces); the
+    // username is the login handle and must be ASCII. Auto-fix as they type so
+    // "Natan Shemesh" -> "natan-shemesh" and Hebrew/invalid chars are dropped.
+    el.value = el.value.toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9_-]+/g, '')
+      .replace(/-+/g, '-')
+      .slice(0, 24);
+    const hint = document.getElementById('auth-username-hint');
+    if (hint) hint.textContent = el.value ? (t('auth.loginAs') + ' ' + el.value) : t('auth.usernameHint');
   }
 
   async function submitAuth() {
@@ -1671,8 +1685,10 @@ Content-Type: text/plain; charset=utf-8
       'auth.logout': 'יציאה',
       'auth.username': 'שם משתמש',
       'auth.password': 'סיסמה',
-      'auth.fullname': 'שם מלא (אופציונלי)',
-      'auth.badUsername': 'שם משתמש: 3–24 תווים, אותיות באנגלית/מספרים/מקף בלבד.',
+      'auth.fullname': 'השם שלך (אפשר בעברית)',
+      'auth.badUsername': 'שם המשתמש הוא לכניסה בלבד — אותיות באנגלית/מספרים/מקף (למשל natan-shemesh). את השם בעברית כותבים בשדה "השם שלך".',
+      'auth.usernameHint': 'אותיות באנגלית, מספרים או מקף — זה שם הכניסה, לא שם התצוגה.',
+      'auth.loginAs': 'תתחבר/י כ:',
       'auth.badPassword': 'הסיסמה צריכה להיות באורך 6 תווים לפחות.',
       'auth.loginFailed': 'שם המשתמש או הסיסמה שגויים.',
       'hero.badge': 'קוד פתוח · מופעל על ידי Claude AI',
@@ -1797,9 +1813,10 @@ Content-Type: text/plain; charset=utf-8
     EN_DEFAULTS['cv.parsing'] = 'Reading your CV…';
     EN_DEFAULTS['cv.done'] = '✅ Pre-filled! Review the fields in the next steps and adjust if needed.';
     EN_DEFAULTS['cv.fail'] = "Couldn't extract details from the file — please fill in manually.";
-    EN_DEFAULTS['auth.badUsername'] = 'Username: 3–24 chars, letters/numbers/dash only.';
+    EN_DEFAULTS['auth.badUsername'] = 'The username is your login only — English letters/numbers/dash (e.g. natan-shemesh). Put your Hebrew name in the "Your name" field.';
     EN_DEFAULTS['auth.badPassword'] = 'Password must be at least 6 characters.';
     EN_DEFAULTS['auth.loginFailed'] = 'Wrong username or password.';
+    EN_DEFAULTS['auth.loginAs'] = "You'll log in as:";
   }
 
   function applyLang(lang) {
