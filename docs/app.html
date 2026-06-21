@@ -18,44 +18,44 @@
   <script>(function(){try{var t=localStorage.getItem('theme')||((window.matchMedia&&matchMedia('(prefers-color-scheme:dark)').matches)?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
   <style>
-    /* ===== MATERIAL 3 EXPRESSIVE — tonal palette from seed #4F6BED ===== */
+    /* ===== MATERIAL 3 EXPRESSIVE — tonal palette from seed #0a6dff ===== */
     :root{
-      --primary:#4F6BED;
+      --primary:#0a6dff;
       --on-primary:#ffffff;
-      --primary-container:#dde1ff;
-      --on-primary-container:#001257;
-      --secondary-container:#dfe1f9;
-      --on-secondary-container:#171b2c;
-      --tertiary-container:#ffd8e8;
-      --on-tertiary-container:#31101d;
-      --canvas:#fbf8ff;
-      --surface:#fbf8ff;
-      --surfaceAlt:#f0edf5;
-      --surface-container:#f0edf5;
-      --surface-container-high:#eae7ef;
-      --surface-container-highest:#e4e1e9;
-      --ink:#1b1b21;
-      --inkSoft:#46464f;
-      --inkFaint:#74747e;
-      --line:#c7c5d0;
-      --lineSoft:#e2e0ea;
-      --accent:#4F6BED;
-      --accentDeep:#3a52c9;
-      --accentSoft:#dde1ff;
-      --accentInk:#001257;
+      --primary-container:#e4efff;
+      --on-primary-container:#00316e;
+      --secondary-container:#eaf1ff;
+      --on-secondary-container:#1d1d1f;
+      --tertiary-container:#fff2e0;
+      --on-tertiary-container:#b25e00;
+      --canvas:#f5f5f7;
+      --surface:#ffffff;
+      --surfaceAlt:#f3f3f5;
+      --surface-container:#f3f3f5;
+      --surface-container-high:#ececef;
+      --surface-container-highest:#e7e7ec;
+      --ink:#1d1d1f;
+      --inkSoft:#6e6e73;
+      --inkFaint:#86868b;
+      --line:#d2d2d7;
+      --lineSoft:#ececef;
+      --accent:#0a6dff;
+      --accentDeep:#0058d6;
+      --accentSoft:#e4efff;
+      --accentInk:#00316e;
       --onAccent:#ffffff;
       --heroBg:var(--primary-container);
-      --wa:#2e6b46;
-      --star:#c9a227;
-      --toast-bg:#2f3036;
-      --success:#2e6b46;
-      --success-container:#b3f1c7;
-      --error:#ba1a1a;
-      --error-container:#ffdad6;
-      --radius:28px;
+      --wa:#1a7f48;
+      --star:#ff9f0a;
+      --toast-bg:#1d1d1f;
+      --success:#1a7f48;
+      --success-container:#e3f7ea;
+      --error:#d70015;
+      --error-container:#ffe5e3;
+      --radius:20px;
       /* elevation — soft, layered, Apple-like depth */
       --e1:0 1px 2px rgba(17,20,45,.04),0 1px 3px rgba(17,20,45,.05);
       --e2:0 2px 6px rgba(17,20,45,.05),0 4px 12px rgba(17,20,45,.06);
@@ -63,9 +63,9 @@
       --e-nav:0 -1px 0 var(--lineSoft),0 -8px 24px rgba(17,20,45,.05);
       /* motion */
       --ease:cubic-bezier(.2,.7,.3,1);
-      --font-display:'Heebo','Roboto Flex',system-ui,sans-serif;
-      --font-ui:'Heebo','Roboto Flex',system-ui,sans-serif;
-      --font-mono:'Roboto Flex',ui-monospace,monospace;
+      --font-display:'Assistant',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+      --font-ui:'Assistant',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+      --font-mono:ui-monospace,'SF Mono',Menlo,monospace;
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%}
@@ -372,7 +372,7 @@
     .chat-msg.err{align-self:center;background:#ffd7d7;color:#8b0000;font-size:.82rem;text-align:center}
     .m-chatbar{display:flex;gap:8px;align-items:flex-end;padding:10px 16px;border-top:1px solid var(--line,#e3e5ec)}
     .m-chatbar textarea{flex:1;resize:none;max-height:140px;border:1px solid var(--line,#d8dae2);border-radius:18px;padding:10px 14px;font-family:var(--font-ui);font-size:16px;line-height:1.4;background:var(--surface,#fff);color:var(--ink)}
-    .m-send{flex:0 0 auto;width:42px;height:42px;border:none;border-radius:50%;background:var(--primary,#4F6BED);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .m-send{flex:0 0 auto;width:42px;height:42px;border:none;border-radius:50%;background:var(--primary,#0a6dff);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
     .m-send:disabled{opacity:.45;cursor:not-allowed}
     html[data-theme="dark"] .chat-msg.ai{background:#2a2d36}
     html[data-theme="dark"] .m-chatbar textarea{background:#1f2229;border-color:#3a3d47}
@@ -1074,7 +1074,7 @@
         </div>
         <div class="filter-row stage-row">
           <button class="sf-chip on-all" data-stage="all" onclick="setStageFilter(this)"><span data-t="stage.all">הכל</span> <span class="n" id="fc-all"></span></button>
-          <button class="sf-chip" data-stage="saved" onclick="setStageFilter(this)"><span class="dot" style="background:#4F6BED"></span><span data-t="stage.saved">שמורות</span> <span class="n" id="fc-saved"></span></button>
+          <button class="sf-chip" data-stage="saved" onclick="setStageFilter(this)"><span class="dot" style="background:#0a6dff"></span><span data-t="stage.saved">שמורות</span> <span class="n" id="fc-saved"></span></button>
           <button class="sf-chip" data-stage="applied" onclick="setStageFilter(this)"><span class="dot" style="background:#0b66c2"></span><span data-t="stage.applied">הוגשו</span> <span class="n" id="fc-applied"></span></button>
           <button class="sf-chip" data-stage="interview" onclick="setStageFilter(this)"><span class="dot" style="background:#9c4267"></span><span data-t="stage.interview">ראיונות</span> <span class="n" id="fc-interview"></span></button>
           <button class="sf-chip" data-stage="offer" onclick="setStageFilter(this)"><span class="dot" style="background:#2e6b46"></span><span data-t="stage.offer">הצעות</span> <span class="n" id="fc-offer"></span></button>
@@ -1851,7 +1851,7 @@ function printCV(){
   const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   const expH=exp.map(e=>`<div class="role"><div class="rh"><span class="rt">${esc(e.role)}</span><span class="rd">${esc(e.dates)}</span></div><div class="ro">${esc(e.org)}</div><ul>${e.bullets.map(b=>`<li>${esc(b)}</li>`).join("")}</ul></div>`).join("");
   const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>CV — ${esc(j.company)}</title>
-  <style>@page{margin:14mm}*{box-sizing:border-box}body{font-family:Georgia,serif;color:#1a1a1a;line-height:1.4;max-width:780px;margin:0 auto;padding:10px}h1{font-size:24px;margin:0}.tag{color:#4F6BED;font-weight:bold;font-size:12.5px;margin:3px 0}.contact{font-size:11px;color:#555;margin-bottom:4px}.tailored{font-size:11px;color:#7c3aed;font-weight:bold;border:1px solid #e4d8fb;background:#f7f3ff;padding:5px 9px;border-radius:6px;display:inline-block;margin:6px 0}h2{font-size:12.5px;text-transform:uppercase;letter-spacing:1px;color:#4F6BED;border-bottom:1.5px solid #4F6BED;padding-bottom:2px;margin:16px 0 7px}p{font-size:12.5px;margin:0}ul{margin:4px 0 0;padding-left:18px}li{font-size:12px;margin:2px 0}.role{margin-bottom:11px}.rh{display:flex;justify-content:space-between}.rt{font-weight:bold;font-size:13px}.rd{font-size:11px;color:#666}.ro{font-style:italic;font-size:11.5px;color:#444}@media print{.np{display:none}}.np{text-align:center;margin:14px 0}.np button{font-family:sans-serif;font-size:14px;padding:9px 22px;border:none;border-radius:8px;background:#4F6BED;color:#fff;cursor:pointer}</style>
+  <style>@page{margin:14mm}*{box-sizing:border-box}body{font-family:Georgia,serif;color:#1a1a1a;line-height:1.4;max-width:780px;margin:0 auto;padding:10px}h1{font-size:24px;margin:0}.tag{color:#0a6dff;font-weight:bold;font-size:12.5px;margin:3px 0}.contact{font-size:11px;color:#555;margin-bottom:4px}.tailored{font-size:11px;color:#7c3aed;font-weight:bold;border:1px solid #e4d8fb;background:#f7f3ff;padding:5px 9px;border-radius:6px;display:inline-block;margin:6px 0}h2{font-size:12.5px;text-transform:uppercase;letter-spacing:1px;color:#0a6dff;border-bottom:1.5px solid #0a6dff;padding-bottom:2px;margin:16px 0 7px}p{font-size:12.5px;margin:0}ul{margin:4px 0 0;padding-left:18px}li{font-size:12px;margin:2px 0}.role{margin-bottom:11px}.rh{display:flex;justify-content:space-between}.rt{font-weight:bold;font-size:13px}.rd{font-size:11px;color:#666}.ro{font-style:italic;font-size:11.5px;color:#444}@media print{.np{display:none}}.np{text-align:center;margin:14px 0}.np button{font-family:sans-serif;font-size:14px;padding:9px 22px;border:none;border-radius:8px;background:#0a6dff;color:#fff;cursor:pointer}</style>
   </head><body>
   <div class="np"><button onclick="window.print()">🖨️ הדפס / שמור כ-PDF</button></div>
   <h1>${esc(cvData.name)}</h1><div class="tag">${esc(cvData.tagline)}</div><div class="contact">${esc(cvData.contact)}</div>
@@ -2509,7 +2509,7 @@ ${j.url?`קישור למשרה: ${j.url}`:""}
 /* ── FEATURE: pipeline analytics ── */
 function openAnalytics(){
   const stats=computeStats();
-  const stageDefs=[["saved","שמורות","#4F6BED"],["applied","הוגשו","#0b66c2"],["interview","ראיונות","#9c4267"],["offer","הצעות","#2e6b46"],["rejected","נסגרו","#ba1a1a"]];
+  const stageDefs=[["saved","שמורות","#86868b"],["applied","הוגשו","#0a6dff"],["interview","ראיונות","#ff9f0a"],["offer","הצעות","#1a7f48"],["rejected","נסגרו","#d70015"]];
   const max=Math.max(1,...stageDefs.map(([k])=>stats.by[k]||0));
   const funnel=stageDefs.map(([k,he,col])=>{
     const v=stats.by[k]||0,w=Math.round(v/max*100);
@@ -3496,7 +3496,7 @@ function __showGate(msg) {
   div.style.cssText = 'position:fixed;inset:0;z-index:9999;background:var(--bg,#fbf8ff);display:flex;align-items:center;justify-content:center;padding:20px;direction:rtl';
   const inCss = 'width:100%;box-sizing:border-box;padding:11px 14px;border:1.5px solid rgba(127,127,127,.4);border-radius:12px;font-family:inherit;font-size:.95rem';
   const tabCss = 'flex:1;padding:9px;border:1.5px solid;border-radius:10px;font-family:inherit;font-weight:700;cursor:pointer';
-  div.innerHTML = '<div style="max-width:380px;width:100%;background:var(--card,#fff);border:1px solid rgba(127,127,127,.25);border-radius:22px;padding:32px 28px;font-family:Heebo,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.08)">' +
+  div.innerHTML = '<div style="max-width:380px;width:100%;background:var(--card,#fff);border:1px solid rgba(127,127,127,.25);border-radius:22px;padding:32px 28px;font-family:Assistant,-apple-system,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.08)">' +
     '<h1 style="font-size:1.3rem;margin:0 0 6px">הטרקר שלי</h1>' +
     '<p style="font-size:.9rem;opacity:.7;margin:0 0 16px">' + (msg || 'התחברו או הירשמו כדי להמשיך') + '</p>' +
     '<div style="display:flex;gap:8px;margin-bottom:14px">' +
@@ -3511,13 +3511,13 @@ function __showGate(msg) {
     '<div id="ag-name-wrap" style="display:none"><label style="display:block;font-size:.85rem;font-weight:600;margin:12px 0 6px">השם שלך (אפשר בעברית)</label>' +
     '<input id="ag-name" type="text" placeholder="עומרי גונן" style="' + inCss + '"/></div>' +
     '<p id="ag-err" style="display:none;color:#ba1a1a;font-size:.85rem;font-weight:600;margin:10px 0 0"></p>' +
-    '<button id="ag-btn" style="width:100%;margin-top:18px;padding:12px;border:none;border-radius:100px;background:#4F6BED;color:#fff;font-family:inherit;font-size:1rem;font-weight:700;cursor:pointer">התחברות</button>' +
+    '<button id="ag-btn" style="width:100%;margin-top:18px;padding:12px;border:none;border-radius:100px;background:#0a6dff;color:#fff;font-family:inherit;font-size:1rem;font-weight:700;cursor:pointer">התחברות</button>' +
     '</div>';
   document.body.appendChild(div);
 
   const $ = id => document.getElementById(id);
   const err = m => { const e = $('ag-err'); e.textContent = m; e.style.display = 'block'; };
-  const onC = 'background:#4F6BED;color:#fff;border-color:#4F6BED';
+  const onC = 'background:#0a6dff;color:#fff;border-color:#0a6dff';
   const offC = 'background:#fff;color:inherit;border-color:rgba(127,127,127,.4)';
 
   function setMode(m) {
