@@ -377,6 +377,11 @@
       return { ring: '#c4c4ca', ink: '#86868b' };
     }
 
+    /* Toast + copy-prompt helpers (wire the action buttons). */
+    function toast(msg){ var t=document.getElementById('jf-toast'); if(!t){ t=document.createElement('div'); t.id='jf-toast'; t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1d1d1f;color:#fff;padding:11px 18px;border-radius:12px;font:600 14px Assistant,-apple-system,sans-serif;z-index:99999;box-shadow:0 6px 20px rgba(0,0,0,.25);opacity:0;transition:opacity .2s'; document.body.appendChild(t);} t.textContent=msg; t.style.opacity='1'; clearTimeout(window.__tt); window.__tt=setTimeout(function(){ t.style.opacity='0'; },2200); }
+    function copyText(text, okMsg){ try{ navigator.clipboard.writeText(text).then(function(){ toast(okMsg||'הועתק ✓'); }, function(){ toast('ההעתקה נכשלה'); }); }catch(e){ toast('ההעתקה נכשלה'); } }
+    function copyPrompt(text){ copyText(text, 'הפרומפט הועתק — הדבק/י ב‑Claude'); }
+
     /* Small reusable icon component. */
     function Icon({ name, className = '', style }) {
       return <span className={'ms ' + className} style={style}>{name}</span>;
@@ -595,7 +600,7 @@
     /* ============================================================
        JOB DETAIL VIEW  (full single-job page)
        ============================================================ */
-    function JobDetailView({ job, isSaved, toggleSave, status, setStatus, note, setNote, onBack }) {
+    function JobDetailView({ job, isSaved, toggleSave, status, setStatus, note, setNote, onBack, onPractice }) {
       const meta = STATUS_META[status];
       const { ink } = scoreColors(job.fitScore);
 
@@ -615,11 +620,11 @@
 
       // Tool buttons.
       const tools = [
-        { icon: 'quiz',                label: 'הכנה לראיון' },
-        { icon: 'record_voice_over',   label: 'תרגול ראיון' },
-        { icon: 'folder_open',         label: 'דוסייר' },
-        { icon: 'volunteer_activism',  label: 'תמיכה רגשית' },
-        { icon: 'thumb_down',          label: 'לא רלוונטי' }
+        { icon: 'quiz',                label: 'הכנה לראיון', act: () => copyPrompt('הכן/י אותי לראיון לתפקיד ' + job.role + ' בחברת ' + job.company + '. תן/י 8 שאלות נפוצות לתפקיד עם תשובות מומלצות מבוססות הפרופיל שלי, ועצה אחת לכל שאלה.') },
+        { icon: 'record_voice_over',   label: 'תרגול ראיון', act: () => onPractice && onPractice() },
+        { icon: 'folder_open',         label: 'דוסייר',      act: () => copyPrompt('תכין/י דוסייר על חברת ' + job.company + ' לקראת ראיון לתפקיד ' + job.role + ': מוצר, תרבות, מתחרים, חדשות אחרונות, ואיך להתבלט בראיון.') },
+        { icon: 'volunteer_activism',  label: 'תמיכה רגשית', act: () => copyPrompt('אני בתהליך חיפוש עבודה. תהיה/י מאמן/ת קריירה אמפתי/ת — הקשב/י, תקף/י את מה שאני מרגיש/ה, ותן/י פרספקטיבה מחזקת ומעשית.') },
+        { icon: 'thumb_down',          label: 'לא רלוונטי',  act: () => { setStatus('rejected'); toast('סומן כלא רלוונטי'); setTimeout(onBack, 450); } }
       ];
 
       return (
@@ -687,8 +692,8 @@
               {isSaved ? 'שמורה' : 'שמור'}
             </button>
             <button className="btn-secondary" onClick={() => job.url && window.open(job.url, '_blank')}><Icon name="open_in_new" style={{ fontSize: 20 }} />פתח מודעה</button>
-            <button className="btn-secondary"><Icon name="forward_to_inbox" style={{ fontSize: 20 }} />צור קשר</button>
-            <button className="btn-secondary"><Icon name="description" style={{ fontSize: 20 }} />קו״ח מותאם</button>
+            <button className="btn-secondary" onClick={() => { if (job.aiOpener) { copyText(job.aiOpener, 'פתיח הפנייה הועתק ✓'); } else { copyPrompt('כתוב/י פנייה קצרה וחמה למגייס/ת בחברת ' + job.company + ' לגבי תפקיד ' + job.role + ', בהתבסס על הפרופיל שלי.'); } }}><Icon name="forward_to_inbox" style={{ fontSize: 20 }} />צור קשר</button>
+            <button className="btn-secondary" onClick={() => copyPrompt('התאם/י את קורות החיים שלי לתפקיד ' + job.role + ' בחברת ' + job.company + '. הדגש/י ניסיון רלוונטי ומילות מפתח מתיאור המשרה.')}><Icon name="description" style={{ fontSize: 20 }} />קו״ח מותאם</button>
           </div>
 
           {/* Tools grid */}
@@ -696,6 +701,7 @@
             {tools.map(t => (
               <button
                 key={t.label}
+                onClick={t.act}
                 className="btn-secondary"
                 style={{ justifyContent: 'center', height: 50, borderRadius: 14 }}
               >
@@ -1034,6 +1040,7 @@
             setStatus={s => { setStatusMap(m => ({ ...m, [selectedJob.id]: s })); if (window.__saveStatus) window.__saveStatus(selectedJob.id, s); }}
             note={noteMap[selectedJob.id] || ''}
             setNote={v => setNoteMap(m => { const nm = { ...m, [selectedJob.id]: v }; try{ localStorage.setItem('jf_notes', JSON.stringify(nm)); }catch(e){} return nm; })}
+            onPractice={() => { setSelectedJobId(null); setView('voice'); }}
             onBack={() => setSelectedJobId(null)}
           />
         );
