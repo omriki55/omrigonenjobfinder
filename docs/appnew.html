@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Job Tracker — ממשק ניהול משרות</title>
+
+  <!-- ============================================================
+       FONTS  (Assistant for Hebrew UI text, Material Symbols icons)
+       ============================================================ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet" />
+
+  <!-- ============================================================
+       REACT  (loaded from CDN — no build step required)
+       Babel Standalone transpiles the JSX in the <script type="text/babel"> below.
+       For production you would pre-compile instead of shipping Babel.
+       ============================================================ -->
+  <script src="./supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- ============================================================
+       STYLES  (all CSS, readable & un-minified, in one place)
+       ============================================================ -->
+  <style>
+    /* ---- Design tokens ---- */
+    :root {
+      --accent:      #0a6dff;            /* primary blue */
+      --accent-ink:  #0852c4;            /* darker blue for gradients / text */
+      --accent-soft: rgba(10,109,255,0.16); /* tinted background */
+      --bg:          #f5f5f7;            /* app background */
+      --surface:     #ffffff;            /* cards */
+      --border:      #ececef;            /* hairline borders */
+      --ink:         #1d1d1f;            /* primary text */
+      --ink-soft:    #86868b;            /* secondary text */
+      --radius:      20px;
+      --shadow:      0 1px 2px rgba(0,0,0,0.03);
+      --shadow-lift: 0 14px 30px rgba(0,0,0,0.08);
+    }
+
+    /* ---- Resets ---- */
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: 'Assistant', -apple-system, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+    button { font-family: inherit; }
+    input, textarea { font-family: inherit; }
+
+    /* Icon helper: <span class="ms">icon_name</span> */
+    .ms {
+      font-family: 'Material Symbols Rounded';
+      font-weight: normal; font-style: normal;
+      line-height: 1; letter-spacing: normal; text-transform: none;
+      white-space: nowrap; word-wrap: normal; direction: ltr;
+      -webkit-font-feature-settings: 'liga'; font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased; user-select: none;
+    }
+    .ms.fill { font-variation-settings: 'FILL' 1; }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 9px; height: 9px; }
+    ::-webkit-scrollbar-thumb {
+      background: #d4d4d9; border-radius: 9px;
+      border: 2px solid transparent; background-clip: padding-box;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: #b9b9c0; background-clip: padding-box; }
+
+    /* ---- Animations ---- */
+    @keyframes fadeUp   { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes barGrow  { from { width: 0; } }
+    @keyframes orbPulse { 0%,100% { transform: scale(1); opacity: .55; } 50% { transform: scale(1.18); opacity: .15; } }
+    @keyframes orbCore  { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+    /* ---- Layout ---- */
+    .app        { display: flex; min-height: 100vh; }
+    .view-fade  { animation: fadeUp .35s ease; }
+
+    /* ---- Sidebar (right, because RTL) ---- */
+    .sidebar {
+      width: 268px; flex-shrink: 0;
+      position: sticky; top: 0; height: 100vh;
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-inline-start: 1px solid #e7e7ec;
+      display: flex; flex-direction: column;
+      padding: 26px 18px 20px;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 4px 10px 22px; }
+    .brand-logo {
+      width: 38px; height: 38px; border-radius: 11px;
+      background: linear-gradient(150deg, var(--accent), var(--accent-ink));
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px var(--accent-soft);
+    }
+    .brand-name { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; }
+    .brand-sub  { font-size: 12px; color: var(--ink-soft); font-weight: 500; margin-top: 1px; }
+
+    .nav { display: flex; flex-direction: column; gap: 3px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px; width: 100%;
+      padding: 11px 12px; border: none; border-radius: 13px;
+      font-size: 14.5px; font-weight: 600; cursor: pointer;
+      text-align: start; background: transparent; color: #3a3a3f;
+      transition: background .15s, color .15s;
+    }
+    .nav-item:hover         { background: #ececf0; }
+    .nav-item .ms           { font-size: 22px; color: #8e8e93; }
+    .nav-item.active        { background: var(--accent-soft); color: var(--accent-ink); font-weight: 700; }
+    .nav-item.active .ms    { color: var(--accent); }
+    .nav-item .badge {
+      font-size: 12px; font-weight: 700; background: var(--accent); color: #fff;
+      min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+
+    .sidebar-foot { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
+    .sidebar-divider { height: 1px; background: #e7e7ec; margin: 8px 6px; }
+    .user-row {
+      display: flex; align-items: center; gap: 11px;
+      padding: 9px 10px; border-radius: 13px; cursor: pointer; transition: background .15s;
+    }
+    .user-row:hover { background: #ececf0; }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(150deg, #ffb86b, #ff7a59);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 15px; flex-shrink: 0;
+    }
+
+    /* ---- Main column ---- */
+    .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .topbar {
+      position: sticky; top: 0; z-index: 5;
+      background: rgba(245,245,247,0.8);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      padding: 22px 40px 18px;
+      display: flex; align-items: center; gap: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-eyebrow { font-size: 13px; font-weight: 600; color: var(--accent); letter-spacing: 0.2px; }
+    .topbar-title   { margin: 2px 0 0; font-size: 26px; font-weight: 800; letter-spacing: -0.6px; }
+
+    .search-box {
+      display: flex; align-items: center; gap: 8px;
+      background: #fff; border: 1px solid #e7e7ec; border-radius: 12px;
+      padding: 0 14px; height: 42px; width: 260px; box-shadow: var(--shadow);
+    }
+    .search-box .ms { font-size: 20px; color: #a1a1a8; }
+    .search-box input { border: none; outline: none; background: transparent; font-size: 14.5px; width: 100%; color: var(--ink); }
+
+    .btn-primary {
+      display: flex; align-items: center; gap: 7px; height: 42px; padding: 0 18px;
+      border: none; border-radius: 12px;
+      background: linear-gradient(150deg, var(--accent), var(--accent-ink));
+      color: #fff; font-size: 14.5px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 3px 10px var(--accent-soft);
+      transition: transform .12s, box-shadow .12s;
+    }
+    .btn-primary:hover  { transform: translateY(-1px); box-shadow: 0 6px 16px var(--accent-soft); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary.lg { height: 46px; padding: 0 24px; font-size: 15px; border-radius: 13px; box-shadow: 0 4px 12px var(--accent-soft); }
+
+    .btn-secondary {
+      display: flex; align-items: center; gap: 8px; height: 46px; padding: 0 18px;
+      border: 1px solid #e7e7ec; border-radius: 13px; background: #fff; color: #3a3a3f;
+      font-size: 14.5px; font-weight: 700; cursor: pointer; transition: background .15s;
+    }
+    .btn-secondary:hover { background: #f3f3f5; }
+
+    .page { padding: 28px 40px 56px; flex: 1; }
+
+    /* ---- Filter pills / sort ---- */
+    .pill-row { display: flex; gap: 9px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 18px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
+      padding: 8px 15px; border-radius: 11px; border: 1px solid #e7e7ec;
+      font-size: 13.5px; font-weight: 700; cursor: pointer; background: #fff; color: #3a3a3f;
+      transition: all .15s;
+    }
+    .pill.active { background: var(--accent); color: #fff; border-color: transparent; }
+    .pill .count {
+      font-size: 11.5px; font-weight: 800; min-width: 19px; height: 19px; padding: 0 5px;
+      border-radius: 9px; display: inline-flex; align-items: center; justify-content: center;
+      background: #f0f0f2; color: var(--ink-soft);
+    }
+    .pill.active .count { background: rgba(255,255,255,0.22); color: #fff; }
+
+    .toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .result-label { font-size: 14px; color: var(--ink-soft); font-weight: 600; }
+    .sort-group { display: flex; align-items: center; gap: 6px; background: #fff; border: 1px solid #e7e7ec; border-radius: 11px; padding: 4px; }
+    .sort-btn { padding: 6px 13px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; background: transparent; color: var(--ink-soft); transition: all .15s; }
+    .sort-btn.active { background: var(--accent-soft); color: var(--accent-ink); }
+
+    /* ---- Job cards grid ---- */
+    .jobs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; }
+    .job-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 20px; display: flex; flex-direction: column; gap: 15px;
+      box-shadow: var(--shadow); cursor: pointer;
+      transition: transform .15s, box-shadow .15s, border-color .15s;
+    }
+    .job-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lift); border-color: #e0e0e6; }
+    .job-logo {
+      width: 46px; height: 46px; border-radius: 13px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 19px; color: #fff;
+    }
+    .job-role    { font-size: 16.5px; font-weight: 700; letter-spacing: -0.2px; line-height: 1.25; }
+    .job-company { font-size: 13.5px; color: var(--ink-soft); font-weight: 600; margin-top: 2px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12.5px; font-weight: 600; color: #6e6e73;
+      background: #f3f3f5; padding: 4px 9px; border-radius: 8px;
+    }
+    .chip .ms { font-size: 15px; }
+    .hairline { height: 1px; background: #f0f0f2; }
+
+    .status-tag { font-size: 12.5px; font-weight: 700; padding: 5px 12px; border-radius: 9px; }
+
+    .star-btn {
+      width: 34px; height: 34px; border-radius: 9px; border: none; background: transparent;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      transition: background .15s;
+    }
+    .star-btn.saved { background: #fff7e8; }
+    .star-btn .ms { font-size: 21px; color: #c4c4ca; }
+    .star-btn.saved .ms { color: #ff9f0a; }
+
+    /* Fit-score ring (conic gradient) */
+    .score-ring { position: relative; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .score-ring .hole { position: absolute; background: #fff; border-radius: 50%; }
+    .score-ring .num  { position: relative; font-weight: 800; }
+
+    /* ---- Generic card ---- */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
+    .card-title { font-size: 16px; font-weight: 700; }
+
+    /* ---- Stats ---- */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); }
+    .stat-value { font-size: 34px; font-weight: 800; letter-spacing: -1px; margin-top: 8px; }
+
+    .funnel-row { display: flex; align-items: center; gap: 16px; }
+    .funnel-label { width: 92px; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+    .funnel-track { flex: 1; height: 34px; background: #f3f3f5; border-radius: 10px; overflow: hidden; }
+    .funnel-bar { height: 100%; border-radius: 10px; animation: barGrow .8s cubic-bezier(.2,.8,.2,1); display: flex; align-items: center; padding: 0 12px; }
+    .funnel-bar span { font-size: 13px; font-weight: 800; color: #fff; }
+    .funnel-pct { width: 44px; font-size: 13px; font-weight: 700; color: var(--ink-soft); text-align: start; }
+
+    /* ---- STAR ---- */
+    .star-tag { font-size: 11.5px; font-weight: 700; color: var(--accent-ink); background: var(--accent-soft); padding: 3px 10px; border-radius: 7px; }
+    .neg-card { background: linear-gradient(160deg, #1d1d1f, #2c2c33); border-radius: 22px; padding: 26px; color: #fff; box-shadow: 0 12px 30px rgba(0,0,0,0.18); position: sticky; top: 96px; }
+
+    /* ---- Voice ---- */
+    .orb { position: relative; width: 150px; height: 150px; display: flex; align-items: center; justify-content: center; margin-bottom: 26px; }
+    .orb-wave { position: absolute; border-radius: 50%; background: var(--accent); }
+    .orb-core {
+      position: relative; width: 92px; height: 92px; border-radius: 50%;
+      background: linear-gradient(150deg, var(--accent), var(--accent-ink));
+      display: flex; align-items: center; justify-content: center;
+      animation: orbCore 2.6s ease-in-out infinite; box-shadow: 0 10px 30px var(--accent-soft);
+    }
+    .voice-round-btn { width: 52px; height: 52px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+    /* ---- Detail timeline ---- */
+    .timeline { display: flex; flex-direction: column; gap: 2px; position: relative; }
+    .timeline-line { position: absolute; top: 15px; bottom: 15px; inset-inline-start: 14px; width: 2px; background: #f0f0f2; }
+    .timeline-dot { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; z-index: 1; }
+    .timeline-dot.done    { background: linear-gradient(150deg, var(--accent), var(--accent-ink)); box-shadow: 0 3px 8px var(--accent-soft); }
+    .timeline-dot.pending { background: #fff; border: 2px solid #e7e7ec; }
+
+    /* ---- Settings ---- */
+    .settings-group-title { font-size: 13px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.6px; padding: 0 6px 9px; }
+    .settings-list { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; box-shadow: var(--shadow); }
+    .settings-row { display: flex; align-items: center; gap: 14px; padding: 15px 18px; border-top: 1px solid #f2f2f4; }
+    .settings-row:first-child { border-top: none; }
+    .settings-row:hover { background: #fafafb; }
+    .settings-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .settings-icon .ms { font-size: 19px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- ============================================================
+       APPLICATION  (JSX, transpiled in-browser by Babel)
+       ============================================================ -->
+  <!-- The application source below is written in JSX. We transpile it ourselves on load
+       (classic runtime = React.createElement, so no ES-module imports are emitted) and
+       then execute the result. Type "text/jsx-source" keeps Babel's auto-runner from
+       touching it, so this stays the single source of truth. -->
+  <script type="text/jsx-source" id="app-source">
+    const { useState } = React;
+
+    /* ============================================================
+       SAMPLE DATA — swap this array for your real jobs.
+       Each job object has these fields:
+         id            number   unique id
+         company       string   company name (Hebrew/English)
+         role          string   job title
+         location      string   city / "remote"
+         salary        string   salary range, display-ready
+         fitScore      number   0–10 AI match score (drives the ring color)
+         status        string   one of: 'saved' | 'applied' | 'interview' | 'offer' | 'rejected'
+         postedDaysAgo number   how many days ago it was added/seen
+         logoFrom      string   logo gradient start color (hex)
+         logoTo        string   logo gradient end color (hex)
+         description   string   free-text role description
+         requirements  string[] list of role requirements (matched top-down against the profile)
+         matchedReqs   number   how many of the requirements the candidate meets
+       ============================================================ */
+    const JOBS = (window.__JOBS || []);
+
+    /* Ready-made STAR answers for the interview bank. */
+    const STAR_ANSWERS = [
+      {
+        question: 'ספר על אתגר מקצועי משמעותי',
+        answer: 'בפרויקט redesign מרכזי קיבלתי דרישה לקצר זמן טעינה ב-40%. מיפיתי צווארי בקבוק, הובלתי שינוי ארכיטקטורת רכיבים, והגענו לשיפור של 52% תוך שבועיים.',
+        tags: ['מנהיגות', 'תוצאתי']
+      },
+      {
+        question: 'איך התמודדת עם קונפליקט בצוות',
+        answer: 'שני מפתחים נחלקו על גישה טכנית. קיימתי שיחה מתווכת, הגדרנו קריטריונים מדידים, ובחרנו פתרון לפי נתונים — מה שחיזק את האמון בצוות.',
+        tags: ['תקשורת']
+      },
+      {
+        question: 'תאר הצלחה שאתה גאה בה',
+        answer: 'הובלתי השקה של פיצ\'ר שהעלה engagement ב-23%. הגדרתי מדדים, תיאמתי בין דיזיין, מוצר ופיתוח, ושמרתי על לוז צמוד.',
+        tags: ['מוצר', 'אימפקט']
+      }
+    ];
+
+    /* Tips shown on the salary-negotiation card. */
+    const NEGOTIATION_TIPS = [
+      'אל תנקוב במספר ראשון — בקש את הטווח שלהם',
+      'עגן את הבקשה לפי שווי שוק ולא לפי השכר הנוכחי',
+      'כלול גם בונוס, מניות וימי חופשה במשא ומתן'
+    ];
+
+    /* ============================================================
+       HELPERS
+       ============================================================ */
+
+    // Visual metadata (label + colors) for each status value.
+    const STATUS_META = {
+      saved:     { label: 'שמורה', bg: 'rgba(10,132,255,0.12)', fg: '#0a6dff' },
+      applied:   { label: 'הוגש',  bg: '#eef0ff',               fg: '#4b56d6' },
+      interview: { label: 'ראיון', bg: '#fff2e0',               fg: '#b25e00' },
+      offer:     { label: 'הצעה',  bg: '#e3f7ea',               fg: '#1a7f48' },
+      rejected:  { label: 'נדחה',  bg: '#f1f1f3',               fg: '#86868b' }
+    };
+
+    // Human-friendly "x days ago" in Hebrew.
+    function formatDaysAgo(days) {
+      if (days === 1) return 'אתמול';
+      if (days === 2) return 'לפני יומיים';
+      if (days < 7)   return 'לפני ' + days + ' ימים';
+      return 'לפני שבוע';
+    }
+
+    // Color for the fit-score ring/number based on the score.
+    function scoreColors(score) {
+      if (score >= 8) return { ring: '#34c759', ink: '#1a7f48' };
+      if (score >= 6) return { ring: '#ff9f0a', ink: '#b25e00' };
+      return { ring: '#c4c4ca', ink: '#86868b' };
+    }
+
+    /* Small reusable icon component. */
+    function Icon({ name, className = '', style }) {
+      return <span className={'ms ' + className} style={style}>{name}</span>;
+    }
+
+    /* Circular fit-score ring built from a conic-gradient. */
+    function ScoreRing({ score, size = 38 }) {
+      const { ring, ink } = scoreColors(score);
+      const pct = score * 10;
+      const hole = Math.round(size * 0.1);
+      return (
+        <div className="score-ring" style={{
+          width: size, height: size,
+          background: `conic-gradient(${ring} ${pct}%, #ececf0 ${pct}%)`
+        }}>
+          <div className="hole" style={{ inset: hole }}></div>
+          <span className="num" style={{ color: ink, fontSize: size * 0.34 }}>{score}</span>
+        </div>
+      );
+    }
+
+    /* ============================================================
+       SIDEBAR  (navigation — sits on the right in RTL)
+       ============================================================ */
+    function Sidebar({ view, setView, jobCount, interviewCount }) {
+      const items = [
+        { key: 'jobs',      icon: 'work',        label: 'משרות' },
+        { key: 'analytics', icon: 'monitoring',  label: 'סטטיסטיקה' },
+        { key: 'star',      icon: 'psychology',  label: 'בנק STAR' },
+        { key: 'voice',     icon: 'graphic_eq',  label: 'ראיון קולי', badge: interviewCount },
+        { key: 'settings',  icon: 'settings',    label: 'הגדרות' }
+      ];
+      return (
+        <aside className="sidebar">
+          <div className="brand">
+            <div className="brand-logo"><Icon name="work" style={{ fontSize: 22, color: '#fff' }} /></div>
+            <div>
+              <div className="brand-name">Job Tracker</div>
+              <div className="brand-sub">{jobCount} משרות פעילות</div>
+            </div>
+          </div>
+
+          <nav className="nav">
+            {items.map(item => (
+              <button
+                key={item.key}
+                className={'nav-item' + (view === item.key ? ' active' : '')}
+                onClick={() => setView(item.key)}
+              >
+                <Icon name={item.icon} />
+                <span style={{ flex: 1, textAlign: 'start' }}>{item.label}</span>
+                {item.badge ? <span className="badge">{item.badge}</span> : null}
+              </button>
+            ))}
+          </nav>
+
+          <div className="sidebar-foot">
+            <div className="sidebar-divider"></div>
+            <div className="user-row">
+              <div className="avatar">{(window.__USER_NAME||'עומרי').trim().charAt(0)}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>{window.__USER_NAME || 'עומרי גונן'}</div>
+                <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>המסלול שלי</div>
+              </div>
+              <Icon name="unfold_more" style={{ fontSize: 18, color: '#b0b0b6' }} />
+            </div>
+          </div>
+        </aside>
+      );
+    }
+
+    /* ============================================================
+       TOP BAR  (eyebrow + title + search + add)
+       ============================================================ */
+    function TopBar({ eyebrow, title, search, setSearch }) {
+      return (
+        <header className="topbar">
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="topbar-eyebrow">{eyebrow}</div>
+            <h1 className="topbar-title">{title}</h1>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="search-box">
+              <Icon name="search" />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="חיפוש משרה או חברה…"
+              />
+            </div>
+            <button className="btn-primary"><Icon name="add" style={{ fontSize: 20 }} />הוסף משרה</button>
+          </div>
+        </header>
+      );
+    }
+
+    /* ============================================================
+       JOB CARD  (single card in the grid)
+       ============================================================ */
+    function JobCard({ job, isSaved, onToggleSave, onOpen }) {
+      const meta = STATUS_META[job.status];
+      return (
+        <div className="job-card" onClick={onOpen}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 13 }}>
+            <div className="job-logo" style={{ background: `linear-gradient(150deg, ${job.logoFrom}, ${job.logoTo})` }}>
+              {job.company.charAt(0)}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="job-role">{job.role}</div>
+              <div className="job-company">{job.company}</div>
+            </div>
+            <button
+              className={'star-btn' + (isSaved ? ' saved' : '')}
+              onClick={e => { e.stopPropagation(); onToggleSave(); }}
+            >
+              <Icon name={isSaved ? 'star' : 'star_border'} className={isSaved ? 'fill' : ''} />
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+            <span className="chip"><Icon name="location_on" />{job.location}</span>
+            <span className="chip"><Icon name="payments" />{job.salary}</span>
+          </div>
+
+          <div className="hairline"></div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span className="status-tag" style={{ background: meta.bg, color: meta.fg }}>{meta.label}</span>
+              <span style={{ fontSize: 12.5, color: '#a1a1a8', fontWeight: 600 }}>{formatDaysAgo(job.postedDaysAgo)}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+              <ScoreRing score={job.fitScore} />
+              <span style={{ fontSize: 11, color: '#a1a1a8', fontWeight: 700, lineHeight: 1.1 }}>התאמה</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ============================================================
+       JOBS VIEW  (filters + sort + grid)
+       ============================================================ */
+    function JobsView({ search, savedMap, toggleSave, openJob }) {
+      const [status, setStatus] = useState('all');
+      const [sort, setSort] = useState('match');
+
+      // Status counts for the filter pills.
+      const counts = {};
+      JOBS.forEach(j => { counts[j.status] = (counts[j.status] || 0) + 1; });
+
+      const filters = [
+        { key: 'all',       label: 'הכל' },
+        { key: 'saved',     label: 'שמורות' },
+        { key: 'applied',   label: 'הוגשו' },
+        { key: 'interview', label: 'ראיונות' },
+        { key: 'offer',     label: 'הצעות' },
+        { key: 'rejected',  label: 'נדחו' }
+      ];
+      const sorts = [
+        { key: 'match',  label: 'התאמה' },
+        { key: 'recent', label: 'עדכני' },
+        { key: 'az',     label: 'A–Z' }
+      ];
+
+      // Apply filter → search → sort.
+      let list = JOBS.slice();
+      if (status !== 'all') list = list.filter(j => j.status === status);
+      const q = search.trim();
+      if (q) list = list.filter(j => (j.company + ' ' + j.role).includes(q));
+      if (sort === 'match')       list.sort((a, b) => b.fitScore - a.fitScore);
+      else if (sort === 'recent') list.sort((a, b) => a.postedDaysAgo - b.postedDaysAgo);
+      else                        list.sort((a, b) => a.role.localeCompare(b.role));
+
+      const isSavedFor = j => (savedMap[j.id] !== undefined ? savedMap[j.id] : j.status === 'saved');
+
+      return (
+        <div className="view-fade">
+          <div className="pill-row">
+            {filters.map(f => {
+              const count = f.key === 'all' ? JOBS.length : (counts[f.key] || 0);
+              return (
+                <button key={f.key} className={'pill' + (status === f.key ? ' active' : '')} onClick={() => setStatus(f.key)}>
+                  {f.label}<span className="count">{count}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="toolbar">
+            <div className="result-label">
+              {list.length} משרות{status !== 'all' ? ' · ' + filters.find(f => f.key === status).label : ''}
+            </div>
+            <div className="sort-group">
+              {sorts.map(s => (
+                <button key={s.key} className={'sort-btn' + (sort === s.key ? ' active' : '')} onClick={() => setSort(s.key)}>{s.label}</button>
+              ))}
+            </div>
+          </div>
+
+          <div className="jobs-grid">
+            {list.map(job => (
+              <JobCard
+                key={job.id}
+                job={job}
+                isSaved={isSavedFor(job)}
+                onToggleSave={() => toggleSave(job)}
+                onOpen={() => openJob(job.id)}
+              />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    /* ============================================================
+       JOB DETAIL VIEW  (full single-job page)
+       ============================================================ */
+    function JobDetailView({ job, isSaved, toggleSave, status, setStatus, note, setNote, onBack }) {
+      const meta = STATUS_META[status];
+      const { ink } = scoreColors(job.fitScore);
+
+      // Timeline derived from the (possibly user-overridden) status.
+      const order = ['saved', 'applied', 'interview', 'offer'];
+      const stageLabels = { saved: 'נשמרה', applied: 'הוגשה', interview: 'ראיון', offer: 'הצעה' };
+      const currentIndex = status === 'rejected' ? 1 : order.indexOf(status);
+
+      // Status picker options.
+      const pickerOptions = [
+        { key: 'saved',     label: 'שמור' },
+        { key: 'applied',   label: 'הוגש' },
+        { key: 'interview', label: 'ראיון' },
+        { key: 'offer',     label: 'הצעה' },
+        { key: 'rejected',  label: 'נסגר' }
+      ];
+
+      // Tool buttons.
+      const tools = [
+        { icon: 'quiz',                label: 'הכנה לראיון' },
+        { icon: 'record_voice_over',   label: 'תרגול ראיון' },
+        { icon: 'folder_open',         label: 'דוסייר' },
+        { icon: 'volunteer_activism',  label: 'תמיכה רגשית' },
+        { icon: 'thumb_down',          label: 'לא רלוונטי' }
+      ];
+
+      return (
+        <div className="view-fade">
+          <button
+            onClick={onBack}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, border: 'none', background: 'transparent', fontSize: 14, fontWeight: 700, color: 'var(--ink-soft)', cursor: 'pointer', padding: '4px 0', marginBottom: 18 }}
+          >
+            <Icon name="chevron_right" style={{ fontSize: 20 }} />חזרה למשרות
+          </button>
+
+          {/* Hero */}
+          <div className="card" style={{ borderRadius: 24, padding: '26px 28px', display: 'flex', alignItems: 'center', gap: 22, flexWrap: 'wrap' }}>
+            <div className="job-logo" style={{ width: 64, height: 64, borderRadius: 18, fontSize: 26, background: `linear-gradient(150deg, ${job.logoFrom}, ${job.logoTo})` }}>
+              {job.company.charAt(0)}
+            </div>
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, letterSpacing: '-0.5px' }}>{job.role}</h2>
+              <div style={{ fontSize: 15, color: 'var(--ink-soft)', fontWeight: 600, marginTop: 3 }}>{job.company}</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 13 }}>
+                <span className="chip"><Icon name="location_on" />{job.location}</span>
+                <span className="chip"><Icon name="payments" />{job.salary}</span>
+                <span className="status-tag" style={{ background: meta.bg, color: meta.fg, padding: '6px 14px', fontSize: 13 }}>{meta.label}</span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <ScoreRing score={job.fitScore} size={72} />
+              <span style={{ fontSize: 12, color: '#a1a1a8', fontWeight: 700 }}>ציון התאמה</span>
+            </div>
+          </div>
+
+          {/* Status picker */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '22px 0 9px', fontSize: 13.5, fontWeight: 700, color: 'var(--ink-soft)' }}>
+            <Icon name="push_pin" style={{ fontSize: 17, color: 'var(--accent)' }} />איפה זה עומד?
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+            {pickerOptions.map(opt => {
+              const active = status === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  onClick={() => setStatus(opt.key)}
+                  style={{
+                    flex: 1, padding: '11px 8px', borderRadius: 12,
+                    border: active ? '1px solid transparent' : '1px solid #e7e7ec',
+                    fontSize: 14, fontWeight: 700, cursor: 'pointer', transition: 'all .15s',
+                    background: active ? 'linear-gradient(150deg, var(--accent), var(--accent-ink))' : '#fff',
+                    color: active ? '#fff' : '#3a3a3f',
+                    boxShadow: active ? '0 3px 10px var(--accent-soft)' : 'none'
+                  }}
+                >{opt.label}</button>
+              );
+            })}
+          </div>
+
+          {/* Primary actions */}
+          <div style={{ display: 'flex', gap: 11, flexWrap: 'wrap', marginBottom: 12 }}>
+            <button className="btn-primary lg"><Icon name="send" style={{ fontSize: 20 }} />הגש מועמדות</button>
+            <button
+              className="btn-secondary"
+              onClick={toggleSave}
+              style={isSaved ? { background: '#fff7e8', borderColor: '#ffe0a3', color: '#b25e00' } : null}
+            >
+              <Icon name={isSaved ? 'star' : 'star_border'} className={isSaved ? 'fill' : ''} style={{ fontSize: 20, color: isSaved ? '#ff9f0a' : '#86868b' }} />
+              {isSaved ? 'שמורה' : 'שמור'}
+            </button>
+            <button className="btn-secondary"><Icon name="open_in_new" style={{ fontSize: 20 }} />פתח מודעה</button>
+            <button className="btn-secondary"><Icon name="forward_to_inbox" style={{ fontSize: 20 }} />צור קשר</button>
+            <button className="btn-secondary"><Icon name="description" style={{ fontSize: 20 }} />קו״ח מותאם</button>
+          </div>
+
+          {/* Tools grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginBottom: 24 }}>
+            {tools.map(t => (
+              <button
+                key={t.label}
+                className="btn-secondary"
+                style={{ justifyContent: 'center', height: 50, borderRadius: 14 }}
+              >
+                <Icon name={t.icon} style={{ fontSize: 20, color: 'var(--accent)' }} />{t.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Two columns: content + sticky aside */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 20, alignItems: 'start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div className="card">
+                <div className="card-title" style={{ marginBottom: 10 }}>תיאור התפקיד</div>
+                <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.7, color: '#4a4a4f' }}>{job.description}</p>
+              </div>
+
+              <div className="card">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                  <div className="card-title">דרישות מול הפרופיל שלך</div>
+                  <span className="star-tag">{job.matchedReqs} מתוך {job.requirements.length} דרישות תואמות</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {job.requirements.map((req, i) => {
+                    const ok = i < job.matchedReqs;
+                    return (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+                        <Icon name={ok ? 'check_circle' : 'remove_circle_outline'} className={ok ? 'fill' : ''} style={{ fontSize: 20, color: ok ? '#34c759' : '#c4c4ca' }} />
+                        <span style={{ fontSize: 14.5, fontWeight: 600, color: ok ? 'var(--ink)' : '#a1a1a8' }}>{req}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div style={{ background: 'linear-gradient(150deg, var(--accent-soft), rgba(94,92,230,0.10))', border: '1px solid var(--accent-soft)', borderRadius: 20, padding: '22px 24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 9 }}>
+                  <Icon name="auto_awesome" style={{ fontSize: 20, color: 'var(--accent)' }} />
+                  <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--accent-ink)' }}>תובנת AI</span>
+                </div>
+                <p style={{ margin: 0, fontSize: 14, lineHeight: 1.65, color: '#3a3a3f' }}>
+                  הניסיון שלך ב-design systems והובלת redesign תואם {job.matchedReqs} מתוך {job.requirements.length} הדרישות. שווה להדגיש בראיון את פרויקט שיפור ה-engagement.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ position: 'sticky', top: 96, display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <div className="card">
+                <div className="card-title" style={{ marginBottom: 20 }}>מסלול המשרה</div>
+                <div className="timeline">
+                  <div className="timeline-line"></div>
+                  {order.map((key, i) => {
+                    const done = i <= currentIndex;
+                    const current = i === currentIndex;
+                    return (
+                      <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '7px 0' }}>
+                        <div className={'timeline-dot ' + (done ? 'done' : 'pending')}>
+                          <Icon name={done ? 'check' : 'radio_button_unchecked'} style={{ fontSize: done ? 17 : 14, color: done ? '#fff' : '#c4c4ca' }} />
+                        </div>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: 14.5, fontWeight: current ? 700 : 600, color: done ? 'var(--ink)' : '#a1a1a8' }}>{stageLabels[key]}</span>
+                          <span style={{ fontSize: 12.5, fontWeight: 600, color: current ? 'var(--accent-ink)' : '#a1a1a8' }}>
+                            {done ? formatDaysAgo(job.postedDaysAgo + (currentIndex - i) * 2) : 'ממתין'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="card">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 13 }}>
+                  <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <Icon name="edit_note" style={{ fontSize: 19, color: 'var(--accent)' }} />הערות אישיות
+                  </div>
+                  <button style={{ display: 'flex', alignItems: 'center', gap: 5, border: 'none', background: 'var(--accent-soft)', color: 'var(--accent-ink)', fontSize: 13, fontWeight: 700, padding: '7px 13px', borderRadius: 10, cursor: 'pointer' }}>
+                    <Icon name="save" style={{ fontSize: 16 }} />שמור
+                  </button>
+                </div>
+                <textarea
+                  value={note}
+                  onChange={e => setNote(e.target.value)}
+                  placeholder="מחשבות, אנשי קשר, שאלות לראיון…"
+                  style={{ width: '100%', minHeight: 104, resize: 'vertical', border: '1px solid #e7e7ec', borderRadius: 14, padding: '13px 14px', fontSize: 14, lineHeight: 1.6, color: 'var(--ink)', outline: 'none', background: '#fafafb' }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ============================================================
+       ANALYTICS VIEW  (stat cards + funnel)
+       ============================================================ */
+    function AnalyticsView() {
+      const counts = {};
+      JOBS.forEach(j => { counts[j.status] = (counts[j.status] || 0) + 1; });
+      const total = JOBS.length;
+
+      const statCards = [
+        { label: 'משרות פעילות',     value: String(total),                 icon: 'work',         iconColor: 'var(--accent)', delta: '+3 השבוע',        deltaColor: '#1a7f48' },
+        { label: 'אחוז התקדמות',     value: '38%',                          icon: 'trending_up',  iconColor: '#34c759',       delta: 'הוגשו מתוך נשמרו', deltaColor: 'var(--ink-soft)' },
+        { label: 'ראיונות',          value: String(counts.interview || 0),  icon: 'forum',        iconColor: '#ff9f0a',       delta: 'השבוע הקרוב',      deltaColor: 'var(--ink-soft)' },
+        { label: 'ציון התאמה ממוצע', value: '7.4',                          icon: 'target',       iconColor: '#5e5ce6',       delta: 'מתוך 10',          deltaColor: 'var(--ink-soft)' }
+      ];
+
+      const funnel = [
+        { label: 'נשמרו',   count: total,                                                              color: '#0a84ff' },
+        { label: 'הוגשו',   count: (counts.applied || 0) + (counts.interview || 0) + (counts.offer || 0), color: '#5e5ce6' },
+        { label: 'ראיונות', count: (counts.interview || 0) + (counts.offer || 0),                      color: '#ff9f0a' },
+        { label: 'הצעות',   count: counts.offer || 0,                                                  color: '#34c759' }
+      ];
+
+      return (
+        <div className="view-fade" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <div className="stat-grid">
+            {statCards.map(c => (
+              <div className="stat-card" key={c.label}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 13.5, color: 'var(--ink-soft)', fontWeight: 600 }}>{c.label}</span>
+                  <Icon name={c.icon} style={{ fontSize: 20, color: c.iconColor }} />
+                </div>
+                <div className="stat-value">{c.value}</div>
+                <div style={{ fontSize: 12.5, fontWeight: 700, marginTop: 4, color: c.deltaColor }}>{c.delta}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="card" style={{ borderRadius: 22, padding: '26px 28px' }}>
+            <div style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.3px' }}>משפך התהליך</div>
+            <div style={{ fontSize: 13.5, color: 'var(--ink-soft)', fontWeight: 500, marginTop: 2 }}>תמונת מצב של תהליך החיפוש</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 24 }}>
+              {funnel.map(f => (
+                <div className="funnel-row" key={f.label}>
+                  <div className="funnel-label">{f.label}</div>
+                  <div className="funnel-track">
+                    <div className="funnel-bar" style={{ width: Math.max((f.count / total) * 100, 8) + '%', background: `linear-gradient(90deg, ${f.color}, ${f.color}cc)` }}>
+                      <span>{f.count}</span>
+                    </div>
+                  </div>
+                  <div className="funnel-pct">{Math.round((f.count / total) * 100)}%</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ============================================================
+       STAR VIEW  (answer bank + salary negotiation card)
+       ============================================================ */
+    function StarView() {
+      return (
+        <div className="view-fade" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 22, alignItems: 'start' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ fontSize: 17, fontWeight: 700 }}>תשובות STAR מוכנות</div>
+            {STAR_ANSWERS.map((s, i) => (
+              <div className="card" style={{ borderRadius: 18, padding: '20px 22px' }} key={i}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Icon name="psychology" style={{ fontSize: 20, color: 'var(--accent)' }} />
+                  <span style={{ fontSize: 15.5, fontWeight: 700 }}>{s.question}</span>
+                </div>
+                <p style={{ margin: '12px 0 0', fontSize: 14, lineHeight: 1.65, color: '#4a4a4f' }}>{s.answer}</p>
+                <div style={{ display: 'flex', gap: 7, marginTop: 14 }}>
+                  {s.tags.map(t => <span className="star-tag" key={t}>{t}</span>)}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="neg-card">
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 700, background: 'rgba(255,255,255,0.12)', padding: '6px 12px', borderRadius: 20 }}>
+              <Icon name="savings" style={{ fontSize: 17 }} />משא ומתן על שכר
+            </div>
+            <div style={{ fontSize: 20, fontWeight: 800, marginTop: 18, letterSpacing: '-0.4px' }}>טווח מומלץ לתפקיד שלך</div>
+            <div style={{ fontSize: 38, fontWeight: 800, marginTop: 6, letterSpacing: '-1px' }}>₪34K–42K</div>
+            <div style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.6)', marginTop: 2, fontWeight: 500 }}>ברוטו לחודש · בכיר</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 11, marginTop: 22 }}>
+              {NEGOTIATION_TIPS.map((tip, i) => (
+                <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <Icon name="check_circle" style={{ fontSize: 18, color: '#5ad19a', marginTop: 1 }} />
+                  <span style={{ fontSize: 13.5, lineHeight: 1.5, color: 'rgba(255,255,255,0.85)' }}>{tip}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ============================================================
+       VOICE INTERVIEW VIEW  (animated orb + transcript + controls)
+       ============================================================ */
+    function VoiceView() {
+      return (
+        <div className="view-fade" style={{ maxWidth: 640, margin: '12px auto 0', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+          <div className="orb">
+            <div className="orb-wave" style={{ inset: 0, animation: 'orbPulse 2.6s ease-in-out infinite' }}></div>
+            <div className="orb-wave" style={{ inset: 18, animation: 'orbPulse 2.6s ease-in-out infinite .6s' }}></div>
+            <div className="orb-core"><Icon name="graphic_eq" style={{ fontSize: 40, color: '#fff' }} /></div>
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.4px' }}>ראיון קולי עם AI</div>
+          <div style={{ fontSize: 14.5, color: 'var(--ink-soft)', fontWeight: 500, marginTop: 4 }}>תרגול שאלות בזמן אמת · קול אנושי</div>
+
+          <div className="card" style={{ width: '100%', marginTop: 28, textAlign: 'start', display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ display: 'flex', gap: 11 }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(150deg, var(--accent), var(--accent-ink))', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Icon name="smart_toy" style={{ fontSize: 18, color: '#fff' }} />
+              </div>
+              <div style={{ background: '#f3f3f5', borderRadius: '4px 16px 16px 16px', padding: '11px 15px', fontSize: 14.5, lineHeight: 1.55 }}>
+                ספר לי על פרויקט שבו הובלת צוות תחת לחץ זמן. איך ניהלת את זה?
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 11, flexDirection: 'row-reverse' }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#ff7a59', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 13 }}>ע</div>
+              <div style={{ background: 'var(--accent)', color: '#fff', borderRadius: '16px 4px 16px 16px', padding: '11px 15px', fontSize: 14.5, lineHeight: 1.55 }}>
+                בטח. ברבעון האחרון הובלתי צוות של ארבעה מעצבים…
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 28 }}>
+            <button className="voice-round-btn" style={{ border: '1px solid #e7e7ec', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <Icon name="skip_next" style={{ fontSize: 24, color: '#6e6e73' }} />
+            </button>
+            <button style={{ width: 72, height: 72, borderRadius: '50%', border: 'none', background: 'linear-gradient(150deg, var(--accent), var(--accent-ink))', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 22px var(--accent-soft)' }}>
+              <Icon name="mic" style={{ fontSize: 32, color: '#fff' }} />
+            </button>
+            <button className="voice-round-btn" style={{ border: 'none', background: '#ffebe9' }}>
+              <Icon name="call_end" style={{ fontSize: 24, color: '#e0392f' }} />
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    /* ============================================================
+       SETTINGS VIEW  (grouped iOS-style rows)
+       ============================================================ */
+    function SettingsView() {
+      const groups = [
+        {
+          title: 'פרופיל',
+          rows: [
+            { icon: 'description', iconBg: 'var(--accent-soft)', iconColor: 'var(--accent)', label: 'קורות חיים',       desc: 'omri_gonen_cv.pdf · עודכן אתמול',  value: '' },
+            { icon: 'badge',       iconBg: '#eef0ff',            iconColor: '#4b56d6',       label: 'תפקידים מבוקשים', desc: 'Product Designer · UX Lead',        value: '3', valueStyle: { fontSize: 13, fontWeight: 700, color: 'var(--ink-soft)' } }
+          ]
+        },
+        {
+          title: 'חיבורים',
+          rows: [
+            { icon: 'cloud',             iconBg: '#e3f7ea', iconColor: '#1a7f48', label: 'Proxy URL',             desc: 'צ\'אט חי מאובטח דרך Cloudflare', value: 'מחובר', valueStyle: { fontSize: 12.5, fontWeight: 700, color: '#1a7f48', background: '#e3f7ea', padding: '4px 10px', borderRadius: 8 } },
+            { icon: 'mail',              iconBg: '#fff2e0', iconColor: '#b25e00', label: 'התראות במייל',          desc: 'משרות עם ציון 8+',               value: 'פעיל', valueStyle: { fontSize: 12.5, fontWeight: 700, color: '#b25e00', background: '#fff2e0', padding: '4px 10px', borderRadius: 8 } },
+            { icon: 'record_voice_over', iconBg: '#f3e8ff', iconColor: '#a23ad6', label: 'ElevenLabs — קול לראיון', desc: 'קול אנושי לראיון הקולי',         value: '' }
+          ]
+        },
+        {
+          title: 'תצוגה',
+          rows: [
+            { icon: 'dark_mode', iconBg: '#f1f1f3', iconColor: '#6e6e73', label: 'מצב כהה', desc: 'התאמה אוטומטית למערכת', value: 'בהיר', valueStyle: { fontSize: 13, fontWeight: 700, color: 'var(--ink-soft)' } }
+          ]
+        }
+      ];
+
+      return (
+        <div className="view-fade" style={{ maxWidth: 720, display: 'flex', flexDirection: 'column', gap: 26 }}>
+          {groups.map(g => (
+            <div key={g.title}>
+              <div className="settings-group-title">{g.title}</div>
+              <div className="settings-list">
+                {g.rows.map(r => (
+                  <div className="settings-row" key={r.label}>
+                    <div className="settings-icon" style={{ background: r.iconBg }}>
+                      <Icon name={r.icon} style={{ color: r.iconColor }} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14.5, fontWeight: 600 }}>{r.label}</div>
+                      <div style={{ fontSize: 12.5, color: 'var(--ink-soft)', fontWeight: 500, marginTop: 1 }}>{r.desc}</div>
+                    </div>
+                    {r.value ? <span style={r.valueStyle}>{r.value}</span> : null}
+                    <Icon name="chevron_left" style={{ fontSize: 20, color: '#c4c4ca' }} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    /* ============================================================
+       APP  (root: holds shared state, picks the active view)
+       ============================================================ */
+    function App() {
+      const [view, setView] = useState('jobs');        // active nav screen
+      const [search, setSearch] = useState('');         // top-bar search text
+      const [selectedJobId, setSelectedJobId] = useState(null); // open job detail, or null
+      const [savedMap, setSavedMap] = useState({});     // { [jobId]: bool } overrides for the star toggle
+      const [statusMap, setStatusMap] = useState({});   // { [jobId]: status } overrides from the detail picker
+      const [noteMap, setNoteMap] = useState({});       // { [jobId]: string } personal notes
+
+      // Effective saved / status for a job (user override falls back to the data).
+      const isSavedFor = job => (savedMap[job.id] !== undefined ? savedMap[job.id] : job.status === 'saved');
+      const statusFor  = job => (statusMap[job.id] || job.status);
+
+      const toggleSave = job => setSavedMap(m => ({ ...m, [job.id]: !isSavedFor(job) }));
+
+      const selectedJob = JOBS.find(j => j.id === selectedJobId) || null;
+
+      // Counts for nav badge.
+      const interviewCount = JOBS.filter(j => statusFor(j) === 'interview' || statusFor(j) === 'offer').length;
+
+      // Top-bar eyebrow + title per view.
+      const titles = { jobs: 'המשרות שלי', analytics: 'סטטיסטיקה', star: 'בנק STAR ומשא ומתן', voice: 'ראיון קולי', settings: 'הגדרות' };
+      const hour = new Date().getHours();
+      const greeting = (hour < 12 ? 'בוקר טוב' : hour < 18 ? 'צהריים טובים' : 'ערב טוב') + ' עומרי 👋';
+
+      let eyebrow = greeting;
+      let title = titles[view];
+      if (selectedJob) {
+        eyebrow = selectedJob.company + ' · ' + selectedJob.location;
+        title = selectedJob.role;
+      }
+
+      // Which screen to render in the page body.
+      let body;
+      if (selectedJob) {
+        body = (
+          <JobDetailView
+            job={selectedJob}
+            isSaved={isSavedFor(selectedJob)}
+            toggleSave={() => toggleSave(selectedJob)}
+            status={statusFor(selectedJob)}
+            setStatus={s => setStatusMap(m => ({ ...m, [selectedJob.id]: s }))}
+            note={noteMap[selectedJob.id] || ''}
+            setNote={v => setNoteMap(m => ({ ...m, [selectedJob.id]: v }))}
+            onBack={() => setSelectedJobId(null)}
+          />
+        );
+      } else if (view === 'jobs') {
+        body = <JobsView search={search} savedMap={savedMap} toggleSave={toggleSave} openJob={setSelectedJobId} />;
+      } else if (view === 'analytics') {
+        body = <AnalyticsView />;
+      } else if (view === 'star') {
+        body = <StarView />;
+      } else if (view === 'voice') {
+        body = <VoiceView />;
+      } else if (view === 'settings') {
+        body = <SettingsView />;
+      }
+
+      return (
+        <div className="app">
+          <Sidebar
+            view={view}
+            setView={v => { setSelectedJobId(null); setView(v); }}
+            jobCount={JOBS.length}
+            interviewCount={interviewCount}
+          />
+          <main className="main">
+            <TopBar eyebrow={eyebrow} title={title} search={search} setSearch={setSearch} />
+            <div className="page">{body}</div>
+          </main>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+
+  <!-- Bootstrap: transpile the JSX source above with the classic runtime, then run it. -->
+  <script>
+  (function () {
+    var sb=null, AUTH_DOMAIN='users.jobfinder.local';
+    function initSb(){ if(!sb && window.SUPABASE_URL && window.SUPABASE_ANON_KEY && window.supabase){ sb=window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);} return sb; }
+    function runApp(){ var s=document.getElementById('app-source').textContent; var c=Babel.transform(s,{presets:[['react',{runtime:'classic'}]]}).code; var el=document.createElement('script'); el.textContent=c; document.body.appendChild(el); }
+    function mapStatus(s){ if(s==='applied'||s==='interview'||s==='offer'||s==='rejected')return s; if(s==='נסגרה')return 'rejected'; return 'saved'; }
+    function daysAgo(d){ if(!d)return 0; return Math.max(0,Math.round((Date.now()-new Date(d))/86400000)); }
+    function grad(n){ var h=0;n=n||'?';for(var i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))>>>0;var u=h%360;return ['hsl('+u+' 58% 56%)','hsl('+((u+26)%360)+' 58% 46%)']; }
+    function loadAndRun(){
+      sb.from('jobs').select('id,company,title,location,url,description,fit_score,score_reason,ai_opener,status,posted,meta').order('fit_score',{ascending:false}).limit(400).then(function(res){
+        var rows=(res&&res.data)||[]; var seen={}, out=[];
+        rows.forEach(function(j){ var k=((j.company||'')+'|'+(j.title||'')).toLowerCase(); if(seen[k])return; seen[k]=1;
+          var meta={}; try{ meta=typeof j.meta==='string'?JSON.parse(j.meta):(j.meta||{}); }catch(e){}
+          var g=grad(j.company); var reqs=(meta.gaps&&meta.gaps.length)?meta.gaps.slice(0,5):[];
+          out.push({ id:j.id, company:j.company||'', role:j.title||'', location:j.location||'', salary:meta.comp_estimate||'', fitScore:Number(j.fit_score)||0, status:mapStatus(j.status), postedDaysAgo:daysAgo(j.posted), logoFrom:g[0], logoTo:g[1], description:j.description||j.score_reason||'', requirements:reqs, matchedReqs:0, aiOpener:j.ai_opener||'', url:j.url||'' });
+        });
+        window.__JOBS=out; runApp();
+      }, function(){ window.__JOBS=[]; runApp(); });
+    }
+    function gate(){
+      var d=document.createElement('div'); d.id='ag';
+      d.style.cssText='position:fixed;inset:0;z-index:99999;background:#f5f5f7;display:flex;align-items:center;justify-content:center;padding:20px;direction:rtl;font-family:Assistant,-apple-system,sans-serif';
+      var ic='width:100%;box-sizing:border-box;padding:11px 14px;border:1.5px solid #d2d2d7;border-radius:12px;font:inherit;font-size:.95rem;margin-top:8px';
+      d.innerHTML='<div style="max-width:380px;width:100%;background:#fff;border-radius:22px;padding:30px 26px;box-shadow:0 10px 40px rgba(0,0,0,.10)">'+
+        '<div style="font-size:1.4rem;font-weight:800">הטרקר שלי</div>'+
+        '<div style="font-size:.9rem;color:#6e6e73;margin:4px 0 16px">התחברו או הירשמו כדי להמשיך</div>'+
+        '<div style="display:flex;gap:8px;margin-bottom:6px"><button id="agl"></button><button id="ags"></button></div>'+
+        '<input id="agu" autocapitalize="off" spellcheck="false" placeholder="omri" style="'+ic+'"/>'+
+        '<input id="agp" type="password" placeholder="סיסמה" style="'+ic+'"/>'+
+        '<div id="agn" style="display:none"><input id="agname" placeholder="השם שלך (אפשר בעברית)" style="'+ic+'"/></div>'+
+        '<div id="age" style="display:none;color:#d70015;font-size:.85rem;font-weight:600;margin-top:8px"></div>'+
+        '<button id="agb" style="width:100%;margin-top:16px;padding:12px;border:none;border-radius:100px;background:#0a6dff;color:#fff;font:inherit;font-size:1rem;font-weight:700;cursor:pointer"></button>'+
+        '</div>';
+      document.body.appendChild(d);
+      var mode='login', $=function(i){return document.getElementById(i);};
+      $('agu').addEventListener('input',function(){this.value=this.value.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9_-]+/g,'').slice(0,24);});
+      function setMode(m){mode=m;$('age').style.display='none';
+        $('agl').style.cssText='flex:1;padding:9px;border-radius:10px;font:inherit;font-weight:700;cursor:pointer;border:1.5px solid '+(m==='login'?'#0a6dff;background:#0a6dff;color:#fff':'#d2d2d7;background:#fff;color:#1d1d1f');
+        $('ags').style.cssText='flex:1;padding:9px;border-radius:10px;font:inherit;font-weight:700;cursor:pointer;border:1.5px solid '+(m==='signup'?'#0a6dff;background:#0a6dff;color:#fff':'#d2d2d7;background:#fff;color:#1d1d1f');
+        $('agl').textContent='התחברות';$('ags').textContent='הרשמה';
+        $('agn').style.display=m==='signup'?'block':'none';$('agb').textContent=m==='signup'?'יצירת חשבון':'התחברות';}
+      $('agl').onclick=function(){setMode('login');};$('ags').onclick=function(){setMode('signup');};
+      function err(m){$('age').textContent=m;$('age').style.display='block';}
+      $('agb').onclick=function(){ var u=$('agu').value.trim().toLowerCase(), p=$('agp').value;
+        if(!/^[a-z0-9_-]{3,24}$/.test(u))return err('שם משתמש באנגלית (למשל omri)');
+        if(p.length<6)return err('סיסמה 6 תווים לפחות'); var em=u+'@'+AUTH_DOMAIN; $('agb').disabled=true;
+        if(mode==='signup'){ sb.auth.signUp({email:em,password:p,options:{data:{username:u,full_name:$('agname').value.trim()}}}).then(function(r){ if(r.error){err(/registered|exists|already/i.test(r.error.message)?'שם המשתמש תפוס':r.error.message);$('agb').disabled=false;return;} location.reload(); }); }
+        else { sb.auth.signInWithPassword({email:em,password:p}).then(function(r){ if(r.error){ setMode('signup'); err('אין חשבון בשם הזה — השלימו הרשמה'); $('agb').disabled=false; return;} location.reload(); }); }
+      };
+      $('agp').addEventListener('keydown',function(e){if(e.key==='Enter')$('agb').click();});
+      setMode('login');
+    }
+    function boot(){ initSb(); if(!sb){ runApp(); return; }
+      sb.auth.getUser().then(function(r){ var us=r&&r.data&&r.data.user; if(!us){ gate(); return; }
+        window.__USER_NAME=(us.user_metadata&&(us.user_metadata.full_name||us.user_metadata.username))||'';
+        sb.from('profiles').select('full_name,username').eq('user_id',us.id).maybeSingle().then(function(pr){ if(pr&&pr.data){window.__USER_NAME=pr.data.full_name||pr.data.username||window.__USER_NAME;} loadAndRun(); }, function(){ loadAndRun(); });
+      }, function(){ gate(); });
+    }
+    if(window.supabase&&window.Babel) boot(); else { var t=setInterval(function(){ if(window.supabase&&window.Babel){clearInterval(t);boot();} },80); setTimeout(function(){clearInterval(t);if(!window.supabase)runApp();},6000); }
+  })();
+  </script>
+</body>
+</html>
