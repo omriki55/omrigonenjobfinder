@@ -1023,6 +1023,24 @@
     .jc-status{display:inline-flex;align-items:center;gap:5px;background:var(--s-bg);color:var(--s-fg);border-radius:999px;padding:5px 10px;font-size:.74rem;font-weight:700;white-space:nowrap}
     .jc-sdot{width:6px;height:6px;border-radius:50%;background:var(--s-solid)}
     .jc-date{font-size:.72rem;color:var(--inkFaint);font-weight:600;white-space:nowrap}
+    /* Analytics — stat cards + funnel (match design) */
+    #an-body .an-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+    #an-body .an-stat{background:#fff;border:1px solid var(--lineSoft);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:3px;position:relative}
+    #an-body .an-stat-ico{position:absolute;top:14px;left:14px;width:30px;height:30px;border-radius:9px;background:var(--surface-container);color:var(--c);display:flex;align-items:center;justify-content:center}
+    #an-body .an-stat-ico .material-symbols-rounded{font-size:18px}
+    #an-body .an-stat-v{font-size:1.85rem;font-weight:800;color:var(--ink);line-height:1.1;margin-top:2px}
+    #an-body .an-stat-l{font-size:.8rem;color:var(--inkSoft);font-weight:600}
+    #an-body .an-funnel-card{background:#fff;border:1px solid var(--lineSoft);border-radius:18px;padding:20px 22px}
+    #an-body .an-funnel-head{margin-bottom:16px}
+    #an-body .an-funnel-head .t{font-size:1.05rem;font-weight:800;color:var(--ink)}
+    #an-body .an-funnel-head .s{font-size:.8rem;color:var(--inkFaint);margin-top:2px}
+    #an-body .an-funnel{display:flex;flex-direction:column;gap:12px}
+    #an-body .an-stage{display:flex;align-items:center;gap:12px}
+    #an-body .an-stage-lbl{width:74px;flex:0 0 auto;font-size:.85rem;font-weight:600;color:var(--inkSoft);text-align:right}
+    #an-body .an-stage-track{flex:1;height:30px;background:var(--surface-container);border-radius:9px;overflow:hidden}
+    #an-body .an-stage-bar{height:100%;border-radius:9px;display:flex;align-items:center;padding:0 10px;color:#fff;font-weight:800;font-size:.82rem;min-width:24px;transition:width .6s var(--ease)}
+    #an-body .an-stage-pct{width:42px;flex:0 0 auto;font-size:.8rem;color:var(--inkFaint);font-weight:700;text-align:left}
+    @media(max-width:760px){#an-body .an-stats{grid-template-columns:repeat(2,1fr)}}
     @media(min-width:1024px){
       #app{margin-right:212px!important}
       #nav-rail{width:212px!important;align-items:stretch!important;padding:18px 12px!important;background:var(--surface)!important;border-left:1px solid var(--lineSoft)!important}
@@ -2554,28 +2572,23 @@ function openAnalytics(){
   const max=Math.max(1,...stageDefs.map(([k])=>stats.by[k]||0));
   const funnel=stageDefs.map(([k,he,col])=>{
     const v=stats.by[k]||0,w=Math.round(v/max*100);
-    return`<div class="an-stage"><span class="lbl">${he}</span><div class="barwrap"><div class="bar" style="width:${w}%;background:${col}"></div></div><span class="v">${v}</span></div>`;
+    return`<div class="an-stage"><span class="an-stage-lbl">${he}</span><div class="an-stage-track"><div class="an-stage-bar" style="width:${v?Math.max(14,w):0}%;background:${col}">${v?`<span>${v}</span>`:''}</div></div><span class="an-stage-pct">${w}%</span></div>`;
   }).join("");
   const applied=stats.by.applied+stats.by.interview+stats.by.offer+stats.by.rejected;
   const reachedInt=stats.by.interview+stats.by.offer;
   const a2i=applied?Math.round(reachedInt/applied*100):0;
-  const i2o=reachedInt?Math.round(stats.by.offer/reachedInt*100):0;
-  // avg days since last status change for active applied jobs
-  let totDays=0,cnt=0;
-  JOBS.forEach(j=>{const st=getJobState(j);if(st.dismissed)return;if(st.status==="applied"&&st.statusDate){totDays+=Math.round((NOW-new Date(st.statusDate))/86400000);cnt++;}});
-  const avgWait=cnt?Math.round(totDays/cnt):0;
-  // interview rounds count
-  let totalRounds=0,passed=0;
-  JOBS.forEach(j=>{getRounds(j).forEach(r=>{totalRounds++;if(r.outcome==="passed")passed++;});});
+  let fitSum=0,fitN=0;JOBS.forEach(j=>{const st=getJobState(j);if(st.dismissed)return;if(j.fit_score){fitSum+=Number(j.fit_score)||0;fitN++;}});
+  const avgFit=fitN?(fitSum/fitN).toFixed(1):'—';
   document.getElementById("an-body").innerHTML=`
-    <div class="an-conv">
-      <div class="card"><div class="pct">${a2i}%</div><div class="cl">הגשה → ראיון</div></div>
-      <div class="card"><div class="pct">${i2o}%</div><div class="cl">ראיון → הצעה</div></div>
+    <div class="an-stats">
+      <div class="an-stat"><span class="an-stat-ico" style="--c:#0a6dff"><span class="material-symbols-rounded">work</span></span><div class="an-stat-v">${stats.total}</div><div class="an-stat-l">משרות פעילות</div></div>
+      <div class="an-stat"><span class="an-stat-ico" style="--c:#1a7f48"><span class="material-symbols-rounded">trending_up</span></span><div class="an-stat-v">${a2i}%</div><div class="an-stat-l">אחוז התקדמות</div></div>
+      <div class="an-stat"><span class="an-stat-ico" style="--c:#ff9f0a"><span class="material-symbols-rounded">forum</span></span><div class="an-stat-v">${reachedInt}</div><div class="an-stat-l">ראיונות</div></div>
+      <div class="an-stat"><span class="an-stat-ico" style="--c:#5e5ce6"><span class="material-symbols-rounded">ads_click</span></span><div class="an-stat-v">${avgFit}</div><div class="an-stat-l">ציון התאמה ממוצע</div></div>
     </div>
-    <div class="an-funnel">${funnel}</div>
-    <div class="an-row">
-      <div class="an-kpi"><div class="v">${avgWait} ימים</div><div class="cl">המתנה ממוצעת אחרי הגשה</div></div>
-      <div class="an-kpi"><div class="v">${passed}/${totalRounds}</div><div class="cl">סבבי ראיון שעברת</div></div>
+    <div class="an-funnel-card">
+      <div class="an-funnel-head"><div class="t">משפך התהליך</div><div class="s">תמונת מצב של תהליך החיפוש</div></div>
+      <div class="an-funnel">${funnel}</div>
     </div>`;
   document.getElementById("sheet").classList.add("show");
 }
