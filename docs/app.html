@@ -999,6 +999,47 @@
     .star-cancel-btn{padding:9px 18px;background:transparent;color:var(--inkFaint);border:1.5px solid var(--lineSoft);border-radius:12px;font-weight:600;font-size:.85rem;cursor:pointer}
     .neg-form{display:flex;flex-direction:column;gap:10px}
     .neg-result{background:var(--canvas);border:1px solid var(--lineSoft);border-radius:14px;padding:14px;font-size:.84rem;line-height:1.6;white-space:pre-wrap;color:var(--ink);display:none}
+    /* ===== NEW DESIGN — card grid + labeled sidebar + modal detail ===== */
+    .jgrid-card{position:relative;background:#fff;border:1px solid var(--lineSoft);border-radius:18px;padding:16px 16px 14px;cursor:pointer;display:flex;flex-direction:column;gap:12px;transition:box-shadow .15s,transform .12s,border-color .15s;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+    .jgrid-card:hover{box-shadow:0 8px 22px rgba(0,0,0,.10);transform:translateY(-2px);border-color:var(--line)}
+    .jgrid-card.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accentSoft)}
+    .jc-star{position:absolute;top:12px;left:12px;border:none;background:none;color:var(--inkFaint);font-size:18px;cursor:pointer;opacity:.5;transition:.15s;line-height:1;z-index:2}
+    .jc-star.on{color:var(--star);opacity:1}
+    .jgrid-card .bulk-cb{position:absolute;top:15px;left:36px;z-index:2}
+    .jc-top{display:flex;align-items:flex-start;gap:12px}
+    .jc-avatar{flex:0 0 auto;width:46px;height:46px;border-radius:13px;color:#fff;font-weight:800;font-size:1.2rem;display:flex;align-items:center;justify-content:center}
+    .jc-id{flex:1;min-width:0;padding-top:1px}
+    .jc-title{font-weight:700;font-size:1rem;color:var(--ink);line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .jc-co{font-size:.84rem;color:var(--inkSoft);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .jc-chips{display:flex;flex-wrap:wrap;gap:6px}
+    .jc-chip{display:inline-flex;align-items:center;gap:4px;background:var(--surface-container);color:var(--inkSoft);border-radius:8px;padding:5px 9px;font-size:.74rem;font-weight:600;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .jc-chip .material-symbols-rounded{font-size:14px}
+    .jc-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:2px;padding-top:11px;border-top:1px solid var(--lineSoft)}
+    .jc-fit{display:flex;align-items:center;gap:8px}
+    .jc-ring{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:conic-gradient(var(--rc) calc(var(--p)*1%),var(--surface-container-highest) 0)}
+    .jc-ring b{width:28px;height:28px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:800}
+    .jc-fit-lbl{font-size:.72rem;color:var(--inkFaint);font-weight:600}
+    .jc-foot-end{display:flex;align-items:center;gap:7px}
+    .jc-status{display:inline-flex;align-items:center;gap:5px;background:var(--s-bg);color:var(--s-fg);border-radius:999px;padding:5px 10px;font-size:.74rem;font-weight:700;white-space:nowrap}
+    .jc-sdot{width:6px;height:6px;border-radius:50%;background:var(--s-solid)}
+    .jc-date{font-size:.72rem;color:var(--inkFaint);font-weight:600;white-space:nowrap}
+    @media(min-width:1024px){
+      #app{margin-right:212px!important}
+      #nav-rail{width:212px!important;align-items:stretch!important;padding:18px 12px!important;background:var(--surface)!important;border-left:1px solid var(--lineSoft)!important}
+      .nr-item{flex-direction:row!important;justify-content:flex-start!important;gap:12px!important;padding:11px 13px!important}
+      .nr-item .material-symbols-rounded{font-size:22px!important}
+      .nr-lbl{font-size:.92rem!important;font-weight:600!important}
+      .nr-item::before{inset:0!important;border-radius:12px!important}
+      .nr-item.active::before{background:var(--accentSoft)!important}
+      .nr-item.active{color:var(--accent)!important}
+      #work{grid-template-columns:1fr!important}
+      #list-col{background:var(--canvas)!important;border-left:none!important}
+      #container{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))!important;gap:16px!important;padding:22px!important;align-content:start!important}
+      #detail{display:none}
+      #detail.open{display:flex!important;position:fixed;inset:0;z-index:300;background:rgba(20,20,25,.42);align-items:flex-start;justify-content:center;padding:34px 20px;overflow-y:auto}
+      #detail.open>.job-card{max-width:680px;width:100%;background:#fff;border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.28);overflow:hidden;animation:cardIn .22s var(--ease)}
+      .detail-close{position:fixed;top:20px;left:24px;z-index:301;width:40px;height:40px;border:none;border-radius:50%;background:#fff;color:var(--ink);font-size:17px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+    }
   </style>
 </head>
 <body>
@@ -3019,10 +3060,15 @@ function render(){
     document.getElementById("container").innerHTML=ob;
     document.getElementById("detail").innerHTML=desktop?ob:'';
   }else if(desktop){
-    if(!vis.some(o=>o.i===window._selIndex))window._selIndex=vis.length?vis[0].i:-1;
-    document.getElementById("container").innerHTML=vis.map(o=>buildRailRow(o.x,o.i,o.i===window._selIndex)).join("");
+    if(!vis.some(o=>o.i===window._selIndex))window._selIndex=-1; // card grid: detail opens as a modal on click, nothing auto-open
+    document.getElementById("container").innerHTML=vis.length
+      ? vis.map(o=>buildRailRow(o.x,o.i,o.i===window._selIndex)).join("")
+      : `<div class="list-empty"><span class="le-icon material-symbols-rounded">travel_explore</span><div class="le-title">${fQ?'לא נמצאו משרות תואמות':'אין משרות בתצוגה הזו'}</div><div class="le-sub">${fQ?'נסה מונח חיפוש אחר':'הסריקה רצה אוטומטית כל יום'}</div>${(fStage!=='all'||fFit!=='all'||fAge!=='all'||fQ)?'<button class="empty-cta" onclick="resetFilters()">נקה סינון</button>':''}</div>`;
     const selO=vis.find(o=>o.i===window._selIndex);
-    document.getElementById("detail").innerHTML=selO?window._buildCard(selO.x,selO.i,true,true):'<div class="detail-empty"><span class="de-icon material-symbols-rounded">work_outline</span><div class="de-text">בחר משרה מהרשימה</div><div class="de-sub">לחץ על משרה כדי לראות פרטים</div></div>';
+    const dEl=document.getElementById("detail");
+    dEl.innerHTML=selO?('<button class="detail-close" onclick="event.stopPropagation();selectJob(-1)" aria-label="סגור">✕</button>'+window._buildCard(selO.x,selO.i,true,true)):'';
+    dEl.classList.toggle('open',!!selO);
+    dEl.onclick=function(e){if(e.target===dEl)selectJob(-1);};
   }else{
     document.getElementById("detail").innerHTML='';
     if(v===0){
@@ -3152,18 +3198,38 @@ function mbnSettings(){
     mbnRestoreJobs();this.removeEventListener('click',once);
   },{once:true});
 }
+function avatarColor(s){let h=0;s=(s||'?');for(let k=0;k<s.length;k++)h=(h*31+s.charCodeAt(k))>>>0;return`hsl(${h%360} 50% 52%)`;}
 function buildRailRow(x,i,sel){
   const j=x.j,st=x.st,stage=x.stage;
   const fc=fitColor(j.fit_score),sc=stageColor(STAGES.find(s=>s.key===stage)?.hue||235);
   const novel=isNew(j);
   const sm=STAGES.find(s=>s.key===stage)||STAGES[0];
-  return`<div class="rail-row${sel?" sel":""}" onclick="selectJob(${i})">
+  const init=((j.company||'?').trim().charAt(0)||'?').toUpperCase();
+  const fs=Math.max(0,Math.min(10,Number(j.fit_score)||0));
+  return`<div class="jgrid-card${sel?" sel":""}" onclick="selectJob(${i})">
     <span class="bulk-cb${window._bulkSel&&window._bulkSel.has(jobKey(j))?' on':''}" data-bk="${jobKey(j).replace(/"/g,'&quot;')}" onclick="event.stopPropagation();toggleBulkPick(this)"></span>
-    <div class="rr-fit" style="background:${fc.bg};color:${fc.fg}">${j.fit_score||'—'}</div>
-    <div class="rr-text"><div class="rr-co">${j.company}</div><div class="rr-ti">${j.title}</div></div>
-    ${st.starred?'<span class="rr-star">★</span>':''}
-    ${novel?'<span class="new-badge">חדש</span>':''}
-    <span class="rr-dot" style="background:${sc.solid}" title="${sm.he}"></span>
+    <button class="jc-star${st.starred?' on':''}" onclick="event.stopPropagation();toggleStar(window._sorted[${i}])" aria-label="star">★</button>
+    <div class="jc-top">
+      <div class="jc-avatar" style="background:${avatarColor(j.company)}">${init}</div>
+      <div class="jc-id">
+        <div class="jc-title" title="${(j.title||'').replace(/"/g,'&quot;')}">${j.title||''}</div>
+        <div class="jc-co">${j.company||''}</div>
+      </div>
+    </div>
+    <div class="jc-chips">
+      ${j.location?`<span class="jc-chip"><span class="material-symbols-rounded">place</span>${j.location}</span>`:''}
+      ${j.job_type?`<span class="jc-chip"><span class="material-symbols-rounded">work</span>${j.job_type}</span>`:''}
+    </div>
+    <div class="jc-foot">
+      <div class="jc-fit">
+        <div class="jc-ring" style="--p:${fs*10};--rc:${fc.fg}"><b style="color:${fc.fg}">${j.fit_score||'—'}</b></div>
+        <span class="jc-fit-lbl">התאמה</span>
+      </div>
+      <div class="jc-foot-end">
+        <span class="jc-status" style="--s-bg:${sc.bg};--s-fg:${sc.fg};--s-solid:${sc.solid}"><span class="jc-sdot"></span>${sm.he}</span>
+        ${novel?'<span class="new-badge">חדש ✨</span>':j.posted?`<span class="jc-date">${postedLabel(j.posted)}</span>`:''}
+      </div>
+    </div>
   </div>`;
 }
 function showToast(msg){
