@@ -18,6 +18,7 @@
        Babel Standalone transpiles the JSX in the <script type="text/babel"> below.
        For production you would pre-compile instead of shipping Babel.
        ============================================================ -->
+  <script id="sw-cleanup">try{if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister();});});}if(window.caches&&caches.keys){caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k);});});}}catch(e){}</script>
   <script src="./supabase-config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -676,7 +677,7 @@
 
           {/* Primary actions */}
           <div style={{ display: 'flex', gap: 11, flexWrap: 'wrap', marginBottom: 12 }}>
-            <button className="btn-primary lg"><Icon name="send" style={{ fontSize: 20 }} />הגש מועמדות</button>
+            <button className="btn-primary lg" onClick={() => { setStatus('applied'); if (job.url) window.open(job.url, '_blank'); }}><Icon name="send" style={{ fontSize: 20 }} />הגש מועמדות</button>
             <button
               className="btn-secondary"
               onClick={toggleSave}
@@ -685,7 +686,7 @@
               <Icon name={isSaved ? 'star' : 'star_border'} className={isSaved ? 'fill' : ''} style={{ fontSize: 20, color: isSaved ? '#ff9f0a' : '#86868b' }} />
               {isSaved ? 'שמורה' : 'שמור'}
             </button>
-            <button className="btn-secondary"><Icon name="open_in_new" style={{ fontSize: 20 }} />פתח מודעה</button>
+            <button className="btn-secondary" onClick={() => job.url && window.open(job.url, '_blank')}><Icon name="open_in_new" style={{ fontSize: 20 }} />פתח מודעה</button>
             <button className="btn-secondary"><Icon name="forward_to_inbox" style={{ fontSize: 20 }} />צור קשר</button>
             <button className="btn-secondary"><Icon name="description" style={{ fontSize: 20 }} />קו״ח מותאם</button>
           </div>
@@ -994,15 +995,15 @@
       const [view, setView] = useState('jobs');        // active nav screen
       const [search, setSearch] = useState('');         // top-bar search text
       const [selectedJobId, setSelectedJobId] = useState(null); // open job detail, or null
-      const [savedMap, setSavedMap] = useState({});     // { [jobId]: bool } overrides for the star toggle
+      const [savedMap, setSavedMap] = useState(function(){ try{ return JSON.parse(localStorage.getItem('jf_star')||'{}'); }catch(e){ return {}; } });
       const [statusMap, setStatusMap] = useState({});   // { [jobId]: status } overrides from the detail picker
-      const [noteMap, setNoteMap] = useState({});       // { [jobId]: string } personal notes
+      const [noteMap, setNoteMap] = useState(function(){ try{ return JSON.parse(localStorage.getItem('jf_notes')||'{}'); }catch(e){ return {}; } });
 
       // Effective saved / status for a job (user override falls back to the data).
       const isSavedFor = job => (savedMap[job.id] !== undefined ? savedMap[job.id] : job.status === 'saved');
       const statusFor  = job => (statusMap[job.id] || job.status);
 
-      const toggleSave = job => setSavedMap(m => ({ ...m, [job.id]: !isSavedFor(job) }));
+      const toggleSave = job => setSavedMap(m => { const nv = !isSavedFor(job); const nm = { ...m, [job.id]: nv }; try{ localStorage.setItem('jf_star', JSON.stringify(nm)); }catch(e){} return nm; });
 
       const selectedJob = JOBS.find(j => j.id === selectedJobId) || null;
 
@@ -1030,9 +1031,9 @@
             isSaved={isSavedFor(selectedJob)}
             toggleSave={() => toggleSave(selectedJob)}
             status={statusFor(selectedJob)}
-            setStatus={s => setStatusMap(m => ({ ...m, [selectedJob.id]: s }))}
+            setStatus={s => { setStatusMap(m => ({ ...m, [selectedJob.id]: s })); if (window.__saveStatus) window.__saveStatus(selectedJob.id, s); }}
             note={noteMap[selectedJob.id] || ''}
-            setNote={v => setNoteMap(m => ({ ...m, [selectedJob.id]: v }))}
+            setNote={v => setNoteMap(m => { const nm = { ...m, [selectedJob.id]: v }; try{ localStorage.setItem('jf_notes', JSON.stringify(nm)); }catch(e){} return nm; })}
             onBack={() => setSelectedJobId(null)}
           />
         );
@@ -1071,7 +1072,7 @@
   <script>
   (function () {
     var sb=null, AUTH_DOMAIN='users.jobfinder.local';
-    function initSb(){ if(!sb && window.SUPABASE_URL && window.SUPABASE_ANON_KEY && window.supabase){ sb=window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);} return sb; }
+    function initSb(){ if(!sb && window.SUPABASE_URL && window.SUPABASE_ANON_KEY && window.supabase){ sb=window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY); window.__sb=sb; window.__saveStatus=function(id,st){ try{ sb.from('jobs').update({status:st}).eq('id',id).then(function(){},function(){}); }catch(e){} }; } return sb; }
     function runApp(){ var s=document.getElementById('app-source').textContent; var c=Babel.transform(s,{presets:[['react',{runtime:'classic'}]]}).code; var el=document.createElement('script'); el.textContent=c; document.body.appendChild(el); }
     function mapStatus(s){ if(s==='applied'||s==='interview'||s==='offer'||s==='rejected')return s; if(s==='נסגרה')return 'rejected'; return 'saved'; }
     function daysAgo(d){ if(!d)return 0; return Math.max(0,Math.round((Date.now()-new Date(d))/86400000)); }
