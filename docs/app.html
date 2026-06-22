@@ -382,6 +382,46 @@
     function copyText(text, okMsg){ try{ navigator.clipboard.writeText(text).then(function(){ toast(okMsg||'הועתק ✓'); }, function(){ toast('ההעתקה נכשלה'); }); }catch(e){ toast('ההעתקה נכשלה'); } }
     function copyPrompt(text){ copyText(text, 'הפרומפט הועתק — הדבק/י ב‑Claude'); }
 
+    /* Live Claude call using the user's saved key/proxy (same scheme as the tracker). */
+    async function callClaude(prompt){
+      var proxy=(localStorage.getItem('claude_proxy')||'').trim();
+      var key=(localStorage.getItem('anthropic_key')||'').trim();
+      var body=JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1600,messages:[{role:'user',content:prompt}]});
+      var url, headers;
+      if(proxy){ url=proxy; headers={'content-type':'application/json'}; }
+      else if(key){ url='https://api.anthropic.com/v1/messages'; headers={'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}; }
+      else { var e=new Error('NO_KEY'); e.code='NO_KEY'; throw e; }
+      var res=await fetch(url,{method:'POST',headers:headers,body:body});
+      if(!res.ok) throw new Error('API '+res.status);
+      var data=await res.json();
+      return (data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
+    }
+
+    /* AI result modal — runs Claude (or shows preText) and DISPLAYS the answer. */
+    function openAiModal(title, prompt, preText){
+      var ov=document.getElementById('ai-modal');
+      if(!ov){ ov=document.createElement('div'); ov.id='ai-modal'; document.body.appendChild(ov); }
+      ov.style.cssText='position:fixed;inset:0;z-index:99998;background:rgba(20,20,25,.45);display:flex;align-items:flex-start;justify-content:center;padding:42px 16px;overflow-y:auto;direction:rtl;font-family:Assistant,-apple-system,sans-serif';
+      ov.onclick=function(e){ if(e.target===ov) ov.remove(); };
+      ov.innerHTML='<div style="max-width:660px;width:100%;background:#fff;border-radius:22px;padding:24px 26px;box-shadow:0 24px 70px rgba(0,0,0,.3)">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div style="font-size:18px;font-weight:800;color:#1d1d1f">'+title+'</div>'
+        +'<button id="aim-x" style="border:none;background:#f1f1f3;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:15px;color:#1d1d1f">✕</button></div>'
+        +'<div id="aim-body" style="font-size:14.5px;line-height:1.75;color:#3a3a3f;white-space:pre-wrap;min-height:54px">'
+        +'<div style="display:flex;align-items:center;gap:9px;color:#86868b;font-weight:600">⏳ מכין/ה עבורך…</div></div>'
+        +'<div id="aim-foot" style="display:none;margin-top:16px"><button id="aim-copy" style="border:none;background:#0a6dff;color:#fff;font:inherit;font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer">העתק</button></div>'
+        +'</div>';
+      document.getElementById('aim-x').onclick=function(){ ov.remove(); };
+      function show(text){ var b=document.getElementById('aim-body'); if(!b)return; b.textContent=text; var f=document.getElementById('aim-foot'); f.style.display='block'; document.getElementById('aim-copy').onclick=function(){ copyText(text,'הועתק ✓'); }; }
+      if(preText){ show(preText); return; }
+      callClaude(prompt).then(show).catch(function(err){
+        var b=document.getElementById('aim-body'); if(!b)return;
+        if(err.code==='NO_KEY'){
+          b.innerHTML='<div style="color:#b25e00;background:#fff2e0;padding:11px 14px;border-radius:12px;margin-bottom:12px;font-weight:600">כדי לקבל תשובה חיה צריך מפתח Anthropic (בהגדרות). בינתיים הנה הפרומפט המוכן — העתק/י אותו ל‑Claude:</div><div style="white-space:pre-wrap;background:#f7f7f8;padding:12px 14px;border-radius:12px;font-size:13.5px">'+prompt.replace(/</g,'&lt;')+'</div>';
+          var f=document.getElementById('aim-foot'); f.style.display='block'; var c=document.getElementById('aim-copy'); c.textContent='העתק פרומפט'; c.onclick=function(){ copyText(prompt,'הפרומפט הועתק ✓'); };
+        } else { b.innerHTML='<div style="color:#d70015;font-weight:600">שגיאה בקריאה ל‑AI: '+(err.message||err)+'</div>'; }
+      });
+    }
+
     /* Small reusable icon component. */
     function Icon({ name, className = '', style }) {
       return <span className={'ms ' + className} style={style}>{name}</span>;
@@ -620,10 +660,10 @@
 
       // Tool buttons.
       const tools = [
-        { icon: 'quiz',                label: 'הכנה לראיון', act: () => copyPrompt('הכן/י אותי לראיון לתפקיד ' + job.role + ' בחברת ' + job.company + '. תן/י 8 שאלות נפוצות לתפקיד עם תשובות מומלצות מבוססות הפרופיל שלי, ועצה אחת לכל שאלה.') },
+        { icon: 'quiz',                label: 'הכנה לראיון', act: () => openAiModal('הכנה לראיון · ' + job.company, 'הכן/י אותי לראיון לתפקיד ' + job.role + ' בחברת ' + job.company + '. תן/י 8 שאלות נפוצות לתפקיד עם תשובה מומלצת קצרה לכל אחת ועצה אחת. ענה/י בעברית, מאורגן וברור.') },
         { icon: 'record_voice_over',   label: 'תרגול ראיון', act: () => onPractice && onPractice() },
-        { icon: 'folder_open',         label: 'דוסייר',      act: () => copyPrompt('תכין/י דוסייר על חברת ' + job.company + ' לקראת ראיון לתפקיד ' + job.role + ': מוצר, תרבות, מתחרים, חדשות אחרונות, ואיך להתבלט בראיון.') },
-        { icon: 'volunteer_activism',  label: 'תמיכה רגשית', act: () => copyPrompt('אני בתהליך חיפוש עבודה. תהיה/י מאמן/ת קריירה אמפתי/ת — הקשב/י, תקף/י את מה שאני מרגיש/ה, ותן/י פרספקטיבה מחזקת ומעשית.') },
+        { icon: 'folder_open',         label: 'דוסייר',      act: () => openAiModal('דוסייר · ' + job.company, 'תכין/י דוסייר על חברת ' + job.company + ' לקראת ראיון לתפקיד ' + job.role + ': מה המוצר, התרבות, המתחרים, חדשות אחרונות, ו-3 דרכים להתבלט בראיון. ענה/י בעברית.') },
+        { icon: 'volunteer_activism',  label: 'תמיכה רגשית', act: () => openAiModal('תמיכה רגשית', 'אני בתהליך חיפוש עבודה ומרגיש/ה לחוץ/ה. תהיה/י מאמן/ת קריירה אמפתי/ת — הקשב/י, תקף/י את מה שאני מרגיש/ה, ותן/י פרספקטיבה מחזקת ו-2 צעדים מעשיים קטנים. ענה/י בעברית, חם ובגוף ראשון.') },
         { icon: 'thumb_down',          label: 'לא רלוונטי',  act: () => { setStatus('rejected'); toast('סומן כלא רלוונטי'); setTimeout(onBack, 450); } }
       ];
 
@@ -692,8 +732,8 @@
               {isSaved ? 'שמורה' : 'שמור'}
             </button>
             <button className="btn-secondary" onClick={() => job.url && window.open(job.url, '_blank')}><Icon name="open_in_new" style={{ fontSize: 20 }} />פתח מודעה</button>
-            <button className="btn-secondary" onClick={() => { if (job.aiOpener) { copyText(job.aiOpener, 'פתיח הפנייה הועתק ✓'); } else { copyPrompt('כתוב/י פנייה קצרה וחמה למגייס/ת בחברת ' + job.company + ' לגבי תפקיד ' + job.role + ', בהתבסס על הפרופיל שלי.'); } }}><Icon name="forward_to_inbox" style={{ fontSize: 20 }} />צור קשר</button>
-            <button className="btn-secondary" onClick={() => copyPrompt('התאם/י את קורות החיים שלי לתפקיד ' + job.role + ' בחברת ' + job.company + '. הדגש/י ניסיון רלוונטי ומילות מפתח מתיאור המשרה.')}><Icon name="description" style={{ fontSize: 20 }} />קו״ח מותאם</button>
+            <button className="btn-secondary" onClick={() => { if (job.aiOpener) { openAiModal('פתיח פנייה · ' + job.company, null, job.aiOpener); } else { openAiModal('פתיח פנייה · ' + job.company, 'כתוב/י פנייה קצרה וחמה (4-5 שורות) למגייס/ת בחברת ' + job.company + ' לגבי תפקיד ' + job.role + ', בהתבסס על הפרופיל שלי. ענה/י בעברית.'); } }}><Icon name="forward_to_inbox" style={{ fontSize: 20 }} />צור קשר</button>
+            <button className="btn-secondary" onClick={() => openAiModal('קו״ח מותאם · ' + job.company, 'תן/י לי 6-8 בולטים (bullets) מותאמים לקורות חיים עבור תפקיד ' + job.role + ' בחברת ' + job.company + ', שמדגישים ניסיון רלוונטי ומילות מפתח מתיאור המשרה. ענה/י בעברית.')}><Icon name="description" style={{ fontSize: 20 }} />קו״ח מותאם</button>
           </div>
 
           {/* Tools grid */}
@@ -898,15 +938,22 @@
        VOICE INTERVIEW VIEW  (animated orb + transcript + controls)
        ============================================================ */
     function VoiceView() {
+      const [lang, setLang] = useState('he');
+      const he = lang === 'he';
+      try { window.__voiceLang = lang; } catch(e){}
       return (
         <div className="view-fade" style={{ maxWidth: 640, margin: '12px auto 0', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+          <div style={{ display:'flex', gap:6, background:'#f1f1f3', padding:4, borderRadius:12, marginBottom:18 }}>
+            <button onClick={() => setLang('he')} style={{ padding:'7px 20px', borderRadius:9, border:'none', cursor:'pointer', fontWeight:700, fontFamily:'inherit', fontSize:14, background: he ? '#fff' : 'transparent', color: he ? 'var(--accent)' : '#6e6e73', boxShadow: he ? '0 1px 3px rgba(0,0,0,.1)' : 'none' }}>עברית</button>
+            <button onClick={() => setLang('en')} style={{ padding:'7px 20px', borderRadius:9, border:'none', cursor:'pointer', fontWeight:700, fontFamily:'inherit', fontSize:14, background: !he ? '#fff' : 'transparent', color: !he ? 'var(--accent)' : '#6e6e73', boxShadow: !he ? '0 1px 3px rgba(0,0,0,.1)' : 'none' }}>English</button>
+          </div>
           <div className="orb">
             <div className="orb-wave" style={{ inset: 0, animation: 'orbPulse 2.6s ease-in-out infinite' }}></div>
             <div className="orb-wave" style={{ inset: 18, animation: 'orbPulse 2.6s ease-in-out infinite .6s' }}></div>
             <div className="orb-core"><Icon name="graphic_eq" style={{ fontSize: 40, color: '#fff' }} /></div>
           </div>
-          <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.4px' }}>ראיון קולי עם AI</div>
-          <div style={{ fontSize: 14.5, color: 'var(--ink-soft)', fontWeight: 500, marginTop: 4 }}>תרגול שאלות בזמן אמת · קול אנושי</div>
+          <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.4px' }}>{he ? 'ראיון קולי עם AI' : 'AI Voice Interview'}</div>
+          <div style={{ fontSize: 14.5, color: 'var(--ink-soft)', fontWeight: 500, marginTop: 4 }}>{he ? 'תרגול שאלות בזמן אמת · קול אנושי' : 'Real-time practice · human voice'}</div>
 
           <div className="card" style={{ width: '100%', marginTop: 28, textAlign: 'start', display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ display: 'flex', gap: 11 }}>
@@ -914,13 +961,13 @@
                 <Icon name="smart_toy" style={{ fontSize: 18, color: '#fff' }} />
               </div>
               <div style={{ background: '#f3f3f5', borderRadius: '4px 16px 16px 16px', padding: '11px 15px', fontSize: 14.5, lineHeight: 1.55 }}>
-                ספר לי על פרויקט שבו הובלת צוות תחת לחץ זמן. איך ניהלת את זה?
+                {he ? 'ספר לי על פרויקט שבו הובלת צוות תחת לחץ זמן. איך ניהלת את זה?' : 'Tell me about a project where you led a team under time pressure. How did you manage it?'}
               </div>
             </div>
             <div style={{ display: 'flex', gap: 11, flexDirection: 'row-reverse' }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#ff7a59', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 13 }}>ע</div>
               <div style={{ background: 'var(--accent)', color: '#fff', borderRadius: '16px 4px 16px 16px', padding: '11px 15px', fontSize: 14.5, lineHeight: 1.55 }}>
-                בטח. ברבעון האחרון הובלתי צוות של ארבעה מעצבים…
+                {he ? 'בטח. ברבעון האחרון הובלתי צוות של ארבעה מעצבים…' : 'Sure — last quarter I led a team of four designers…'}
               </div>
             </div>
           </div>
