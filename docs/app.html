@@ -411,7 +411,25 @@
         +'<div id="aim-foot" style="display:none;margin-top:16px"><button id="aim-copy" style="border:none;background:#0a6dff;color:#fff;font:inherit;font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer">העתק</button></div>'
         +'</div>';
       document.getElementById('aim-x').onclick=function(){ ov.remove(); };
-      function show(text){ var b=document.getElementById('aim-body'); if(!b)return; b.textContent=text; var f=document.getElementById('aim-foot'); f.style.display='block'; document.getElementById('aim-copy').onclick=function(){ copyText(text,'הועתק ✓'); }; }
+      function aimEsc(x){ return x.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+      function aimMd(t){
+        var lines=aimEsc(t).split('\n'), html='', inList=false;
+        function closeL(){ if(inList){ html+='</ul>'; inList=false; } }
+        for(var i=0;i<lines.length;i++){ var l=lines[i];
+          l=l.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/__(.+?)__/g,'<b>$1</b>').replace(/`([^`]+)`/g,'<code style=\'background:#f1f1f3;padding:1px 5px;border-radius:5px;font-size:13px\'>$1</code>');
+          if(/^\s*###\s+/.test(l)){ closeL(); html+='<div style=\'font-weight:800;font-size:15px;margin:11px 0 3px;color:#1d1d1f\'>'+l.replace(/^\s*###\s+/,'')+'</div>'; }
+          else if(/^\s*##\s+/.test(l)){ closeL(); html+='<div style=\'font-weight:800;font-size:16.5px;margin:14px 0 5px;color:#1d1d1f\'>'+l.replace(/^\s*##\s+/,'')+'</div>'; }
+          else if(/^\s*#\s+/.test(l)){ closeL(); html+='<div style=\'font-weight:800;font-size:18px;margin:6px 0 8px;color:#0a6dff\'>'+l.replace(/^\s*#\s+/,'')+'</div>'; }
+          else if(/^\s*[-*]\s+/.test(l)){ if(!inList){ html+='<ul style=\'margin:4px 0;padding-inline-start:20px\'>'; inList=true; } html+='<li style=\'margin:3px 0\'>'+l.replace(/^\s*[-*]\s+/,'')+'</li>'; }
+          else if(/^\s*\d+\.\s+/.test(l)){ closeL(); html+='<div style=\'margin:4px 0\'><b>'+l.match(/^\s*(\d+)\./)[1]+'.</b> '+l.replace(/^\s*\d+\.\s+/,'')+'</div>'; }
+          else if(/^\s*---+\s*$/.test(l)){ closeL(); html+='<hr style=\'border:none;border-top:1px solid #ececef;margin:11px 0\'>'; }
+          else if(l.trim()===''){ closeL(); html+='<div style=\'height:7px\'></div>'; }
+          else { closeL(); html+='<div style=\'margin:2px 0\'>'+l+'</div>'; }
+        }
+        if(inList) html+='</ul>';
+        return html;
+      }
+      function show(text){ var b=document.getElementById('aim-body'); if(!b)return; b.style.whiteSpace='normal'; b.innerHTML=aimMd(text); var f=document.getElementById('aim-foot'); f.style.display='block'; document.getElementById('aim-copy').onclick=function(){ copyText(text,'הועתק ✓'); }; }
       if(preText){ show(preText); return; }
       callClaude(prompt).then(show).catch(function(err){
         var b=document.getElementById('aim-body'); if(!b)return;
