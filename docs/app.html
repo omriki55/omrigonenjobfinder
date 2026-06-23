@@ -510,7 +510,7 @@
         { key: 'jobs',      icon: 'work',        label: 'משרות' },
         { key: 'analytics', icon: 'monitoring',  label: 'סטטיסטיקה' },
         { key: 'star',      icon: 'psychology',  label: 'בנק STAR' },
-        { key: 'voice',     icon: 'graphic_eq',  label: 'ראיון קולי', badge: interviewCount },
+        { key: 'voice',     icon: 'graphic_eq',  label: 'ראיון קולי' },
         { key: 'settings',  icon: 'settings',    label: 'הגדרות' }
       ];
       return (
@@ -580,7 +580,7 @@
     /* ============================================================
        JOB CARD  (single card in the grid)
        ============================================================ */
-    function JobCard({ job, isSaved, onToggleSave, onOpen }) {
+    function JobCard({ job, isSaved, onToggleSave, onOpen, onHide, hidden }) {
       const meta = STATUS_META[job.status];
       return (
         <div className="job-card" onClick={onOpen}>
@@ -597,6 +597,13 @@
               onClick={e => { e.stopPropagation(); onToggleSave(); }}
             >
               <Icon name={isSaved ? 'star' : 'star_border'} className={isSaved ? 'fill' : ''} />
+            </button>
+            <button
+              className="star-btn"
+              title={hidden ? 'שחזר משרה' : 'הסתר משרה'}
+              onClick={e => { e.stopPropagation(); onHide && onHide(); }}
+            >
+              <Icon name={hidden ? 'undo' : 'visibility_off'} />
             </button>
           </div>
 
@@ -624,13 +631,16 @@
     /* ============================================================
        JOBS VIEW  (filters + sort + grid)
        ============================================================ */
-    function JobsView({ search, savedMap, toggleSave, openJob }) {
+    function JobsView({ search, savedMap, toggleSave, openJob, hiddenMap, toggleHide }) {
       const [status, setStatus] = useState('all');
       const [sort, setSort] = useState('match');
 
-      // Status counts for the filter pills.
+      // Status counts for the filter pills (hidden jobs excluded from the normal tabs).
+      const isHidden = j => !!(hiddenMap && hiddenMap[j.id]);
       const counts = {};
-      JOBS.forEach(j => { counts[j.status] = (counts[j.status] || 0) + 1; });
+      JOBS.forEach(j => { if (isHidden(j)) return; counts[j.status] = (counts[j.status] || 0) + 1; });
+      const hiddenCount = JOBS.filter(isHidden).length;
+      const visibleTotal = JOBS.length - hiddenCount;
 
       const filters = [
         { key: 'all',       label: 'הכל' },
@@ -638,7 +648,8 @@
         { key: 'applied',   label: 'הוגשו' },
         { key: 'interview', label: 'ראיונות' },
         { key: 'offer',     label: 'הצעות' },
-        { key: 'rejected',  label: 'נדחו' }
+        { key: 'rejected',  label: 'נדחו' },
+        { key: 'hidden',    label: 'מוסתרות' }
       ];
       const sorts = [
         { key: 'match',  label: 'התאמה' },
@@ -646,9 +657,10 @@
         { key: 'az',     label: 'A–Z' }
       ];
 
-      // Apply filter → search → sort.
-      let list = JOBS.slice();
-      if (status !== 'all') list = list.filter(j => j.status === status);
+      // Apply filter → search → sort. Hidden jobs only appear in the מוסתרות tab.
+      let list;
+      if (status === 'hidden') { list = JOBS.filter(isHidden); }
+      else { list = JOBS.filter(j => !isHidden(j)); if (status !== 'all') list = list.filter(j => j.status === status); }
       const q = search.trim();
       if (q) list = list.filter(j => (j.company + ' ' + j.role).includes(q));
       if (sort === 'match')       list.sort((a, b) => b.fitScore - a.fitScore);
@@ -661,7 +673,7 @@
         <div className="view-fade">
           <div className="pill-row">
             {filters.map(f => {
-              const count = f.key === 'all' ? JOBS.length : (counts[f.key] || 0);
+              const count = f.key === 'all' ? visibleTotal : f.key === 'hidden' ? hiddenCount : (counts[f.key] || 0);
               return (
                 <button key={f.key} className={'pill' + (status === f.key ? ' active' : '')} onClick={() => setStatus(f.key)}>
                   {f.label}<span className="count">{count}</span>
@@ -689,6 +701,8 @@
                 isSaved={isSavedFor(job)}
                 onToggleSave={() => toggleSave(job)}
                 onOpen={() => openJob(job.id)}
+                onHide={() => toggleHide(job)}
+                hidden={isHidden(job)}
               />
             ))}
           </div>
@@ -699,7 +713,7 @@
     /* ============================================================
        JOB DETAIL VIEW  (full single-job page)
        ============================================================ */
-    function JobDetailView({ job, isSaved, toggleSave, status, setStatus, note, setNote, onBack, onPractice }) {
+    function JobDetailView({ job, isSaved, toggleSave, status, setStatus, note, setNote, onBack, onPractice, onHide }) {
       const meta = STATUS_META[status];
       const { ink } = scoreColors(job.fitScore);
 
@@ -723,7 +737,7 @@
         { icon: 'record_voice_over',   label: 'תרגול ראיון', act: () => onPractice && onPractice() },
         { icon: 'folder_open',         label: 'דוסייר',      act: () => openAiModal('דוסייר · ' + job.company, 'תכין/י דוסייר על חברת ' + job.company + ' לקראת ראיון לתפקיד ' + job.role + ': מה המוצר, התרבות, המתחרים, חדשות אחרונות, ו-3 דרכים להתבלט בראיון. ענה/י בעברית.') },
         { icon: 'volunteer_activism',  label: 'תמיכה רגשית', act: () => openAiModal('תמיכה רגשית', 'אני בתהליך חיפוש עבודה ומרגיש/ה לחוץ/ה. תהיה/י מאמן/ת קריירה אמפתי/ת — הקשב/י, תקף/י את מה שאני מרגיש/ה, ותן/י פרספקטיבה מחזקת ו-2 צעדים מעשיים קטנים. ענה/י בעברית, חם ובגוף ראשון.') },
-        { icon: 'thumb_down',          label: 'לא רלוונטי',  act: () => { setStatus('rejected'); toast('סומן כלא רלוונטי'); setTimeout(onBack, 450); } }
+        { icon: 'thumb_down',          label: 'לא רלוונטי',  act: () => { setStatus('rejected'); if (onHide) onHide(); toast('סומן כלא רלוונטי והוסתר'); setTimeout(onBack, 450); } }
       ];
 
       return (
@@ -1194,6 +1208,8 @@
       const [savedMap, setSavedMap] = useState(function(){ try{ return JSON.parse(localStorage.getItem('jf_star')||'{}'); }catch(e){ return {}; } });
       const [statusMap, setStatusMap] = useState({});   // { [jobId]: status } overrides from the detail picker
       const [noteMap, setNoteMap] = useState(function(){ try{ return JSON.parse(localStorage.getItem('jf_notes')||'{}'); }catch(e){ return {}; } });
+      const [hiddenMap, setHiddenMap] = useState(function(){ try{ return JSON.parse(localStorage.getItem('jf_hidden')||'{}'); }catch(e){ return {}; } });
+      const toggleHide = job => setHiddenMap(m => { const nm = { ...m }; if (nm[job.id]) delete nm[job.id]; else nm[job.id] = true; try{ localStorage.setItem('jf_hidden', JSON.stringify(nm)); }catch(e){} return nm; });
 
       // Effective saved / status for a job (user override falls back to the data).
       const isSavedFor = job => (savedMap[job.id] !== undefined ? savedMap[job.id] : job.status === 'saved');
@@ -1231,11 +1247,12 @@
             note={noteMap[selectedJob.id] || ''}
             setNote={v => setNoteMap(m => { const nm = { ...m, [selectedJob.id]: v }; try{ localStorage.setItem('jf_notes', JSON.stringify(nm)); }catch(e){} return nm; })}
             onPractice={() => { setSelectedJobId(null); setView('voice'); }}
+            onHide={() => toggleHide(selectedJob)}
             onBack={() => setSelectedJobId(null)}
           />
         );
       } else if (view === 'jobs') {
-        body = <JobsView search={search} savedMap={savedMap} toggleSave={toggleSave} openJob={setSelectedJobId} />;
+        body = <JobsView search={search} savedMap={savedMap} toggleSave={toggleSave} openJob={setSelectedJobId} hiddenMap={hiddenMap} toggleHide={toggleHide} />;
       } else if (view === 'analytics') {
         body = <AnalyticsView />;
       } else if (view === 'star') {
