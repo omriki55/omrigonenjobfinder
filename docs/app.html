@@ -631,7 +631,7 @@
     /* ============================================================
        JOBS VIEW  (filters + sort + grid)
        ============================================================ */
-    function JobsView({ search, savedMap, toggleSave, openJob, hiddenMap, toggleHide }) {
+    function JobsView({ search, savedMap, toggleSave, openJob, hiddenMap, toggleHide, hideJobs }) {
       const [status, setStatus] = useState('all');
       const [sort, setSort] = useState('match');
 
@@ -686,6 +686,13 @@
             <div className="result-label">
               {list.length} משרות{status !== 'all' ? ' · ' + filters.find(f => f.key === status).label : ''}
             </div>
+            {status === 'rejected' && list.length > 0 ? (
+              <button
+                onClick={() => { hideJobs(list.map(j => j.id)); toast('כל הנדחו הוסתרו'); }}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 999, border: '1px solid #e7e7ec', background: '#fff', color: '#6e6e73', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: 13 }}>
+                <Icon name="visibility_off" style={{ fontSize: 17 }} />הסתר את כל הנדחו
+              </button>
+            ) : null}
             <div className="sort-group">
               {sorts.map(s => (
                 <button key={s.key} className={'sort-btn' + (sort === s.key ? ' active' : '')} onClick={() => setSort(s.key)}>{s.label}</button>
@@ -1210,6 +1217,7 @@
       const [noteMap, setNoteMap] = useState(function(){ try{ return JSON.parse(localStorage.getItem('jf_notes')||'{}'); }catch(e){ return {}; } });
       const [hiddenMap, setHiddenMap] = useState(function(){ try{ return JSON.parse(localStorage.getItem('jf_hidden')||'{}'); }catch(e){ return {}; } });
       const toggleHide = job => setHiddenMap(m => { const nm = { ...m }; if (nm[job.id]) delete nm[job.id]; else nm[job.id] = true; try{ localStorage.setItem('jf_hidden', JSON.stringify(nm)); }catch(e){} return nm; });
+      const hideJobs = ids => setHiddenMap(m => { const nm = { ...m }; ids.forEach(id => { nm[id] = true; }); try{ localStorage.setItem('jf_hidden', JSON.stringify(nm)); }catch(e){} return nm; });
 
       // Effective saved / status for a job (user override falls back to the data).
       const isSavedFor = job => (savedMap[job.id] !== undefined ? savedMap[job.id] : job.status === 'saved');
@@ -1252,7 +1260,7 @@
           />
         );
       } else if (view === 'jobs') {
-        body = <JobsView search={search} savedMap={savedMap} toggleSave={toggleSave} openJob={setSelectedJobId} hiddenMap={hiddenMap} toggleHide={toggleHide} />;
+        body = <JobsView search={search} savedMap={savedMap} toggleSave={toggleSave} openJob={setSelectedJobId} hiddenMap={hiddenMap} toggleHide={toggleHide} hideJobs={hideJobs} />;
       } else if (view === 'analytics') {
         body = <AnalyticsView />;
       } else if (view === 'star') {
