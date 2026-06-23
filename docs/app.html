@@ -585,9 +585,6 @@
       return (
         <div className="job-card" onClick={onOpen}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 13 }}>
-            <div className="job-logo" style={{ background: `linear-gradient(150deg, ${job.logoFrom}, ${job.logoTo})` }}>
-              {job.company.charAt(0)}
-            </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div className="job-role">{job.role}</div>
               <div className="job-company">{job.company}</div>
@@ -758,9 +755,6 @@
 
           {/* Hero */}
           <div className="card" style={{ borderRadius: 24, padding: '26px 28px', display: 'flex', alignItems: 'center', gap: 22, flexWrap: 'wrap' }}>
-            <div className="job-logo" style={{ width: 64, height: 64, borderRadius: 18, fontSize: 26, background: `linear-gradient(150deg, ${job.logoFrom}, ${job.logoTo})` }}>
-              {job.company.charAt(0)}
-            </div>
             <div style={{ flex: 1, minWidth: 200 }}>
               <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, letterSpacing: '-0.5px' }}>{job.role}</h2>
               <div style={{ fontSize: 15, color: 'var(--ink-soft)', fontWeight: 600, marginTop: 3 }}>{job.company}</div>
