@@ -302,7 +302,7 @@
        then execute the result. Type "text/jsx-source" keeps Babel's auto-runner from
        touching it, so this stays the single source of truth. -->
   <script type="text/jsx-source" id="app-source">
-    const { useState } = React;
+    const { useState, useRef } = React;
 
     /* ============================================================
        SAMPLE DATA — swap this array for your real jobs.
@@ -396,6 +396,47 @@
       var data=await res.json();
       return (data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
     }
+
+    /* ===== Voice interview engine: Claude chat + ElevenLabs/native TTS + Web Speech STT ===== */
+    async function callClaudeMsgs(system, messages){
+      var proxy=(localStorage.getItem('claude_proxy')||'').trim();
+      var key=(localStorage.getItem('anthropic_key')||'').trim();
+      var payload={model:'claude-sonnet-4-6',max_tokens:400,system:system,messages:messages};
+      var url, headers;
+      if(proxy){ url=proxy; headers={'content-type':'application/json'}; }
+      else if(key){ url='https://api.anthropic.com/v1/messages'; headers={'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}; }
+      else { var e=new Error('NO_KEY'); e.code='NO_KEY'; throw e; }
+      var res=await fetch(url,{method:'POST',headers:headers,body:JSON.stringify(payload)});
+      if(!res.ok) throw new Error('API '+res.status);
+      var data=await res.json();
+      return (data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
+    }
+    function ttsNative(text, lang){
+      return new Promise(function(resolve){
+        try{ window.speechSynthesis.cancel(); }catch(e){}
+        var langCode = lang==='he' ? 'he-IL' : 'en-US';
+        var voices = window.speechSynthesis.getVoices()||[];
+        var pref = /female|samantha|karen|carmit|tessa|moira|google|zira|tal/i;
+        var pool = voices.filter(function(x){return x.lang===langCode;});
+        if(!pool.length) pool = voices.filter(function(x){return x.lang.indexOf(lang==='he'?'he':'en')===0;});
+        pool.sort(function(a,b){ return (pref.test(b.name)?1:0)-(pref.test(a.name)?1:0); });
+        var v = pool[0];
+        var chunks = text.match(/[^.!?\n]+[.!?\n]?/g) || [text];
+        var i=0;
+        window.__ttsOn = true;
+        function next(){ if(i>=chunks.length || !window.__ttsOn){ resolve(); return; } var c=(chunks[i]||'').trim(); i++; if(!c){ next(); return; } var u=new SpeechSynthesisUtterance(c); if(v)u.voice=v; u.lang=langCode; u.rate=1; u.pitch=1.06; u.onend=function(){ next(); }; u.onerror=function(){ next(); }; window.speechSynthesis.speak(u); }
+        next();
+      });
+    }
+    async function ttsEleven(text, lang){
+      var key=(localStorage.getItem('elevenlabs_key')||'').trim(); if(!key) throw new Error('no11');
+      var voice='EXAVITQu4vr4xnSDxMaL';
+      var res=await fetch('https://api.elevenlabs.io/v1/text-to-speech/'+voice,{method:'POST',headers:{'xi-api-key':key,'content-type':'application/json'},body:JSON.stringify({text:text,model_id:'eleven_multilingual_v2',voice_settings:{stability:0.45,similarity_boost:0.75,style:0.35,use_speaker_boost:true}})});
+      if(!res.ok) throw new Error('tts'+res.status);
+      var blob=await res.blob(); var url=URL.createObjectURL(blob);
+      return new Promise(function(resolve){ var a=new Audio(url); window.__ttsAudio=a; a.onended=function(){ try{URL.revokeObjectURL(url);}catch(e){} resolve(); }; a.onerror=function(){ resolve(); }; a.play().catch(function(){ resolve(); }); });
+    }
+    async function speakText(text, lang){ window.__ttsOn=true; try{ await ttsEleven(text, lang); }catch(e){ await ttsNative(text, lang); } }
 
     /* AI result modal — runs Claude (or shows preText) and DISPLAYS the answer. */
     function openAiModal(title, prompt, preText){
@@ -958,48 +999,132 @@
     function VoiceView() {
       const [lang, setLang] = useState('he');
       const he = lang === 'he';
-      try { window.__voiceLang = lang; } catch(e){}
+      const [phase, setPhase] = useState('idle');        // idle | thinking | listening | speaking
+      const [msgs, setMsgs] = useState([]);
+      const [interim, setInterim] = useState('');
+      const [err, setErr] = useState('');
+      const runningRef = useRef(false);
+      const recRef = useRef(null);
+      const msgsRef = useRef([]);
+      const langRef = useRef('he');
+      React.useEffect(function(){ langRef.current = lang; try { window.__voiceLang = lang; } catch(e){} }, [lang]);
+      React.useEffect(function(){ return function(){ stopAll(); }; }, []);
+
+      function pushMsg(role, text){ msgsRef.current = msgsRef.current.concat([{ role: role, text: text }]); setMsgs(msgsRef.current.slice()); }
+
+      function sysPrompt(){
+        var roleTxt = '';
+        try { var r = JSON.parse(localStorage.getItem('desired_roles')||'null'); if (Array.isArray(r) && r.length) roleTxt = r[0]; else if (typeof r === 'string') roleTxt = r; } catch(e){}
+        if (langRef.current === 'he') {
+          return 'אתה מראיין/ת מקצועי/ת, חם/ה ואמפתי/ת שמראיין/ת את עומרי' + (roleTxt ? ' לתפקיד ' + roleTxt : '') + '. נהל ראיון אמיתי בקול: שאל שאלה אחת בכל פעם, חכה לתשובה, תן משוב קצר וחיובי ואז עבור לשאלה הבאה. דבר עברית טבעית לדיבור, משפטים קצרים, בלי רשימות ובלי סימני מרקדאון. אם זו ההתחלה — פתח בברכה קצרה מאוד ובשאלה הראשונה.';
+        }
+        return 'You are a professional, warm and empathetic job interviewer interviewing Omri' + (roleTxt ? ' for a ' + roleTxt + ' role' : '') + '. Run a real spoken interview: ask one question at a time, wait for the answer, give brief positive feedback, then move to the next question. Speak natural spoken English, short sentences, no lists or markdown. If this is the start, open with a very short greeting and your first question.';
+      }
+
+      async function aiReply(){
+        setPhase('thinking'); setInterim('');
+        var apiMsgs = msgsRef.current.map(function(m){ return { role: m.role === 'me' ? 'user' : 'assistant', content: m.text }; });
+        if (apiMsgs.length === 0) apiMsgs = [{ role: 'user', content: langRef.current === 'he' ? 'בוא נתחיל את הראיון.' : "Let's begin the interview." }];
+        var text;
+        try { text = await callClaudeMsgs(sysPrompt(), apiMsgs); }
+        catch(e){ setErr(langRef.current === 'he' ? 'שגיאה בחיבור ל‑AI. ודא שמפתח Claude מוגדר בהגדרות.' : 'AI connection error. Check the Claude key in Settings.'); setPhase('idle'); runningRef.current = false; return; }
+        if (!runningRef.current) return;
+        pushMsg('ai', text);
+        setPhase('speaking');
+        await speakText(text, langRef.current);
+        if (runningRef.current) listen();
+      }
+
+      function listen(){
+        if (!runningRef.current) return;
+        var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { setErr(he ? 'הדפדפן לא תומך בזיהוי דיבור (נסה Chrome).' : 'This browser does not support speech recognition (try Chrome).'); return; }
+        var r = new SR();
+        r.lang = langRef.current === 'he' ? 'he-IL' : 'en-US';
+        r.interimResults = true; r.continuous = false; r.maxAlternatives = 1;
+        recRef.current = r;
+        var finalText = '';
+        setPhase('listening'); setInterim('');
+        r.onresult = function(e){ var iv = ''; for (var i = e.resultIndex; i < e.results.length; i++){ var t = e.results[i][0].transcript; if (e.results[i].isFinal) finalText += t; else iv += t; } setInterim(iv); };
+        r.onerror = function(){};
+        r.onend = function(){ setInterim(''); if (!runningRef.current) return; var t = finalText.trim(); if (t){ pushMsg('me', t); aiReply(); } else { listen(); } };
+        try { r.start(); } catch(e){ setTimeout(listen, 400); }
+      }
+
+      function stopAll(){
+        runningRef.current = false;
+        window.__ttsOn = false;
+        try { if (recRef.current){ recRef.current.onend = null; recRef.current.onresult = null; recRef.current.stop(); } } catch(e){}
+        try { if (window.__ttsAudio){ window.__ttsAudio.pause(); } } catch(e){}
+        try { window.speechSynthesis.cancel(); } catch(e){}
+      }
+
+      function startInterview(){ setErr(''); msgsRef.current = []; setMsgs([]); runningRef.current = true; aiReply(); }
+      function endInterview(){ stopAll(); setPhase('idle'); }
+      function skipTurn(){ window.__ttsOn = false; try { if (window.__ttsAudio) window.__ttsAudio.pause(); } catch(e){} try { if (recRef.current){ recRef.current.onend = null; recRef.current.stop(); } } catch(e){} if (runningRef.current) aiReply(); }
+
+      var active = phase !== 'idle';
+      var statusText = phase === 'listening' ? (he ? 'מקשיב/ה לך…' : 'Listening…') : phase === 'thinking' ? (he ? 'חושב/ת…' : 'Thinking…') : phase === 'speaking' ? (he ? 'מדבר/ת…' : 'Speaking…') : (he ? 'תרגול שאלות בזמן אמת · קול אנושי' : 'Real-time practice · human voice');
+      var fast = (phase === 'speaking' || phase === 'listening');
+
       return (
         <div className="view-fade" style={{ maxWidth: 640, margin: '12px auto 0', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-          <div style={{ display:'flex', gap:6, background:'#f1f1f3', padding:4, borderRadius:12, marginBottom:18 }}>
+          <div style={{ display:'flex', gap:6, background:'#f1f1f3', padding:4, borderRadius:12, marginBottom:18, opacity: active ? 0.45 : 1, pointerEvents: active ? 'none' : 'auto' }}>
             <button onClick={() => setLang('he')} style={{ padding:'7px 20px', borderRadius:9, border:'none', cursor:'pointer', fontWeight:700, fontFamily:'inherit', fontSize:14, background: he ? '#fff' : 'transparent', color: he ? 'var(--accent)' : '#6e6e73', boxShadow: he ? '0 1px 3px rgba(0,0,0,.1)' : 'none' }}>עברית</button>
             <button onClick={() => setLang('en')} style={{ padding:'7px 20px', borderRadius:9, border:'none', cursor:'pointer', fontWeight:700, fontFamily:'inherit', fontSize:14, background: !he ? '#fff' : 'transparent', color: !he ? 'var(--accent)' : '#6e6e73', boxShadow: !he ? '0 1px 3px rgba(0,0,0,.1)' : 'none' }}>English</button>
           </div>
           <div className="orb">
-            <div className="orb-wave" style={{ inset: 0, animation: 'orbPulse 2.6s ease-in-out infinite' }}></div>
-            <div className="orb-wave" style={{ inset: 18, animation: 'orbPulse 2.6s ease-in-out infinite .6s' }}></div>
-            <div className="orb-core"><Icon name="graphic_eq" style={{ fontSize: 40, color: '#fff' }} /></div>
+            <div className="orb-wave" style={{ inset: 0, animation: 'orbPulse ' + (fast ? '1.5s' : '2.6s') + ' ease-in-out infinite' }}></div>
+            <div className="orb-wave" style={{ inset: 18, animation: 'orbPulse ' + (fast ? '1.5s' : '2.6s') + ' ease-in-out infinite .5s' }}></div>
+            <div className="orb-core"><Icon name={phase === 'listening' ? 'mic' : 'graphic_eq'} style={{ fontSize: 40, color: '#fff' }} /></div>
           </div>
           <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.4px' }}>{he ? 'ראיון קולי עם AI' : 'AI Voice Interview'}</div>
-          <div style={{ fontSize: 14.5, color: 'var(--ink-soft)', fontWeight: 500, marginTop: 4 }}>{he ? 'תרגול שאלות בזמן אמת · קול אנושי' : 'Real-time practice · human voice'}</div>
+          <div style={{ fontSize: 14.5, color: phase === 'listening' ? 'var(--accent)' : 'var(--ink-soft)', fontWeight: 600, marginTop: 4 }}>{statusText}</div>
 
-          <div className="card" style={{ width: '100%', marginTop: 28, textAlign: 'start', display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div style={{ display: 'flex', gap: 11 }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(150deg, var(--accent), var(--accent-ink))', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Icon name="smart_toy" style={{ fontSize: 18, color: '#fff' }} />
-              </div>
-              <div style={{ background: '#f3f3f5', borderRadius: '4px 16px 16px 16px', padding: '11px 15px', fontSize: 14.5, lineHeight: 1.55 }}>
-                {he ? 'ספר לי על פרויקט שבו הובלת צוות תחת לחץ זמן. איך ניהלת את זה?' : 'Tell me about a project where you led a team under time pressure. How did you manage it?'}
-              </div>
+          {(msgs.length > 0 || interim) ? (
+            <div className="card" style={{ width: '100%', marginTop: 24, textAlign: 'start', display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 340, overflowY: 'auto' }}>
+              {msgs.map(function(m, idx){
+                return m.role === 'ai' ? (
+                  <div key={idx} style={{ display: 'flex', gap: 11 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(150deg, var(--accent), var(--accent-ink))', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="smart_toy" style={{ fontSize: 18, color: '#fff' }} /></div>
+                    <div style={{ background: '#f3f3f5', borderRadius: '4px 16px 16px 16px', padding: '11px 15px', fontSize: 14.5, lineHeight: 1.55 }}>{m.text}</div>
+                  </div>
+                ) : (
+                  <div key={idx} style={{ display: 'flex', gap: 11, flexDirection: 'row-reverse' }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#ff7a59', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 13 }}>ע</div>
+                    <div style={{ background: 'var(--accent)', color: '#fff', borderRadius: '16px 4px 16px 16px', padding: '11px 15px', fontSize: 14.5, lineHeight: 1.55 }}>{m.text}</div>
+                  </div>
+                );
+              })}
+              {interim ? (
+                <div style={{ display: 'flex', gap: 11, flexDirection: 'row-reverse', opacity: 0.55 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#ff7a59', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 13 }}>ע</div>
+                  <div style={{ background: '#eef4ff', color: 'var(--accent-ink)', borderRadius: '16px 4px 16px 16px', padding: '11px 15px', fontSize: 14.5, lineHeight: 1.55 }}>{interim}</div>
+                </div>
+              ) : null}
             </div>
-            <div style={{ display: 'flex', gap: 11, flexDirection: 'row-reverse' }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#ff7a59', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 13 }}>ע</div>
-              <div style={{ background: 'var(--accent)', color: '#fff', borderRadius: '16px 4px 16px 16px', padding: '11px 15px', fontSize: 14.5, lineHeight: 1.55 }}>
-                {he ? 'בטח. ברבעון האחרון הובלתי צוות של ארבעה מעצבים…' : 'Sure — last quarter I led a team of four designers…'}
-              </div>
-            </div>
-          </div>
+          ) : null}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 28 }}>
-            <button className="voice-round-btn" style={{ border: '1px solid #e7e7ec', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-              <Icon name="skip_next" style={{ fontSize: 24, color: '#6e6e73' }} />
-            </button>
-            <button style={{ width: 72, height: 72, borderRadius: '50%', border: 'none', background: 'linear-gradient(150deg, var(--accent), var(--accent-ink))', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 22px var(--accent-soft)' }}>
-              <Icon name="mic" style={{ fontSize: 32, color: '#fff' }} />
-            </button>
-            <button className="voice-round-btn" style={{ border: 'none', background: '#ffebe9' }}>
-              <Icon name="call_end" style={{ fontSize: 24, color: '#e0392f' }} />
-            </button>
+          {err ? <div style={{ marginTop: 14, color: '#e0392f', fontSize: 13.5, fontWeight: 600, maxWidth: 460 }}>{err}</div> : null}
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 26 }}>
+            {!active ? (
+              <button onClick={startInterview} style={{ display:'flex', alignItems:'center', gap:10, padding:'14px 28px', borderRadius: 999, border: 'none', background: 'linear-gradient(150deg, var(--accent), var(--accent-ink))', color:'#fff', cursor: 'pointer', fontFamily:'inherit', fontWeight: 700, fontSize: 15.5, boxShadow: '0 8px 22px var(--accent-soft)' }}>
+                <Icon name="mic" style={{ fontSize: 22, color: '#fff' }} />{he ? 'התחל ראיון' : 'Start interview'}
+              </button>
+            ) : (
+              <React.Fragment>
+                <button onClick={skipTurn} title={he ? 'דלג לשאלה הבאה' : 'Skip'} className="voice-round-btn" style={{ border: '1px solid #e7e7ec', background: '#fff', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                  <Icon name="skip_next" style={{ fontSize: 24, color: '#6e6e73' }} />
+                </button>
+                <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(150deg, var(--accent), var(--accent-ink))', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 22px var(--accent-soft)' }}>
+                  <Icon name={phase === 'listening' ? 'mic' : phase === 'speaking' ? 'graphic_eq' : 'hourglass_top'} style={{ fontSize: 32, color: '#fff' }} />
+                </div>
+                <button onClick={endInterview} title={he ? 'סיים ראיון' : 'End'} className="voice-round-btn" style={{ border: 'none', background: '#ffebe9', cursor: 'pointer' }}>
+                  <Icon name="call_end" style={{ fontSize: 24, color: '#e0392f' }} />
+                </button>
+              </React.Fragment>
+            )}
           </div>
         </div>
       );
