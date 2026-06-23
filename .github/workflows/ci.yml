@@ -29,14 +29,25 @@ jobs:
         run: |
           node -e '
             const fs = require("fs"), vm = require("vm");
+            // Only validate scripts that are actually plain JavaScript. The pages
+            // ship JSX via Babel (type="text/babel" / "text/jsx-source"), which a
+            // plain JS parser cannot read, so those types are skipped.
+            const JS_TYPES = ["", "text/javascript", "application/javascript"];
             for (const f of ["docs/app.html", "docs/landing.html"]) {
-              const s = fs.readFileSync(f, "utf8");
-              const blocks = [...s.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1]);
-              if (!blocks.length) { console.error(f + ": no inline scripts found"); process.exit(1); }
-              for (let i = 0; i < blocks.length; i++) {
-                try { new vm.Script(blocks[i]); }
-                catch (e) { console.error(f + " script #" + (i+1) + ": " + e.message); process.exit(1); }
+              let s = fs.readFileSync(f, "utf8");
+              // Strip HTML comments first so an example <script> tag written inside
+              // a comment is not mistaken for a real script block.
+              s = s.replace(/<!--[\s\S]*?-->/g, "");
+              const re = /<script\b((?:(?!\bsrc=)[^>])*)>([\s\S]*?)<\/script>/g;
+              let m, checked = 0;
+              while ((m = re.exec(s)) !== null) {
+                const tm = m[1].match(/\btype\s*=\s*["\x27]([^"\x27]*)["\x27]/i);
+                const type = tm ? tm[1].toLowerCase() : "";
+                if (!JS_TYPES.includes(type)) continue;
+                try { new vm.Script(m[2]); checked++; }
+                catch (e) { console.error(f + " inline JS error: " + e.message); process.exit(1); }
               }
-              console.log(f + " OK (" + blocks.length + " inline script(s))");
+              if (!checked) { console.error(f + ": no inline JS scripts found"); process.exit(1); }
+              console.log(f + " OK (" + checked + " inline JS script(s) checked)");
             }
           '
